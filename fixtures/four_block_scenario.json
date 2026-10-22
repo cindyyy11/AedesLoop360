@@ -1,0 +1,20 @@
+{
+  "scenario_id": "aedesloop-demo-2026-10",
+  "is_simulated": true,
+  "warning": "All block/trap counts/locations here are fictional and cannot establish disease or vector-control effectiveness.",
+  "sample_window": {"start": "2026-10-16T00:00:00Z", "end": "2026-10-23T00:00:00Z"},
+  "blocks": [
+    {"id": "block-1", "name": "Block 1", "valid_trap_intervals": 2, "expected_trap_intervals": 2, "new_egg_counts": [35, 28], "unresolved_verified_sites": 3, "recurring_sites": 1},
+    {"id": "block-2", "name": "Block 2", "valid_trap_intervals": 2, "expected_trap_intervals": 2, "new_egg_counts": [19, 17], "unresolved_verified_sites": 0, "recurring_sites": 0},
+    {"id": "block-3", "name": "Block 3", "valid_trap_intervals": 2, "expected_trap_intervals": 2, "new_egg_counts": [8, 10], "unresolved_verified_sites": 0, "recurring_sites": 0},
+    {"id": "block-4", "name": "Block 4", "valid_trap_intervals": 0, "expected_trap_intervals": 2, "new_egg_counts": [], "unresolved_verified_sites": 1, "recurring_sites": 0, "trap_status": "OFFLINE"}
+  ],
+  "candidate_targets": [
+    {"id": "finding-dry", "asset_id": "asset-p01", "block_id": "block-1", "water_state": "DRY", "eligibility": "SKIP", "reason": "No evidence of water"},
+    {"id": "finding-mock", "asset_id": "asset-p02", "block_id": "block-1", "water_state": "VISIBLE_WATER", "eligibility": "MOCK_ACTION_ELIGIBLE", "reason": "Fictional harmless demo target only"},
+    {"id": "finding-occluded", "asset_id": "asset-p03", "block_id": "block-1", "water_state": "OCCLUDED", "eligibility": "GROUND_REVIEW", "reason": "Image obscured"}
+  ],
+  "recurrence_example": {"asset_id": "asset-p03", "separately_verified_accumulation_events": 2, "expected_work_order": "ENGINEERING_REVIEW"},
+  "resource_budget": {"staff_hours": 12, "drone_survey_hours": 2},
+  "source_mode": "SIMULATED"
+}
