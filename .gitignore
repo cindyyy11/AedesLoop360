@@ -1,0 +1,36 @@
+# Local secrets and environment files (keep the example template)
+.env
+.env.*
+!.env.example
+
+# Local databases and demo data
+*.db
+*.db-*
+data/
+
+# Python environments and generated caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# JavaScript dependencies and generated build output
+node_modules/
+.next/
+.next-*/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Test output and coverage
+test-results/
+playwright-report/
+coverage/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
