@@ -21,13 +21,15 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from . import drone, planning
+from . import drone, drone_inference, planning
+from . import allocation_benchmark, data_analytics
 from .contracts import (
     One,
     Many,
     Summary,
     AssetRecord,
     SampleRecord,
+    SampleRevisionRecord,
     TrapRecord,
     FindingRecord,
     MissionRecord,
@@ -39,12 +41,18 @@ from .contracts import (
     AuditRecord,
     AllocationRecord,
     HistoryRecord,
+    AnalyticsRunRecord,
+    ModelEvaluations,
+    BlockSurveillanceAnalytics,
+    LatestBenchmark,
+    AnalyticsMany,
 )
 from .db import now, session
 from .models import (
     Allocation,
     Asset,
     Audit,
+    AnalyticsRun,
     AuthSession,
     Block,
     Finding,
@@ -55,6 +63,7 @@ from .models import (
     MissionEvent,
     Observation,
     Sample,
+    SampleRevision,
     Trap,
     User,
     WorkOrder,
@@ -71,6 +80,7 @@ from .schemas import (
     PlanInput,
     ReviewInput,
     SampleInput,
+    SampleRevisionInput,
     VerifyInput,
     WorkUpdate,
 )
@@ -189,6 +199,65 @@ def blocks(
     return {"data": summaries(db, user, start, end), "source_mode": "SIMULATED"}
 
 
+@app.get(P + "/analytics/evaluations", response_model=ModelEvaluations)
+def analytics_evaluations(db: DB, user: Actor):
+    return data_analytics.evaluation_cards(db, user)
+
+
+@app.get(P + "/analytics/surveillance", response_model=AnalyticsMany[BlockSurveillanceAnalytics])
+def analytics_surveillance(
+    db: DB,
+    user: Actor,
+    start: datetime = PlanInput().window_start,
+    end: datetime = PlanInput().window_end,
+):
+    if start.tzinfo is None or end.tzinfo is None or end <= start:
+        raise HTTPException(422, "Use a positive timezone-aware window")
+    values = data_analytics.surveillance_analytics(db, user, start, end)
+    modes = {mode for block in values for mode in block["source_modes"]}
+    source_mode = next(iter(modes)) if len(modes) == 1 else "MIXED_OR_NO_SAMPLES"
+    return {"data": values, "source_mode": source_mode}
+
+
+@app.get(P + "/analytics/allocation-benchmark", response_model=LatestBenchmark)
+def analytics_allocation_benchmark(db: DB, user: Actor):
+    return {"data": data_analytics.latest_benchmark(db, user)}
+
+
+@app.post(P + "/analytics/allocation-benchmark", response_model=One[AnalyticsRunRecord])
+def run_allocation_benchmark(db: DB, user: Actor, key: Key):
+    require(user, "coordinator")
+    payload = {"scenario_id": "four-block-allocation-v1", "seed": 0}
+    cached = replay(db, user, "allocation-benchmark", key, payload)
+    if cached:
+        return item(get(db, AnalyticsRun, cached, user))
+    output = allocation_benchmark.benchmark()
+    from .repository import digest
+
+    run_hash = digest(output)[:12]
+    run = AnalyticsRun(
+        tenant_id=user.tenant_id,
+        mode="SIMULATED",
+        run_id=f"allocation-benchmark-{run_hash}",
+        run_type="ALLOCATION_BENCHMARK",
+        status="COMPLETED",
+        source_mode="SIMULATED",
+        run_metadata={"scenario_id": output["results"][0]["scenario_id"], "seed": 0},
+        metrics=output,
+        artifacts=[],
+        limitations=[
+            "SIMULATED EXPERIMENT only; scripted scenario task coverage is not field or biological evidence."
+        ],
+        initiated_by=user.id,
+    )
+    db.add(run)
+    db.flush()
+    receipt(db, user, "allocation-benchmark", key, payload, run.id)
+    audit(db, user, run.id, "ALLOCATION_BENCHMARK_COMPLETED", {"run_id": run.run_id})
+    db.commit()
+    return item(run)
+
+
 @app.get(P + "/assets", response_model=Many[AssetRecord])
 def assets(db: DB, user: Actor):
     return collection(rows(db, Asset, user))
@@ -230,8 +299,10 @@ async def upload(
     file: UploadFile = File(),
     rights: str = Form(min_length=5, max_length=1000),
     captured_at: str = Form(),
+    asset_id: str = Form(),
 ):
     require(user, "operator", "reviewer", "inspector", "coordinator")
+    asset = get(db, Asset, asset_id, user)
     content = await file.read(5 * 1024 * 1024 + 1)
     if len(content) > 5 * 1024 * 1024:
         raise HTTPException(413, "Image exceeds 5 MB")
@@ -247,10 +318,22 @@ async def upload(
         raise HTTPException(422, "Use a valid PNG/JPEG and past timezone-aware capture timestamp")
     sha = hashlib.sha256(content).hexdigest()
     known = db.scalar(select(Media).where(Media.tenant_id == user.tenant_id, Media.sha256 == sha))
+    original_finding = (
+        db.scalar(
+            select(Finding).where(
+                Finding.tenant_id == user.tenant_id,
+                Finding.media_id == known.id,
+                Finding.asset_id == asset.id,
+            )
+        )
+        if known and known.adapter == "DEMO_PREANNOTATED_V1"
+        else None
+    )
+    inference = None if original_finding else drone_inference.infer_candidates(content)
     adapter = (
         "DEMO_PREANNOTATED_V1"
-        if known and known.adapter == "DEMO_PREANNOTATED_V1"
-        else "UNSUPPORTED_GROUND_REVIEW"
+        if original_finding
+        else f"YOLO_LOCAL_V1:{inference.status}"
     )
     row = Media(
         tenant_id=user.tenant_id,
@@ -265,6 +348,75 @@ async def upload(
     db.add(row)
     db.flush()
     audit(db, user, row.id, "MEDIA_IMPORTED", {"sha256": sha, "adapter": adapter})
+    if original_finding:
+        finding = Finding(
+            tenant_id=user.tenant_id,
+            asset_id=asset.id,
+            media_id=row.id,
+            water_state=original_finding.water_state,
+            object_class=original_finding.object_class,
+            bbox=original_finding.bbox,
+            confidence=original_finding.confidence,
+            model_version="DEMO_PREANNOTATED_V1",
+            reason="Exact synthetic fixture match; copied human-authored annotation, not model inference",
+        )
+        db.add(finding)
+        db.flush()
+        audit(db, user, finding.id, "FIXTURE_ANNOTATION_LINKED", {"media_id": row.id})
+    elif inference and inference.detections:
+        for detection in inference.detections:
+            finding = Finding(
+                tenant_id=user.tenant_id,
+                asset_id=asset.id,
+                media_id=row.id,
+                water_state="UNCERTAIN",
+                object_class=detection.object_class,
+                bbox=detection.bbox,
+                confidence=detection.confidence,
+                model_version=inference.model_version or "LOCAL_MODEL_UNKNOWN",
+                mode="IMPORTED",
+                reason=(
+                    "Model detected a candidate container; water and breeding status are "
+                    "unconfirmed and require ground review"
+                ),
+            )
+            db.add(finding)
+            db.flush()
+            audit(
+                db,
+                user,
+                finding.id,
+                "MODEL_CANDIDATE_RECORDED",
+                {"media_id": row.id, "model_version": finding.model_version},
+            )
+    else:
+        inference_reason = inference.reason if inference else None
+        no_detection = inference and inference.status == "NO_DETECTIONS"
+        finding = Finding(
+            tenant_id=user.tenant_id,
+            asset_id=asset.id,
+            media_id=row.id,
+            water_state="UNCERTAIN",
+            object_class="candidate_container",
+            bbox=[0.0, 0.0, 1.0, 1.0],
+            confidence=None,
+            model_version=(
+                inference.model_version
+                if inference and inference.model_version
+                else "UNSUPPORTED_GROUND_REVIEW"
+            ),
+            mode="IMPORTED",
+            reason=(
+                "Configured model returned no candidate; inspect image before ruling out a "
+                "container"
+                if no_detection
+                else inference_reason
+                or "No evaluated detector is installed; inspect the whole image at the selected asset"
+            ),
+        )
+        db.add(finding)
+        db.flush()
+        audit(db, user, finding.id, "UNCERTAIN_UPLOAD_QUEUED", {"media_id": row.id})
     db.commit()
     return item(row)
 
@@ -303,6 +455,69 @@ def import_sample(entity_id: str, body: SampleInput, db: DB, user: Actor, key: K
     return item(row)
 
 
+@app.get(P + "/samples/{entity_id}/revisions", response_model=Many[SampleRevisionRecord])
+def sample_revisions(entity_id: str, db: DB, user: Actor):
+    get(db, Sample, entity_id, user)
+    values = db.scalars(
+        select(SampleRevision)
+        .where(SampleRevision.sample_id == entity_id, SampleRevision.tenant_id == user.tenant_id)
+        .order_by(SampleRevision.created_at, SampleRevision.id)
+    )
+    return collection(values)
+
+
+@app.post(P + "/samples/{entity_id}/revisions", response_model=One[SampleRevisionRecord])
+def revise_sample(entity_id: str, body: SampleRevisionInput, db: DB, user: Actor, key: Key):
+    require(user, "reviewer", "coordinator")
+    sample = db.scalar(
+        select(Sample)
+        .where(Sample.id == entity_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    if sample is None:
+        raise HTTPException(404, "Record not found")
+    if sample.tenant_id != user.tenant_id:
+        raise HTTPException(403, "Record belongs to another tenant")
+    payload = body.model_dump(mode="json")
+    cached = replay(db, user, f"sample-revision:{entity_id}", key, payload)
+    if cached:
+        return item(get(db, SampleRevision, cached, user))
+    if body.corrected_egg_count == sample.egg_count and body.media_id == sample.media_id:
+        raise HTTPException(422, "Revision must correct the count or replace its evidence")
+    media = get(db, Media, body.media_id, user)
+    if media.mode != sample.mode:
+        raise HTTPException(422, "Correction evidence and sample modes must match")
+    trap = get(db, Trap, sample.trap_id, user)
+    revision = SampleRevision(
+        tenant_id=user.tenant_id,
+        sample_id=sample.id,
+        reviewer_id=user.id,
+        previous_egg_count=sample.egg_count,
+        corrected_egg_count=body.corrected_egg_count,
+        media_id=media.id,
+        reason=body.reason,
+    )
+    db.add(revision)
+    sample.egg_count = body.corrected_egg_count
+    sample.media_id = media.id
+    sample.quality = body.quality
+    sample.validity = (
+        "VALID" if body.quality == "GOOD" and effective_status(trap) == "ACTIVE" else "INVALID"
+    )
+    db.flush()
+    receipt(db, user, f"sample-revision:{entity_id}", key, payload, revision.id)
+    audit(
+        db,
+        user,
+        sample.id,
+        "SAMPLE_COUNT_REVISED",
+        {"revision_id": revision.id, **payload, "previous_egg_count": revision.previous_egg_count},
+    )
+    db.commit()
+    return item(revision)
+
+
 @app.get(P + "/drones/missions", response_model=Many[MissionRecord])
 def missions(db: DB, user: Actor):
     return collection(rows(db, Mission, user))
@@ -331,7 +546,10 @@ def review_mission(entity_id: str, db: DB, user: Actor):
 
 @app.post(P + "/drones/missions/{entity_id}/decision", response_model=One[MissionRecord])
 def decide_mission(entity_id: str, body: Decision, db: DB, user: Actor):
-    require(user, "coordinator")
+    if user.role != "coordinator":
+        audit(db, user, entity_id, "MISSION_DECISION_DENIED_ROLE", {"role": user.role})
+        db.commit()
+        raise HTTPException(403, "Coordinator role required")
     row = get(db, Mission, entity_id, user)
     drone.decide(db, user, row, body)
     db.commit()
@@ -342,7 +560,13 @@ def decide_mission(entity_id: str, body: Decision, db: DB, user: Actor):
 def simulate_mission(entity_id: str, db: DB, user: Actor, key: Key):
     require(user, "operator")
     row = get(db, Mission, entity_id, user)
-    drone.simulate(db, user, row, key)
+    try:
+        drone.simulate(db, user, row, key)
+    except HTTPException as error:
+        if error.status_code == 409:
+            audit(db, user, row.id, "SIMULATION_DENIED", {"reason": error.detail})
+            db.commit()
+        raise
     db.commit()
     return item(row)
 

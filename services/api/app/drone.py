@@ -1,3 +1,5 @@
+from datetime import timedelta, timezone
+
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -46,6 +48,9 @@ def decide(db: Session, user: User, mission: Mission, body: Decision):
     mission.status = "APPROVED" if body.decision == "APPROVE" else "REJECTED"
     mission.approved_by = user.id if body.decision == "APPROVE" else None
     mission.approved_at = now() if body.decision == "APPROVE" else None
+    mission.approval_expires_at = (
+        now() + timedelta(minutes=30) if body.decision == "APPROVE" else None
+    )
     audit(db, user, mission.id, mission.status, body.model_dump())
 
 
@@ -53,9 +58,14 @@ def simulate(db: Session, user: User, mission: Mission, key: str):
     cached = replay(db, user, "simulate", key, {"mission_id": mission.id})
     if cached:
         return
+    approval_expires_at = mission.approval_expires_at
+    if approval_expires_at and approval_expires_at.tzinfo is None:
+        approval_expires_at = approval_expires_at.replace(tzinfo=timezone.utc)
     if (
         mission.status != "APPROVED"
         or not mission.approved_by
+        or not approval_expires_at
+        or approval_expires_at <= now()
         or mission.mode != "SIMULATED"
         or mission.policy_version != "demo-policy-v1"
     ):
@@ -66,7 +76,7 @@ def simulate(db: Session, user: User, mission: Mission, key: str):
         if asset.block_id != mission.block_id:
             raise HTTPException(409, "Target scope changed; create a new mission")
     mission.status = "SIMULATING"
-    db.add(Job(tenant_id=user.tenant_id, mission_id=mission.id))
+    db.add(Job(tenant_id=user.tenant_id, mission_id=mission.id, operator_id=user.id))
     receipt(db, user, "simulate", key, {"mission_id": mission.id}, mission.id)
     audit(db, user, mission.id, "SIMULATION_QUEUED")
 
@@ -77,7 +87,9 @@ def step(db: Session, job: Job):
     if mission.status != "SIMULATING":
         job.status = "CANCELLED"
         return
-    actor = db.get(User, mission.approved_by)
+    # Keep the person who started the simulation as the actor for execution events.
+    # Fall back to the approver only for jobs created before migration 002.
+    actor = db.get(User, job.operator_id or mission.approved_by)
     if job.cursor >= len(mission.target_ids):
         kind, payload = (
             "MISSION_COMPLETED",

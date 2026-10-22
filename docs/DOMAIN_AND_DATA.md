@@ -28,7 +28,8 @@
 | `candidate_findings` | `id`, `observation_id`, `object_class`, `bbox`, `confidence`, `model_version`, `eligibility`, `reason_codes` | no unconfirmed biological claim |
 | `traps` | `id`, `block_id`, `asset_id?`, `type`, `status`, `serviced_at`, `safe_design_verified`, `device_identifier` | unique device id |
 | `ovitrap_samples` | `id`, `trap_id`, `source_sample_id`, `interval_start`, `interval_end`, `egg_count?`, `egg_positive?`, `validity`, `image_id?`, `model_version?`, `quality_notes`, `supersedes_id?` | interval end > start; unique source sample; no duplicate |
-| `missions` | `id`, `tenant_id`, `block_id`, `mode`, `purpose`, `status`, `reviewed_by?`, `approved_at?`, `approval_scope`, `policy_version` | forbid actual spray mode |
+| `sample_revisions` (local demo) | `id`, `sample_id`, `reviewer_id`, `previous_egg_count`, `corrected_egg_count`, `media_id`, `reason`, `mode`, `created_at` | append-only count correction history |
+| `missions` | `id`, `tenant_id`, `block_id`, `mode`, `purpose`, `status`, `reviewed_by?`, `approved_at?`, `approval_expires_at?`, `approval_scope`, `policy_version` | forbid actual spray mode; local simulated approval expires after 30 minutes |
 | `mission_targets` | `id`, `mission_id`, `candidate_id`, `decision`, `reason`, `state` | unique mission/candidate |
 | `mission_events` | `id`, `mission_id`, `event_id`, `type`, `occurred_at`, `received_at`, `source_mode`, `payload` | unique event id |
 | `work_orders` | `id`, `asset_id?`, `block_id`, `kind`, `priority`, `status`, `assigned_to?`, `reason`, `parent_work_order_id?` | owning tenant checks |

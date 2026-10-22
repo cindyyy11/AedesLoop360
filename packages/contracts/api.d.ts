@@ -89,6 +89,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/analytics/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Analytics Evaluations */
+        get: operations["analytics_evaluations_api_v1_analytics_evaluations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/surveillance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Analytics Surveillance */
+        get: operations["analytics_surveillance_api_v1_analytics_surveillance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/allocation-benchmark": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Analytics Allocation Benchmark */
+        get: operations["analytics_allocation_benchmark_api_v1_analytics_allocation_benchmark_get"];
+        put?: never;
+        /** Run Allocation Benchmark */
+        post: operations["run_allocation_benchmark_api_v1_analytics_allocation_benchmark_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/assets": {
         parameters: {
             query?: never;
@@ -203,6 +255,24 @@ export interface paths {
         put?: never;
         /** Import Sample */
         post: operations["import_sample_api_v1_ovitraps__entity_id__samples_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/samples/{entity_id}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sample Revisions */
+        get: operations["sample_revisions_api_v1_samples__entity_id__revisions_get"];
+        put?: never;
+        /** Revise Sample */
+        post: operations["revise_sample_api_v1_samples__entity_id__revisions_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -513,6 +583,49 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** AnalyticsMany[BlockSurveillanceAnalytics] */
+        AnalyticsMany_BlockSurveillanceAnalytics_: {
+            /** Data */
+            data: components["schemas"]["BlockSurveillanceAnalytics"][];
+            /** Source Mode */
+            source_mode: string;
+        };
+        /** AnalyticsRunRecord */
+        AnalyticsRunRecord: {
+            /** Id */
+            id: string;
+            /** Tenant Id */
+            tenant_id: string;
+            /** Mode */
+            mode: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Run Id */
+            run_id: string;
+            /** Run Type */
+            run_type: string;
+            /** Status */
+            status: string;
+            /** Source Mode */
+            source_mode: string;
+            /** Run Metadata */
+            run_metadata: {
+                [key: string]: unknown;
+            };
+            /** Metrics */
+            metrics: {
+                [key: string]: unknown;
+            } | null;
+            /** Artifacts */
+            artifacts: string[];
+            /** Limitations */
+            limitations: string[];
+            /** Initiated By */
+            initiated_by: string | null;
+        };
         /** AssetRecord */
         AssetRecord: {
             /** Block Id */
@@ -563,6 +676,41 @@ export interface components {
              */
             created_at: string;
         };
+        /** BlockSurveillanceAnalytics */
+        BlockSurveillanceAnalytics: {
+            /** Block Id */
+            block_id: string;
+            /** Block Name */
+            block_name: string;
+            /** Status */
+            status: string;
+            /** Valid Trap Intervals */
+            valid_trap_intervals: number;
+            /** Expected Trap Intervals */
+            expected_trap_intervals: number;
+            /** Invalid Intervals */
+            invalid_intervals: number;
+            /** Completeness */
+            completeness: number | null;
+            /** Egg Sum */
+            egg_sum: number | null;
+            /** Eggs Per Valid Trap Interval */
+            eggs_per_valid_trap_interval: number | null;
+            /** Positivity */
+            positivity: number | null;
+            /** Unavailable Traps */
+            unavailable_traps: string[];
+            /** Sources */
+            sources: string[];
+            /** Source Modes */
+            source_modes: string[];
+            /** Interval Days Included */
+            interval_days_included: number[];
+            /** Comparability Warning */
+            comparability_warning: string | null;
+            /** Series */
+            series: components["schemas"]["SurveillancePoint"][];
+        };
         /** Body_upload_api_v1_media_post */
         Body_upload_api_v1_media_post: {
             /** File */
@@ -571,6 +719,8 @@ export interface components {
             rights: string;
             /** Captured At */
             captured_at: string;
+            /** Asset Id */
+            asset_id: string;
         };
         /** Budget */
         Budget: {
@@ -686,6 +836,8 @@ export interface components {
         JobRecord: {
             /** Mission Id */
             mission_id: string;
+            /** Operator Id */
+            operator_id: string | null;
             /** Status */
             status: string;
             /** Cursor */
@@ -710,6 +862,15 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** LatestBenchmark */
+        LatestBenchmark: {
+            data: components["schemas"]["AnalyticsRunRecord"] | null;
+            /**
+             * Source Mode
+             * @default SIMULATED EXPERIMENT
+             */
+            source_mode: string;
         };
         /** Login */
         Login: {
@@ -819,6 +980,17 @@ export interface components {
         Many_SampleRecord_: {
             /** Data */
             data: components["schemas"]["SampleRecord"][];
+            /**
+             * Source Mode
+             * @default SIMULATED
+             * @constant
+             */
+            source_mode: "SIMULATED";
+        };
+        /** Many[SampleRevisionRecord] */
+        Many_SampleRevisionRecord_: {
+            /** Data */
+            data: components["schemas"]["SampleRevisionRecord"][];
             /**
              * Source Mode
              * @default SIMULATED
@@ -939,6 +1111,8 @@ export interface components {
             approved_by: string | null;
             /** Approved At */
             approved_at: string | null;
+            /** Approval Expires At */
+            approval_expires_at: string | null;
             /** Id */
             id: string;
             /** Tenant Id */
@@ -950,6 +1124,21 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** ModelEvaluationCard */
+        ModelEvaluationCard: {
+            /** Run Type */
+            run_type: string;
+            /** Status */
+            status: string;
+            /** Reason */
+            reason?: string | null;
+            latest_completed_run?: components["schemas"]["AnalyticsRunRecord"] | null;
+        };
+        /** ModelEvaluations */
+        ModelEvaluations: {
+            drone_detection: components["schemas"]["ModelEvaluationCard"];
+            ovitrap_count: components["schemas"]["ModelEvaluationCard"];
         };
         /** ObservationInput */
         ObservationInput: {
@@ -1009,6 +1198,16 @@ export interface components {
              */
             source_mode: "SIMULATED";
         };
+        /** One[AnalyticsRunRecord] */
+        One_AnalyticsRunRecord_: {
+            data: components["schemas"]["AnalyticsRunRecord"];
+            /**
+             * Source Mode
+             * @default SIMULATED
+             * @constant
+             */
+            source_mode: "SIMULATED";
+        };
         /** One[HistoryRecord] */
         One_HistoryRecord_: {
             data: components["schemas"]["HistoryRecord"];
@@ -1052,6 +1251,16 @@ export interface components {
         /** One[SampleRecord] */
         One_SampleRecord_: {
             data: components["schemas"]["SampleRecord"];
+            /**
+             * Source Mode
+             * @default SIMULATED
+             * @constant
+             */
+            source_mode: "SIMULATED";
+        };
+        /** One[SampleRevisionRecord] */
+        One_SampleRevisionRecord_: {
+            data: components["schemas"]["SampleRevisionRecord"];
             /**
              * Source Mode
              * @default SIMULATED
@@ -1143,6 +1352,8 @@ export interface components {
             interval_days: number;
             /** Uncertainty */
             uncertainty: string;
+            /** Comparability Warning */
+            comparability_warning?: string | null;
             /** Score */
             score: number;
             /** Reasons */
@@ -1259,6 +1470,47 @@ export interface components {
              */
             created_at: string;
         };
+        /** SampleRevisionInput */
+        SampleRevisionInput: {
+            /** Corrected Egg Count */
+            corrected_egg_count: number;
+            /** Media Id */
+            media_id: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Quality
+             * @default GOOD
+             * @enum {string}
+             */
+            quality: "GOOD" | "BLURRED" | "OCCLUDED";
+        };
+        /** SampleRevisionRecord */
+        SampleRevisionRecord: {
+            /** Sample Id */
+            sample_id: string;
+            /** Reviewer Id */
+            reviewer_id: string;
+            /** Previous Egg Count */
+            previous_egg_count: number;
+            /** Corrected Egg Count */
+            corrected_egg_count: number;
+            /** Media Id */
+            media_id: string;
+            /** Reason */
+            reason: string;
+            /** Id */
+            id: string;
+            /** Tenant Id */
+            tenant_id: string;
+            /** Mode */
+            mode: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** Summary */
         Summary: {
             /** Id */
@@ -1295,6 +1547,51 @@ export interface components {
             interval_days: number;
             /** Uncertainty */
             uncertainty: string;
+            /** Comparability Warning */
+            comparability_warning?: string | null;
+        };
+        /** SurveillancePoint */
+        SurveillancePoint: {
+            /**
+             * Interval Start
+             * Format: date-time
+             */
+            interval_start: string;
+            /**
+             * Interval End
+             * Format: date-time
+             */
+            interval_end: string;
+            /** Interval Days */
+            interval_days: number;
+            /** Egg Sum */
+            egg_sum: number | null;
+            /** Eggs Per Valid Trap Interval */
+            eggs_per_valid_trap_interval: number | null;
+            /** Positive Intervals */
+            positive_intervals: number | null;
+            /** Valid Trap Intervals */
+            valid_trap_intervals: number;
+            /** Expected Trap Intervals */
+            expected_trap_intervals: number;
+            /** Invalid Intervals */
+            invalid_intervals: number;
+            /** Completeness */
+            completeness: number | null;
+            /** Status */
+            status: string;
+            /** Sample Ids */
+            sample_ids: string[];
+            /** Sources */
+            sources: string[];
+            /** Source Modes */
+            source_modes: string[];
+            /** Quality States */
+            quality_states: string[];
+            /** Latest Collected At */
+            latest_collected_at: string | null;
+            /** Latest Uploaded At */
+            latest_uploaded_at: string | null;
         };
         /** Task */
         Task: {
@@ -1324,6 +1621,8 @@ export interface components {
             status: string;
             /** Safe Design Verified */
             safe_design_verified: boolean;
+            /** Sampling Cadence Days */
+            sampling_cadence_days: number;
             /**
              * Serviced At
              * Format: date-time
@@ -1551,6 +1850,109 @@ export interface operations {
             };
         };
     };
+    analytics_evaluations_api_v1_analytics_evaluations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelEvaluations"];
+                };
+            };
+        };
+    };
+    analytics_surveillance_api_v1_analytics_surveillance_get: {
+        parameters: {
+            query?: {
+                start?: string;
+                end?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalyticsMany_BlockSurveillanceAnalytics_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    analytics_allocation_benchmark_api_v1_analytics_allocation_benchmark_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LatestBenchmark"];
+                };
+            };
+        };
+    };
+    run_allocation_benchmark_api_v1_analytics_allocation_benchmark_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["One_AnalyticsRunRecord_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     assets_api_v1_assets_get: {
         parameters: {
             query?: never;
@@ -1761,6 +2163,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["One_SampleRecord_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sample_revisions_api_v1_samples__entity_id__revisions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Many_SampleRevisionRecord_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revise_sample_api_v1_samples__entity_id__revisions_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SampleRevisionInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["One_SampleRevisionRecord_"];
                 };
             };
             /** @description Validation Error */

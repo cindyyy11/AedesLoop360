@@ -147,6 +147,133 @@
         }
       }
     },
+    "/api/v1/analytics/evaluations": {
+      "get": {
+        "summary": "Analytics Evaluations",
+        "operationId": "analytics_evaluations_api_v1_analytics_evaluations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelEvaluations"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/surveillance": {
+      "get": {
+        "summary": "Analytics Surveillance",
+        "operationId": "analytics_surveillance_api_v1_analytics_surveillance_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": "2026-10-16T00:00:00Z",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": "2026-10-23T00:00:00Z",
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsMany_BlockSurveillanceAnalytics_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/allocation-benchmark": {
+      "get": {
+        "summary": "Analytics Allocation Benchmark",
+        "operationId": "analytics_allocation_benchmark_api_v1_analytics_allocation_benchmark_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LatestBenchmark"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Run Allocation Benchmark",
+        "operationId": "run_allocation_benchmark_api_v1_analytics_allocation_benchmark_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_AnalyticsRunRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/assets": {
       "get": {
         "summary": "Assets",
@@ -395,6 +522,103 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/One_SampleRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/samples/{entity_id}/revisions": {
+      "get": {
+        "summary": "Sample Revisions",
+        "operationId": "sample_revisions_api_v1_samples__entity_id__revisions_get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_SampleRevisionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Revise Sample",
+        "operationId": "revise_sample_api_v1_samples__entity_id__revisions_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleRevisionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_SampleRevisionRecord_"
                 }
               }
             }
@@ -1139,6 +1363,123 @@
         ],
         "title": "AllocationRecord"
       },
+      "AnalyticsMany_BlockSurveillanceAnalytics_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/BlockSurveillanceAnalytics"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "title": "Source Mode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "source_mode"
+        ],
+        "title": "AnalyticsMany[BlockSurveillanceAnalytics]"
+      },
+      "AnalyticsRunRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "run_type": {
+            "type": "string",
+            "title": "Run Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "source_mode": {
+            "type": "string",
+            "title": "Source Mode"
+          },
+          "run_metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Run Metadata"
+          },
+          "metrics": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metrics"
+          },
+          "artifacts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Artifacts"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "initiated_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initiated By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at",
+          "run_id",
+          "run_type",
+          "status",
+          "source_mode",
+          "run_metadata",
+          "metrics",
+          "artifacts",
+          "limitations",
+          "initiated_by"
+        ],
+        "title": "AnalyticsRunRecord"
+      },
       "AssetRecord": {
         "properties": {
           "block_id": {
@@ -1248,6 +1589,144 @@
         ],
         "title": "AuditRecord"
       },
+      "BlockSurveillanceAnalytics": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "block_name": {
+            "type": "string",
+            "title": "Block Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "valid_trap_intervals": {
+            "type": "integer",
+            "title": "Valid Trap Intervals"
+          },
+          "expected_trap_intervals": {
+            "type": "integer",
+            "title": "Expected Trap Intervals"
+          },
+          "invalid_intervals": {
+            "type": "integer",
+            "title": "Invalid Intervals"
+          },
+          "completeness": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completeness"
+          },
+          "egg_sum": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Egg Sum"
+          },
+          "eggs_per_valid_trap_interval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eggs Per Valid Trap Interval"
+          },
+          "positivity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positivity"
+          },
+          "unavailable_traps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unavailable Traps"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "source_modes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Modes"
+          },
+          "interval_days_included": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Interval Days Included"
+          },
+          "comparability_warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparability Warning"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/SurveillancePoint"
+            },
+            "type": "array",
+            "title": "Series"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_id",
+          "block_name",
+          "status",
+          "valid_trap_intervals",
+          "expected_trap_intervals",
+          "invalid_intervals",
+          "completeness",
+          "egg_sum",
+          "eggs_per_valid_trap_interval",
+          "positivity",
+          "unavailable_traps",
+          "sources",
+          "source_modes",
+          "interval_days_included",
+          "comparability_warning",
+          "series"
+        ],
+        "title": "BlockSurveillanceAnalytics"
+      },
       "Body_upload_api_v1_media_post": {
         "properties": {
           "file": {
@@ -1264,13 +1743,18 @@
           "captured_at": {
             "type": "string",
             "title": "Captured At"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
           }
         },
         "type": "object",
         "required": [
           "file",
           "rights",
-          "captured_at"
+          "captured_at",
+          "asset_id"
         ],
         "title": "Body_upload_api_v1_media_post"
       },
@@ -1562,6 +2046,17 @@
             "type": "string",
             "title": "Mission Id"
           },
+          "operator_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operator Id"
+          },
           "status": {
             "type": "string",
             "title": "Status"
@@ -1611,6 +2106,7 @@
         "type": "object",
         "required": [
           "mission_id",
+          "operator_id",
           "status",
           "cursor",
           "attempts",
@@ -1622,6 +2118,30 @@
           "created_at"
         ],
         "title": "JobRecord"
+      },
+      "LatestBenchmark": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalyticsRunRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_mode": {
+            "type": "string",
+            "title": "Source Mode",
+            "default": "SIMULATED EXPERIMENT"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "LatestBenchmark"
       },
       "Login": {
         "properties": {
@@ -1866,6 +2386,28 @@
           "data"
         ],
         "title": "Many[SampleRecord]"
+      },
+      "Many_SampleRevisionRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SampleRevisionRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[SampleRevisionRecord]"
       },
       "Many_Summary_": {
         "properties": {
@@ -2117,6 +2659,18 @@
             ],
             "title": "Approved At"
           },
+          "approval_expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Expires At"
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -2143,12 +2697,68 @@
           "policy_version",
           "approved_by",
           "approved_at",
+          "approval_expires_at",
           "id",
           "tenant_id",
           "mode",
           "created_at"
         ],
         "title": "MissionRecord"
+      },
+      "ModelEvaluationCard": {
+        "properties": {
+          "run_type": {
+            "type": "string",
+            "title": "Run Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "latest_completed_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalyticsRunRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_type",
+          "status"
+        ],
+        "title": "ModelEvaluationCard"
+      },
+      "ModelEvaluations": {
+        "properties": {
+          "drone_detection": {
+            "$ref": "#/components/schemas/ModelEvaluationCard"
+          },
+          "ovitrap_count": {
+            "$ref": "#/components/schemas/ModelEvaluationCard"
+          }
+        },
+        "type": "object",
+        "required": [
+          "drone_detection",
+          "ovitrap_count"
+        ],
+        "title": "ModelEvaluations"
       },
       "ObservationInput": {
         "properties": {
@@ -2275,6 +2885,24 @@
         ],
         "title": "One[AllocationRecord]"
       },
+      "One_AnalyticsRunRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AnalyticsRunRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[AnalyticsRunRecord]"
+      },
       "One_HistoryRecord_": {
         "properties": {
           "data": {
@@ -2364,6 +2992,24 @@
           "data"
         ],
         "title": "One[SampleRecord]"
+      },
+      "One_SampleRevisionRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SampleRevisionRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[SampleRevisionRecord]"
       },
       "One_WorkOrderRecord_": {
         "properties": {
@@ -2553,6 +3199,17 @@
           "uncertainty": {
             "type": "string",
             "title": "Uncertainty"
+          },
+          "comparability_warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparability Warning"
           },
           "score": {
             "type": "number",
@@ -2812,6 +3469,103 @@
         ],
         "title": "SampleRecord"
       },
+      "SampleRevisionInput": {
+        "properties": {
+          "corrected_egg_count": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Corrected Egg Count"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "GOOD",
+              "BLURRED",
+              "OCCLUDED"
+            ],
+            "title": "Quality",
+            "default": "GOOD"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "corrected_egg_count",
+          "media_id",
+          "reason"
+        ],
+        "title": "SampleRevisionInput"
+      },
+      "SampleRevisionRecord": {
+        "properties": {
+          "sample_id": {
+            "type": "string",
+            "title": "Sample Id"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "title": "Reviewer Id"
+          },
+          "previous_egg_count": {
+            "type": "integer",
+            "title": "Previous Egg Count"
+          },
+          "corrected_egg_count": {
+            "type": "integer",
+            "title": "Corrected Egg Count"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_id",
+          "reviewer_id",
+          "previous_egg_count",
+          "corrected_egg_count",
+          "media_id",
+          "reason",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "SampleRevisionRecord"
+      },
       "Summary": {
         "properties": {
           "id": {
@@ -2907,6 +3661,17 @@
           "uncertainty": {
             "type": "string",
             "title": "Uncertainty"
+          },
+          "comparability_warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparability Warning"
           }
         },
         "type": "object",
@@ -2930,6 +3695,157 @@
           "uncertainty"
         ],
         "title": "Summary"
+      },
+      "SurveillancePoint": {
+        "properties": {
+          "interval_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval Start"
+          },
+          "interval_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval End"
+          },
+          "interval_days": {
+            "type": "number",
+            "title": "Interval Days"
+          },
+          "egg_sum": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Egg Sum"
+          },
+          "eggs_per_valid_trap_interval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eggs Per Valid Trap Interval"
+          },
+          "positive_intervals": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positive Intervals"
+          },
+          "valid_trap_intervals": {
+            "type": "integer",
+            "title": "Valid Trap Intervals"
+          },
+          "expected_trap_intervals": {
+            "type": "integer",
+            "title": "Expected Trap Intervals"
+          },
+          "invalid_intervals": {
+            "type": "integer",
+            "title": "Invalid Intervals"
+          },
+          "completeness": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completeness"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "sample_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sample Ids"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "source_modes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Modes"
+          },
+          "quality_states": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Quality States"
+          },
+          "latest_collected_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Collected At"
+          },
+          "latest_uploaded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Uploaded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "interval_start",
+          "interval_end",
+          "interval_days",
+          "egg_sum",
+          "eggs_per_valid_trap_interval",
+          "positive_intervals",
+          "valid_trap_intervals",
+          "expected_trap_intervals",
+          "invalid_intervals",
+          "completeness",
+          "status",
+          "sample_ids",
+          "sources",
+          "source_modes",
+          "quality_states",
+          "latest_collected_at",
+          "latest_uploaded_at"
+        ],
+        "title": "SurveillancePoint"
       },
       "Task": {
         "properties": {
@@ -2990,6 +3906,10 @@
             "type": "boolean",
             "title": "Safe Design Verified"
           },
+          "sampling_cadence_days": {
+            "type": "integer",
+            "title": "Sampling Cadence Days"
+          },
           "serviced_at": {
             "type": "string",
             "format": "date-time",
@@ -3028,6 +3948,7 @@
           "name",
           "status",
           "safe_design_verified",
+          "sampling_cadence_days",
           "serviced_at",
           "heartbeat_at",
           "id",
