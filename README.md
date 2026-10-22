@@ -38,6 +38,57 @@ The application must never claim that a container detection proves Aedes larvae,
 
 Given a seeded four-block demo: upload/mock aerial image -> show candidate object -> record eligibility -> request operator approval -> simulate a harmless test-water spray / skip target -> ingest *new per-sampling-interval* ovitrap data -> recompute task priorities -> create next mission/inspection tasks -> verify and escalate recurring water-accumulation asset. Changes must persist in DB and survive reloads.
 
+## Run the local demo (Windows PowerShell)
+
+The default demonstration uses SQLite, synthetic fixture evidence, a persisted mission worker and the local Next.js UI. No Docker service, external account or real actuator is required. Start each service in its own PowerShell window from the repository root.
+
+**Terminal 1 — migrate, seed and start the API:**
+
+```powershell
+$repo = (Resolve-Path .).Path.Replace('\', '/')
+New-Item -ItemType Directory -Force data | Out-Null
+$env:AEDES_DATABASE_URL = "sqlite:///$repo/data/aedes-demo.sqlite"
+python -m alembic -c services/api/alembic.ini upgrade head
+Push-Location services/api
+python -m app.seed
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+**Terminal 2 — start the durable simulation worker:**
+
+```powershell
+$repo = (Resolve-Path .).Path.Replace('\', '/')
+$env:AEDES_DATABASE_URL = "sqlite:///$repo/data/aedes-demo.sqlite"
+Set-Location services/api
+python -m app.worker
+```
+
+**Terminal 3 — install and start the web UI:**
+
+```powershell
+Set-Location apps/web
+npm install
+npm run dev
+```
+
+Open `http://127.0.0.1:3000/dashboard`. The seeded local accounts use `<role>` / `demo-<role>-360`, including `coordinator`, `operator`, `inspector` and `reviewer`.
+
+To reset the demo, stop the API and worker with Ctrl+C and use a new SQLite filename, for example `aedes-demo-reset-1.sqlite`, in the same `AEDES_DATABASE_URL` setting in the API and worker terminals. Run the migration and seed commands again. The previous database and audit history remain intact. Seeding an existing database is idempotent and preserves its records.
+
+Run the automated checks from the repository root and `apps/web`:
+
+```powershell
+python -m pytest -q
+ruff check services/api
+Set-Location apps/web
+npm run lint
+npm run typecheck
+npm run build
+npm run test
+```
+
+The Playwright scenario expects the API, worker and web UI to be running. Install its browser once with `npx playwright install chromium`, or set `AEDES_BROWSER_EXECUTABLE` to an installed Chromium-compatible browser. For a side-by-side run when ports 3000/8000 are occupied, set `AEDES_API_ORIGIN` for Next.js, set `AEDES_WEB_ORIGIN` in both the API and Playwright process, and use a separate `AEDES_NEXT_DIST_DIR` for the second Next.js development server.
+
 ## Explicit exclusions
 
 Unrestricted automatic chemical spraying, use of real live mosquitoes in demos, flight-control firmware or autopilot, autonomous drone flight, pesticide type/dose algorithms, medical/dengue infection risk prediction, public-health claims without field evidence, arbitrary third-party IP reuse, gamification, resident social features, untested cloud-only dependency.

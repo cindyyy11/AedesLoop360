@@ -1,0 +1,3256 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AedesLoop 360",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Login",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Me",
+        "operationId": "me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Logout",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blocks": {
+      "get": {
+        "summary": "Blocks",
+        "operationId": "blocks_api_v1_blocks_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": "2026-10-16T00:00:00Z",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": "2026-10-23T00:00:00Z",
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_Summary_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assets": {
+      "get": {
+        "summary": "Assets",
+        "operationId": "assets_api_v1_assets_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_AssetRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assets/{entity_id}/history": {
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_v1_assets__entity_id__history_get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_HistoryRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/findings": {
+      "get": {
+        "summary": "Findings",
+        "operationId": "findings_api_v1_findings_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_FindingRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media": {
+      "post": {
+        "summary": "Upload",
+        "operationId": "upload_api_v1_media_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_api_v1_media_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MediaRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/{entity_id}": {
+      "get": {
+        "summary": "Media",
+        "operationId": "media_api_v1_media__entity_id__get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ovitraps": {
+      "get": {
+        "summary": "Traps",
+        "operationId": "traps_api_v1_ovitraps_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_TrapRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ovitraps/{entity_id}/samples": {
+      "get": {
+        "summary": "Samples",
+        "operationId": "samples_api_v1_ovitraps__entity_id__samples_get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_SampleRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Import Sample",
+        "operationId": "import_sample_api_v1_ovitraps__entity_id__samples_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_SampleRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions": {
+      "get": {
+        "summary": "Missions",
+        "operationId": "missions_api_v1_drones_missions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_MissionRecord_"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Mission",
+        "operationId": "create_mission_api_v1_drones_missions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MissionInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MissionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions/{entity_id}/review": {
+      "post": {
+        "summary": "Review Mission",
+        "operationId": "review_mission_api_v1_drones_missions__entity_id__review_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MissionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions/{entity_id}/decision": {
+      "post": {
+        "summary": "Decide Mission",
+        "operationId": "decide_mission_api_v1_drones_missions__entity_id__decision_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Decision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MissionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions/{entity_id}/simulate": {
+      "post": {
+        "summary": "Simulate Mission",
+        "operationId": "simulate_mission_api_v1_drones_missions__entity_id__simulate_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MissionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions/{entity_id}/abort": {
+      "post": {
+        "summary": "Abort Mission",
+        "operationId": "abort_mission_api_v1_drones_missions__entity_id__abort_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MissionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions/{entity_id}/events": {
+      "get": {
+        "summary": "Mission Events",
+        "operationId": "mission_events_api_v1_drones_missions__entity_id__events_get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_MissionEventRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs": {
+      "get": {
+        "summary": "Jobs",
+        "operationId": "jobs_api_v1_jobs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_JobRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/planning/runs": {
+      "get": {
+        "summary": "Plans",
+        "operationId": "plans_api_v1_planning_runs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_AllocationRecord_"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Plan",
+        "operationId": "create_plan_api_v1_planning_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_AllocationRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/planning/runs/{entity_id}/approve": {
+      "post": {
+        "summary": "Approve Plan",
+        "operationId": "approve_plan_api_v1_planning_runs__entity_id__approve_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_AllocationRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inspections": {
+      "post": {
+        "summary": "Observation",
+        "operationId": "observation_api_v1_inspections_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObservationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_ObservationRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Observations",
+        "operationId": "observations_api_v1_inspections_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_ObservationRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inspections/{entity_id}/review": {
+      "post": {
+        "summary": "Review Observation",
+        "operationId": "review_observation_api_v1_inspections__entity_id__review_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_ObservationRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assets/{entity_id}/recurrence": {
+      "post": {
+        "summary": "Recurrence",
+        "operationId": "recurrence_api_v1_assets__entity_id__recurrence_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-orders": {
+      "get": {
+        "summary": "Work Orders",
+        "operationId": "work_orders_api_v1_work_orders_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_WorkOrderRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-orders/{entity_id}": {
+      "patch": {
+        "summary": "Update Work",
+        "operationId": "update_work_api_v1_work_orders__entity_id__patch",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_WorkOrderRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-orders/{entity_id}/verify": {
+      "post": {
+        "summary": "Verify Work",
+        "operationId": "verify_work_api_v1_work_orders__entity_id__verify_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_WorkOrderRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/audit": {
+      "get": {
+        "summary": "Audits",
+        "operationId": "audits_api_v1_audit_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_AuditRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AllocationRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "evidence_snapshot_hash": {
+            "type": "string",
+            "title": "Evidence Snapshot Hash"
+          },
+          "snapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Snapshot"
+          },
+          "result": {
+            "$ref": "#/components/schemas/PlanResult"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at",
+          "evidence_snapshot_hash",
+          "snapshot",
+          "result",
+          "policy_version",
+          "status"
+        ],
+        "title": "AllocationRecord"
+      },
+      "AssetRecord": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "accessible": {
+            "type": "boolean",
+            "title": "Accessible"
+          },
+          "permission": {
+            "type": "boolean",
+            "title": "Permission"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_id",
+          "name",
+          "accessible",
+          "permission",
+          "x",
+          "y",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "AssetRecord"
+      },
+      "AuditRecord": {
+        "properties": {
+          "actor_id": {
+            "type": "string",
+            "title": "Actor Id"
+          },
+          "entity_id": {
+            "type": "string",
+            "title": "Entity Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "actor_id",
+          "entity_id",
+          "action",
+          "details",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "AuditRecord"
+      },
+      "Body_upload_api_v1_media_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "rights": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Rights"
+          },
+          "captured_at": {
+            "type": "string",
+            "title": "Captured At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "rights",
+          "captured_at"
+        ],
+        "title": "Body_upload_api_v1_media_post"
+      },
+      "Budget": {
+        "properties": {
+          "staff_hours": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 4.0,
+            "title": "Staff Hours"
+          },
+          "drone_survey_hours": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Drone Survey Hours"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "staff_hours",
+          "drone_survey_hours"
+        ],
+        "title": "Budget"
+      },
+      "BudgetUsed": {
+        "properties": {
+          "staff_hours": {
+            "type": "number",
+            "title": "Staff Hours"
+          },
+          "drone_survey_hours": {
+            "type": "number",
+            "title": "Drone Survey Hours"
+          }
+        },
+        "type": "object",
+        "required": [
+          "staff_hours",
+          "drone_survey_hours"
+        ],
+        "title": "BudgetUsed"
+      },
+      "Decision": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "APPROVE",
+              "REJECT"
+            ],
+            "title": "Decision"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          },
+          "checked_items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Checked Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision",
+          "reason",
+          "checked_items"
+        ],
+        "title": "Decision"
+      },
+      "FindingRecord": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "water_state": {
+            "type": "string",
+            "title": "Water State"
+          },
+          "object_class": {
+            "type": "string",
+            "title": "Object Class"
+          },
+          "bbox": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Bbox"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "eligibility": {
+            "type": "string",
+            "title": "Eligibility"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id",
+          "media_id",
+          "water_state",
+          "object_class",
+          "bbox",
+          "confidence",
+          "model_version",
+          "reason",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at",
+          "eligibility"
+        ],
+        "title": "FindingRecord"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "database": {
+            "type": "string",
+            "title": "Database"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ready",
+          "database"
+        ],
+        "title": "HealthResponse"
+      },
+      "HistoryRecord": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "accessible": {
+            "type": "boolean",
+            "title": "Accessible"
+          },
+          "permission": {
+            "type": "boolean",
+            "title": "Permission"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/ObservationRecord"
+            },
+            "type": "array",
+            "title": "Observations"
+          },
+          "work_orders": {
+            "items": {
+              "$ref": "#/components/schemas/WorkOrderRecord"
+            },
+            "type": "array",
+            "title": "Work Orders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_id",
+          "name",
+          "accessible",
+          "permission",
+          "x",
+          "y",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at",
+          "observations",
+          "work_orders"
+        ],
+        "title": "HistoryRecord"
+      },
+      "ItemResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Record"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ItemResponse"
+      },
+      "JobRecord": {
+        "properties": {
+          "mission_id": {
+            "type": "string",
+            "title": "Mission Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "cursor": {
+            "type": "integer",
+            "title": "Cursor"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "next_attempt_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Next Attempt At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mission_id",
+          "status",
+          "cursor",
+          "attempts",
+          "next_attempt_at",
+          "error",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "JobRecord"
+      },
+      "Login": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Login"
+      },
+      "LoginResponse": {
+        "properties": {
+          "user": {
+            "type": "string",
+            "title": "User"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user",
+          "role",
+          "tenant_id"
+        ],
+        "title": "LoginResponse"
+      },
+      "Many_AllocationRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AllocationRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[AllocationRecord]"
+      },
+      "Many_AssetRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AssetRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[AssetRecord]"
+      },
+      "Many_AuditRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AuditRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[AuditRecord]"
+      },
+      "Many_FindingRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/FindingRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[FindingRecord]"
+      },
+      "Many_JobRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/JobRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[JobRecord]"
+      },
+      "Many_MissionEventRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MissionEventRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[MissionEventRecord]"
+      },
+      "Many_MissionRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MissionRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[MissionRecord]"
+      },
+      "Many_ObservationRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ObservationRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[ObservationRecord]"
+      },
+      "Many_SampleRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SampleRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[SampleRecord]"
+      },
+      "Many_Summary_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Summary"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[Summary]"
+      },
+      "Many_TrapRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TrapRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[TrapRecord]"
+      },
+      "Many_WorkOrderRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/WorkOrderRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[WorkOrderRecord]"
+      },
+      "MediaRecord": {
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "rights": {
+            "type": "string",
+            "title": "Rights"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          },
+          "uploader_id": {
+            "type": "string",
+            "title": "Uploader Id"
+          },
+          "adapter": {
+            "type": "string",
+            "title": "Adapter"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sha256",
+          "content_type",
+          "rights",
+          "captured_at",
+          "uploader_id",
+          "adapter",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "MediaRecord"
+      },
+      "MissionEventRecord": {
+        "properties": {
+          "mission_id": {
+            "type": "string",
+            "title": "Mission Id"
+          },
+          "event_key": {
+            "type": "string",
+            "title": "Event Key"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mission_id",
+          "event_key",
+          "kind",
+          "payload",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "MissionEventRecord"
+      },
+      "MissionInput": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "target_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Target Ids"
+          },
+          "mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "block_id",
+          "target_ids"
+        ],
+        "title": "MissionInput"
+      },
+      "MissionRecord": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "target_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Target Ids"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_id",
+          "status",
+          "target_ids",
+          "policy_version",
+          "approved_by",
+          "approved_at",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "MissionRecord"
+      },
+      "ObservationInput": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Observed At"
+          },
+          "water_state": {
+            "type": "string",
+            "enum": [
+              "DRY",
+              "VISIBLE_WATER",
+              "OCCLUDED"
+            ],
+            "title": "Water State"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "asset_id",
+          "observed_at",
+          "water_state",
+          "media_id"
+        ],
+        "title": "ObservationInput"
+      },
+      "ObservationRecord": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Observed At"
+          },
+          "water_state": {
+            "type": "string",
+            "title": "Water State"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "reviewer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewer Id"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "resolved": {
+            "type": "boolean",
+            "title": "Resolved"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id",
+          "observed_at",
+          "water_state",
+          "review_status",
+          "reviewer_id",
+          "media_id",
+          "resolved",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "ObservationRecord"
+      },
+      "One_AllocationRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AllocationRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[AllocationRecord]"
+      },
+      "One_HistoryRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/HistoryRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[HistoryRecord]"
+      },
+      "One_MediaRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MediaRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[MediaRecord]"
+      },
+      "One_MissionRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MissionRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[MissionRecord]"
+      },
+      "One_ObservationRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ObservationRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[ObservationRecord]"
+      },
+      "One_SampleRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SampleRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[SampleRecord]"
+      },
+      "One_WorkOrderRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/WorkOrderRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[WorkOrderRecord]"
+      },
+      "PlanInput": {
+        "properties": {
+          "budget": {
+            "$ref": "#/components/schemas/Budget",
+            "default": {
+              "staff_hours": 12.0,
+              "drone_survey_hours": 2.0
+            }
+          },
+          "window_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Window Start",
+            "default": "2026-10-16T00:00:00Z"
+          },
+          "window_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Window End",
+            "default": "2026-10-23T00:00:00Z"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PlanInput"
+      },
+      "PlanResult": {
+        "properties": {
+          "block_priorities": {
+            "items": {
+              "$ref": "#/components/schemas/Priority"
+            },
+            "type": "array",
+            "title": "Block Priorities"
+          },
+          "recommended_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            },
+            "type": "array",
+            "title": "Recommended Tasks"
+          },
+          "excluded_tasks": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Excluded Tasks"
+          },
+          "budget_used": {
+            "$ref": "#/components/schemas/BudgetUsed"
+          },
+          "coverage_guardrail": {
+            "type": "boolean",
+            "title": "Coverage Guardrail"
+          },
+          "assumptions": {
+            "type": "string",
+            "title": "Assumptions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_priorities",
+          "recommended_tasks",
+          "excluded_tasks",
+          "budget_used",
+          "coverage_guardrail",
+          "assumptions"
+        ],
+        "title": "PlanResult"
+      },
+      "Priority": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "valid_intervals": {
+            "type": "integer",
+            "title": "Valid Intervals"
+          },
+          "expected_intervals": {
+            "type": "integer",
+            "title": "Expected Intervals"
+          },
+          "eggs_per_interval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eggs Per Interval"
+          },
+          "positivity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positivity"
+          },
+          "sample_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sample Ids"
+          },
+          "observation_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Observation Ids"
+          },
+          "unresolved_sources": {
+            "type": "integer",
+            "title": "Unresolved Sources"
+          },
+          "unavailable_traps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unavailable Traps"
+          },
+          "excluded_samples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Excluded Samples"
+          },
+          "interval_days": {
+            "type": "number",
+            "title": "Interval Days"
+          },
+          "uncertainty": {
+            "type": "string",
+            "title": "Uncertainty"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "x",
+          "y",
+          "mode",
+          "status",
+          "valid_intervals",
+          "expected_intervals",
+          "eggs_per_interval",
+          "positivity",
+          "sample_ids",
+          "observation_ids",
+          "unresolved_sources",
+          "unavailable_traps",
+          "excluded_samples",
+          "interval_days",
+          "uncertainty",
+          "score",
+          "reasons",
+          "evidence_ids"
+        ],
+        "title": "Priority"
+      },
+      "Record": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "Record"
+      },
+      "ReviewInput": {
+        "properties": {
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confirmed",
+          "reason"
+        ],
+        "title": "ReviewInput"
+      },
+      "SampleInput": {
+        "properties": {
+          "source_sample_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source Sample Id"
+          },
+          "substrate_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Substrate Id"
+          },
+          "interval_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval Start"
+          },
+          "interval_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval End"
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Collected At"
+          },
+          "sampling_effort_days": {
+            "type": "number",
+            "maximum": 31.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Sampling Effort Days"
+          },
+          "egg_count": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Egg Count"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "GOOD",
+              "BLURRED",
+              "OCCLUDED"
+            ],
+            "title": "Quality",
+            "default": "GOOD"
+          },
+          "source": {
+            "type": "string",
+            "const": "HUMAN_LABELLED_FIXTURE",
+            "title": "Source",
+            "default": "HUMAN_LABELLED_FIXTURE"
+          },
+          "mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_sample_id",
+          "substrate_id",
+          "interval_start",
+          "interval_end",
+          "collected_at",
+          "sampling_effort_days",
+          "egg_count",
+          "media_id"
+        ],
+        "title": "SampleInput"
+      },
+      "SampleRecord": {
+        "properties": {
+          "trap_id": {
+            "type": "string",
+            "title": "Trap Id"
+          },
+          "source_sample_id": {
+            "type": "string",
+            "title": "Source Sample Id"
+          },
+          "substrate_id": {
+            "type": "string",
+            "title": "Substrate Id"
+          },
+          "interval_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval Start"
+          },
+          "interval_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval End"
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Collected At"
+          },
+          "sampling_effort_days": {
+            "type": "number",
+            "title": "Sampling Effort Days"
+          },
+          "egg_count": {
+            "type": "integer",
+            "title": "Egg Count"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "quality": {
+            "type": "string",
+            "title": "Quality"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "validity": {
+            "type": "string",
+            "title": "Validity"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trap_id",
+          "source_sample_id",
+          "substrate_id",
+          "interval_start",
+          "interval_end",
+          "collected_at",
+          "sampling_effort_days",
+          "egg_count",
+          "media_id",
+          "source",
+          "quality",
+          "review_status",
+          "validity",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "SampleRecord"
+      },
+      "Summary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "valid_intervals": {
+            "type": "integer",
+            "title": "Valid Intervals"
+          },
+          "expected_intervals": {
+            "type": "integer",
+            "title": "Expected Intervals"
+          },
+          "eggs_per_interval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eggs Per Interval"
+          },
+          "positivity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positivity"
+          },
+          "sample_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sample Ids"
+          },
+          "observation_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Observation Ids"
+          },
+          "unresolved_sources": {
+            "type": "integer",
+            "title": "Unresolved Sources"
+          },
+          "unavailable_traps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unavailable Traps"
+          },
+          "excluded_samples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Excluded Samples"
+          },
+          "interval_days": {
+            "type": "number",
+            "title": "Interval Days"
+          },
+          "uncertainty": {
+            "type": "string",
+            "title": "Uncertainty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "x",
+          "y",
+          "mode",
+          "status",
+          "valid_intervals",
+          "expected_intervals",
+          "eggs_per_interval",
+          "positivity",
+          "sample_ids",
+          "observation_ids",
+          "unresolved_sources",
+          "unavailable_traps",
+          "excluded_samples",
+          "interval_days",
+          "uncertainty"
+        ],
+        "title": "Summary"
+      },
+      "Task": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "hours": {
+            "type": "number",
+            "title": "Hours"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "block_id",
+          "kind",
+          "hours",
+          "reason"
+        ],
+        "title": "Task"
+      },
+      "TrapRecord": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "safe_design_verified": {
+            "type": "boolean",
+            "title": "Safe Design Verified"
+          },
+          "serviced_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Serviced At"
+          },
+          "heartbeat_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Heartbeat At"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "effective_status": {
+            "type": "string",
+            "title": "Effective Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_id",
+          "name",
+          "status",
+          "safe_design_verified",
+          "serviced_at",
+          "heartbeat_at",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at",
+          "effective_status"
+        ],
+        "title": "TrapRecord"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VerifyInput": {
+        "properties": {
+          "result": {
+            "type": "string",
+            "enum": [
+              "VERIFIED_RESOLVED",
+              "REOPENED"
+            ],
+            "title": "Result"
+          },
+          "evidence_id": {
+            "type": "string",
+            "title": "Evidence Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "result",
+          "evidence_id",
+          "reason"
+        ],
+        "title": "VerifyInput"
+      },
+      "WorkOrderRecord": {
+        "properties": {
+          "dedupe_key": {
+            "type": "string",
+            "title": "Dedupe Key"
+          },
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "assigned_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To"
+          },
+          "completed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed By"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dedupe_key",
+          "block_id",
+          "asset_id",
+          "kind",
+          "status",
+          "reason",
+          "assigned_to",
+          "completed_by",
+          "evidence_id",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "WorkOrderRecord"
+      },
+      "WorkUpdate": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "ASSIGN",
+              "START",
+              "COMPLETE"
+            ],
+            "title": "Action"
+          },
+          "assignee_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Id"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "WorkUpdate"
+      }
+    }
+  }
+}
