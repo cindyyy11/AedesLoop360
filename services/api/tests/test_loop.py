@@ -18,8 +18,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.db import SessionLocal, now  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import Asset  # noqa: E402
-from app.seed import media, seed  # noqa: E402
+from app.models import Asset, Media, Mission, Sample  # noqa: E402
+from app.seed import fixture_png, media, seed  # noqa: E402
 from app.worker import tick  # noqa: E402
 
 API = "/api/v1"
@@ -85,7 +85,11 @@ def test_foundation_auth_tenancy_media():
         c.post(
             API + "/media",
             files={"file": ("bad.png", b"not image", "image/png")},
-            data={"rights": "Original fixture", "captured_at": "2026-10-01T00:00:00Z"},
+            data={
+                "rights": "Original fixture",
+                "captured_at": now().isoformat(),
+                "asset_id": "asset-p01",
+            },
         ).status_code
         == 422
     )
@@ -100,14 +104,20 @@ def test_drone_gates_order_retry_and_abort():
         ).status_code
         == 409
     )
+    inspector = client("inspector")
     assert (
-        client("inspector")
-        .post(
+        inspector.post(
             f"{API}/drones/missions/{mid}/decision",
             json={"decision": "APPROVE", "reason": "Wrong role attempt", "checked_items": CHECKS},
-        )
-        .status_code
+        ).status_code
         == 403
+    )
+    denied = c.get(API + "/audit").json()["data"]
+    assert any(
+        event["entity_id"] == mid
+        and event["action"] == "MISSION_DECISION_DENIED_ROLE"
+        and event["actor_id"] == "user-inspector"
+        for event in denied
     )
     approve(c, mid)
     for _ in range(2):
@@ -127,6 +137,19 @@ def test_drone_gates_order_retry_and_abort():
         "MISSION_COMPLETED",
     ]
     assert not tick()
+    with SessionLocal() as db:
+        execution_audit = db.scalar(
+            text(
+                "SELECT actor_id FROM audit_events "
+                "WHERE entity_id = :mission_id AND action = 'MOCK_ACTION_RECORDED'"
+            ),
+            {"mission_id": mid},
+        )
+    assert execution_audit == "user-operator"
+    persisted_tasks = c.get(API + "/work-orders").json()["data"]
+    assert any(
+        w["kind"] == "INSPECT_GROUND" and w["asset_id"] == "asset-p03" for w in persisted_tasks
+    )
     c, mid = new_mission()
     approve(c, mid)
     operator.post(f"{API}/drones/missions/{mid}/simulate", headers={"Idempotency-Key": mid})
@@ -209,6 +232,17 @@ def test_samples_dedup_quality_and_planning_feedback():
         )
         == 4
     )
+    tasks = after["result"]["recommended_tasks"]
+    assert any(t["block_id"] == "block-4" and t["kind"] == "SERVICE_TRAP" for t in tasks)
+    assert any(t["block_id"] == "block-1" and t["kind"] == "REMOVE_SOURCE" for t in tasks)
+    assert all(t["kind"] != "DRONE_MISSION" for t in tasks)
+    mismatch_end = (now() - timedelta(days=7)).isoformat()
+    mismatched = c.get(
+        API + "/blocks", params={"start": body["interval_start"], "end": mismatch_end}
+    ).json()["data"]
+    block_one = next(b for b in mismatched if b["id"] == "block-1")
+    assert block_one["comparability_warning"]
+    assert sid in block_one["excluded_samples"]
     repeat = c.post(API + "/planning/runs", json=params).json()["data"]
     assert repeat["evidence_snapshot_hash"] == after["evidence_snapshot_hash"]
     assert repeat["result"] == after["result"]
@@ -224,6 +258,47 @@ def test_samples_dedup_quality_and_planning_feedback():
         API + "/ovitraps/trap-b4-1/samples", json=invalid, headers={"Idempotency-Key": "offline"}
     )
     assert response.json()["data"]["validity"] == "INVALID"
+    blurred = sample_payload("blurred", trap="trap-b1-2", days_ago=21)
+    blurred["quality"] = "BLURRED"
+    response = c.post(
+        API + "/ovitraps/trap-b1-2/samples",
+        json=blurred,
+        headers={"Idempotency-Key": "blurred"},
+    )
+    assert response.json()["data"]["validity"] == "INVALID"
+
+
+def test_sample_count_correction_is_audited_and_append_only():
+    c = client("coordinator")
+    body = sample_payload("revision", trap="trap-b2-1", days_ago=21)
+    path = API + "/ovitraps/trap-b2-1/samples"
+    sample = c.post(path, json=body, headers={"Idempotency-Key": "revision-import"}).json()["data"]
+    reviewer = client("reviewer")
+    revision_path = f"{API}/samples/{sample['id']}/revisions"
+    payload = {
+        "corrected_egg_count": 73,
+        "media_id": "media-egg-new-001",
+        "reason": "Recounted the human-labelled synthetic image",
+        "quality": "GOOD",
+    }
+    revised = reviewer.post(revision_path, json=payload, headers={"Idempotency-Key": "revision-1"})
+    assert revised.status_code == 200, revised.text
+    record = revised.json()["data"]
+    assert record["previous_egg_count"] == 100
+    assert record["corrected_egg_count"] == 73
+    assert record["reviewer_id"] == "user-reviewer"
+    assert (
+        reviewer.post(
+            revision_path, json=payload, headers={"Idempotency-Key": "revision-1"}
+        ).json()["data"]["id"]
+        == record["id"]
+    )
+    with SessionLocal() as db:
+        assert db.get(Sample, sample["id"]).egg_count == 73
+        with pytest.raises(Exception):
+            db.execute(text("UPDATE sample_revisions SET corrected_egg_count = 0"))
+        db.rollback()
+    assert len(reviewer.get(revision_path).json()["data"]) == 1
 
 
 def test_recurrence_work_followup_audit_persistence():
@@ -315,3 +390,101 @@ def test_permission_changed_fails_closed():
     assert "MOCK_ACTION_RECORDED" not in kinds
     with SessionLocal.begin() as db:
         db.get(Asset, "asset-p02").permission = True
+
+
+def test_expired_mission_approval_cannot_queue_execution():
+    coordinator, mission_id = new_mission()
+    approve(coordinator, mission_id)
+    with SessionLocal.begin() as db:
+        db.get(Mission, mission_id).approval_expires_at = now() - timedelta(seconds=1)
+    operator = client("operator")
+    response = operator.post(
+        f"{API}/drones/missions/{mission_id}/simulate",
+        headers={"Idempotency-Key": "expired-approval"},
+    )
+    assert response.status_code == 409
+    assert all(
+        job["mission_id"] != mission_id for job in operator.get(API + "/jobs").json()["data"]
+    )
+    assert any(
+        event["entity_id"] == mission_id and event["action"] == "SIMULATION_DENIED"
+        for event in coordinator.get(API + "/audit").json()["data"]
+    )
+
+
+def test_upload_links_exact_fixture_and_queues_uncertain_review():
+    c = client("operator")
+    with SessionLocal() as db:
+        exact_fixture = db.get(Media, "media-aerial-001").content
+    exact = c.post(
+        API + "/media",
+        files={"file": ("aerial.png", exact_fixture, "image/png")},
+        data={
+            "rights": "Original synthetic fixture, CC0",
+            "captured_at": now().isoformat(),
+            "asset_id": "asset-p02",
+        },
+    )
+    assert exact.status_code == 200, exact.text
+    uploaded = exact.json()["data"]
+    assert uploaded["adapter"] == "DEMO_PREANNOTATED_V1"
+    finding = next(
+        f for f in c.get(API + "/findings").json()["data"] if f["media_id"] == uploaded["id"]
+    )
+    assert finding["asset_id"] == "asset-p02"
+    assert finding["water_state"] == "VISIBLE_WATER"
+    assert finding["model_version"] == "DEMO_PREANNOTATED_V1"
+    assert finding["mode"] == "SIMULATED"
+
+    unsupported = c.post(
+        API + "/media",
+        files={"file": ("unknown.png", fixture_png("unknown local image"), "image/png")},
+        data={
+            "rights": "Original synthetic fixture, CC0",
+            "captured_at": now().isoformat(),
+            "asset_id": "asset-p01",
+        },
+    )
+    assert unsupported.status_code == 200, unsupported.text
+    row = unsupported.json()["data"]
+    assert row["adapter"] == "YOLO_LOCAL_V1:NOT_CONFIGURED"
+    finding = next(f for f in c.get(API + "/findings").json()["data"] if f["media_id"] == row["id"])
+    assert finding["water_state"] == "UNCERTAIN"
+    assert finding["eligibility"] == "GROUND_REVIEW"
+
+
+def test_configured_drone_detector_persists_candidate_without_water_confirmation(monkeypatch):
+    from app import drone_inference
+
+    c = client("operator")
+    monkeypatch.setattr(
+        drone_inference,
+        "infer_candidates",
+        lambda _: drone_inference.InferenceResult(
+            "DETECTED",
+            "candidate@abc123",
+            [drone_inference.CandidateDetection("tyre", [0.1, 0.2, 0.5, 0.6], 0.81)],
+        ),
+    )
+    response = c.post(
+        API + "/media",
+        files={"file": ("detector-input.png", fixture_png("unique detector input"), "image/png")},
+        data={
+            "rights": "Operator supplied image with usage permission",
+            "captured_at": now().isoformat(),
+            "asset_id": "asset-p01",
+        },
+    )
+    assert response.status_code == 200, response.text
+    media_row = response.json()["data"]
+    assert media_row["adapter"] == "YOLO_LOCAL_V1:DETECTED"
+    finding = next(
+        row for row in c.get(API + "/findings").json()["data"] if row["media_id"] == media_row["id"]
+    )
+    assert finding["object_class"] == "tyre"
+    assert finding["confidence"] == 0.81
+    assert finding["bbox"] == [0.1, 0.2, 0.5, 0.6]
+    assert finding["model_version"] == "candidate@abc123"
+    assert finding["mode"] == "IMPORTED"
+    assert finding["water_state"] == "UNCERTAIN"
+    assert finding["eligibility"] == "GROUND_REVIEW"

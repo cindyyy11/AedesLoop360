@@ -21,6 +21,11 @@ class Many(BaseModel, Generic[T]):
     source_mode: Literal["SIMULATED"] = "SIMULATED"
 
 
+class AnalyticsMany(BaseModel, Generic[T]):
+    data: list[T]
+    source_mode: str
+
+
 def entity(model, **extra):
     fields = {}
     for column in model.__table__.columns:
@@ -55,10 +60,12 @@ class Summary(BaseModel):
     excluded_samples: list[str]
     interval_days: float
     uncertainty: str
+    comparability_warning: str | None = None
 
 
 AssetRecord = entity(models.Asset)
 SampleRecord = entity(models.Sample)
+SampleRevisionRecord = entity(models.SampleRevision)
 TrapRecord = entity(models.Trap, effective_status=(str, ...))
 FindingRecord = entity(models.Finding, eligibility=(str, ...))
 MissionRecord = entity(models.Mission)
@@ -68,6 +75,76 @@ ObservationRecord = entity(models.Observation)
 WorkRecord = entity(models.WorkOrder)
 JobRecord = entity(models.Job)
 AuditRecord = entity(models.Audit)
+class AnalyticsRunRecord(BaseModel):
+    id: str
+    tenant_id: str
+    mode: str
+    created_at: datetime
+    run_id: str
+    run_type: str
+    status: str
+    source_mode: str
+    run_metadata: dict[str, Any]
+    metrics: dict[str, Any] | None
+    artifacts: list[str]
+    limitations: list[str]
+    initiated_by: str | None
+
+
+class ModelEvaluationCard(BaseModel):
+    run_type: str
+    status: str
+    reason: str | None = None
+    latest_completed_run: AnalyticsRunRecord | None = None
+
+
+class ModelEvaluations(BaseModel):
+    drone_detection: ModelEvaluationCard
+    ovitrap_count: ModelEvaluationCard
+
+
+class SurveillancePoint(BaseModel):
+    interval_start: datetime
+    interval_end: datetime
+    interval_days: float
+    egg_sum: int | None
+    eggs_per_valid_trap_interval: float | None
+    positive_intervals: int | None
+    valid_trap_intervals: int
+    expected_trap_intervals: int
+    invalid_intervals: int
+    completeness: float | None
+    status: str
+    sample_ids: list[str]
+    sources: list[str]
+    source_modes: list[str]
+    quality_states: list[str]
+    latest_collected_at: datetime | None
+    latest_uploaded_at: datetime | None
+
+
+class BlockSurveillanceAnalytics(BaseModel):
+    block_id: str
+    block_name: str
+    status: str
+    valid_trap_intervals: int
+    expected_trap_intervals: int
+    invalid_intervals: int
+    completeness: float | None
+    egg_sum: int | None
+    eggs_per_valid_trap_interval: float | None
+    positivity: float | None
+    unavailable_traps: list[str]
+    sources: list[str]
+    source_modes: list[str]
+    interval_days_included: list[float]
+    comparability_warning: str | None
+    series: list[SurveillancePoint]
+
+
+class LatestBenchmark(BaseModel):
+    data: AnalyticsRunRecord | None
+    source_mode: str = "SIMULATED EXPERIMENT"
 
 
 class Priority(Summary):

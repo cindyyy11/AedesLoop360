@@ -1,24 +1,32 @@
 import { test, expect, type Page } from "@playwright/test";
 
 async function login(page: Page, role: string) {
-  const signOut=page.getByRole("button", {name:"Sign out"});
-  const account=page.getByLabel("Local demonstration account");
-  await expect(signOut.or(account)).toBeVisible();
-  if (await signOut.isVisible()) {
-    await signOut.click();
-    await expect(account).toBeVisible();
+  const enterDemo=page.getByRole("button", {name:"Enter demo", exact:true});
+  const currentRole=page.locator(".topbar .badge");
+  // The splash screen shows while the session check runs; wait for either
+  // the signed-out entry button or the signed-in topbar before acting.
+  await expect(enterDemo.or(currentRole)).toBeVisible();
+  if (await enterDemo.isVisible().catch(()=>false)) {
+    await enterDemo.click();
   }
-  await account.selectOption(role);
-  await page.getByRole("button", {name:"Sign in", exact:true}).click();
-  await expect(page.getByRole("button", {name:"Sign out"})).toBeVisible();
+  await expect(currentRole).toBeVisible();
+  const current=await currentRole.textContent();
+  if (["coordinator","operator"].includes(role) && ["coordinator","operator"].includes(current??"")) {
+    if (current !== role) await page.getByRole("button", {name:`Switch to ${role}`, exact:true}).click();
+  } else {
+    const response=await page.context().request.post(new URL("/api/v1/auth/login", page.url()).toString(), {data:{username:role,password:`demo-${role}-360`}});
+    expect(response.ok()).toBeTruthy();
+    await page.reload();
+  }
+  await expect(page.locator(".topbar .badge")).toHaveText(role);
 }
 
-test("five-scene persisted loop and mobile layout", async ({page})=>{
+test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await page.goto("/dashboard");
   await login(page,"coordinator");
   await expect(page.getByRole("heading",{name:"Every observation. One loop."})).toBeVisible();
   await expect(page.getByRole("cell",{name:"DATA UNAVAILABLE",exact:true})).toBeVisible();
-  await page.screenshot({path:"../../docs/evidence/dashboard-desktop.png",fullPage:true});
+  await page.screenshot({path:testInfo.outputPath("dashboard-desktop.png"),fullPage:true});
   await page.getByRole("link",{name:"Drone missions",exact:true}).click();
   await expect(page.getByRole("heading",{name:"Candidate evidence"})).toBeVisible();
   await page.getByRole("button",{name:"Create new draft"}).click();
@@ -37,6 +45,11 @@ test("five-scene persisted loop and mobile layout", async ({page})=>{
   await expect(groundReview).toHaveCount(2);
   await expect(groundReview.first()).toBeVisible();
   await login(page,"coordinator");
+  await page.getByLabel("PNG / JPEG · maximum 5 MB").setInputFiles("../../fixtures/images/aerial-001.png");
+  await page.getByLabel("Linked asset").selectOption("asset-p02");
+  await page.getByRole("button",{name:"Import private image"}).click();
+  await expect(page.getByRole("status").filter({hasText:"DEMO_PREANNOTATED_V1"})).toBeVisible();
+  await expect(page.getByText("Exact synthetic fixture match; copied human-authored annotation, not model inference")).toBeVisible({timeout:5000});
   await page.getByRole("link",{name:"Next-round planning",exact:true}).click();
   await page.getByLabel("Window start · UTC").fill("2026-10-09");
   await page.getByLabel("Window end · UTC").fill("2026-10-16");
@@ -49,6 +62,11 @@ test("five-scene persisted loop and mobile layout", async ({page})=>{
   await page.getByRole("button",{name:"Import interval",exact:true}).click();
   await expect(page.getByRole("status")).toContainText("Interval saved");
   await expect(page.locator("details summary").filter({hasText:"B1-T1-2026W42-NEW"})).toHaveCount(1);
+  const revisionOption=page.getByLabel("Sample to correct").locator("option").filter({hasText:"B1-T1-2026W42-NEW"});
+  await page.getByLabel("Sample to correct").selectOption(await revisionOption.getAttribute("value")??"");
+  await page.getByLabel("Corrected human count").fill("73");
+  await page.getByRole("button",{name:"Save count correction"}).click();
+  await expect(page.getByText(/Count revised 100 to 73/)).toBeVisible();
   await page.getByRole("link",{name:"Next-round planning",exact:true}).click();
   await page.getByLabel("Window start · UTC").fill("2026-10-09");
   await page.getByLabel("Window end · UTC").fill("2026-10-16");
@@ -73,7 +91,8 @@ test("five-scene persisted loop and mobile layout", async ({page})=>{
   await expect(page.getByText("VERIFIED RESOLVED",{exact:true})).toBeVisible();
   await page.goto("/dashboard");
   await page.setViewportSize({width:390,height:844});
-  await page.screenshot({path:"../../docs/evidence/dashboard-mobile.png",fullPage:true});
+  await expect(page.getByRole("heading",{name:"Surveillance by block",exact:true})).toBeVisible();
+  await page.screenshot({path:testInfo.outputPath("dashboard-mobile.png"),fullPage:true});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
   expect(overflow).toBe(false);
 });

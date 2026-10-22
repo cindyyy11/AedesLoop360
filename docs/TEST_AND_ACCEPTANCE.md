@@ -51,6 +51,10 @@
 | AC-36 | Cross-role mission approval attempt | Denied with audit |
 | AC-37 | Broken object-storage URL | Safe error/loading/retry, no leaked key |
 | AC-38 | All three pillars in one judge workflow | End-to-end state updated on dashboard from backend |
+| AC-39 | No independent labelled test data/checkpoint | Evaluation cards show `NOT_EVALUATED`, no fabricated numeric metrics |
+| AC-40 | No valid trap intervals or offline device | Analytics shows `DATA_UNAVAILABLE`, null egg rate and servicing need |
+| AC-41 | Run adaptive benchmark as coordinator | Uniform/static/adaptive share fixed truth and budget; result persists as `SIMULATED EXPERIMENT` |
+| AC-42 | Operator runs adaptive benchmark | API denies benchmark execution |
 
 ## 3. Quality gates
 
@@ -89,3 +93,17 @@ Record actual output logs/screenshot with all of: selected dry target skipped, e
 ## 6. Model and benchmark evidence
 
 Report dataset name/license, unique site splits, count of test images, metric definitions, baseline, confusion/error values and uncertainty. Synthetic fixture correctness is a functional test, not CV accuracy. Do not conflate performance on artificial dots with mosquito egg detector field accuracy.
+
+The incremental analytics checks are runnable with `PYTHONPATH=services/api python -m pytest services/api/tests/test_analytics.py services/api/tests/test_data_evaluation.py services/api/tests/test_allocation_benchmark.py -q` from the repository root. These cover report status/provenance, unavailable intervals, benchmark persistence/idempotency, role denial, metric formulas and deterministic shared-budget scenario behavior. They do not replace `test_loop.py` or the Playwright closed-loop test.
+
+## 7. 3D presentation acceptance (additive; does not replace AC-01–AC-38)
+
+- 3D-01: Township renders registered blocks/assets and supports orbit, zoom, reset and HTML evidence selection.
+- 3D-02: Only persisted mission events replay; switching to an empty mission clears outcomes; scene interactions issue zero mutation requests.
+- 3D-03: Offline Block 4 and trap state remain explicit unavailable data, including timestamps and valid interval counts.
+- 3D-04: Saved plan ID, date, score and reasons appear in the allocation chapter.
+- 3D-05: At 390px there is no horizontal page overflow; missing WebGL keeps HTML evidence usable and disables camera controls.
+- 3D-06: Empty township and failed API reads do not fabricate records; retry is available.
+- 3D-07: Live isolated-database test creates and approves a mission as coordinator, simulates as operator, waits for the real worker, and verifies skip/review/mock events and saved plan in the scene.
+
+Reproduction and limits: [3D_TOWNSHIP.md](3D_TOWNSHIP.md). Fixture and live browser checks are separate from model evaluation and biological impact.

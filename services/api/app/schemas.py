@@ -36,6 +36,13 @@ class SampleInput(Input):
         return self
 
 
+class SampleRevisionInput(Input):
+    corrected_egg_count: int = Field(ge=0, le=10000)
+    media_id: str
+    reason: str = Field(min_length=8, max_length=1000)
+    quality: Literal["GOOD", "BLURRED", "OCCLUDED"] = "GOOD"
+
+
 class MissionInput(Input):
     block_id: str
     target_ids: list[str] = Field(min_length=1, max_length=20)

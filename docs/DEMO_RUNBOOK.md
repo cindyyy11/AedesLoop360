@@ -4,9 +4,11 @@
 
 ## 0. Set up
 
+For the interactive 3D presentation, follow [3D_TOWNSHIP.md](3D_TOWNSHIP.md): open Township, inspect assets, replay a previously approved and completed simulated mission, select offline Block 4, and show saved allocation reasons. The presentation preserves existing evidence and approval flows; it never executes a mission. The guide includes isolated-database validation and exact npm commands.
+
 1. Run documented local stack and migration/seed.
 2. Reset `fixtures/four_block_scenario.json` via admin-only demo reset.
-3. Sign in as Coordinator; show `SIMULATED DEMO` indicator and monitoring sample date range.
+3. Click **Enter demo** to open the coordinator view; show the `SIMULATED` indicator and monitoring sample date range. Use **Switch to operator** only for the approved simulation step.
 4. Open simultaneous tabs: Township, Drone, Ovitrap, Planning, Operations. Do not depend on public network.
 
 ## Scene 1 — Problem: four blocks with distinct evidence (20–30 seconds)
@@ -19,7 +21,7 @@
 
 ## Scene 2 — Drone finds three different targets (45–60 seconds)
 
-- Select authorised fictional Block 1 rooftop/planter image. Show boxes: `P01 dry`, `P02 mock water target`, `P03 occluded`.
+- Upload the exact synthetic Block 1 aerial fixture and link it to the matching fictional asset. Show its human-authored boxes: `P01 dry`, `P02 mock water target`, `P03 occluded`. This is exact-hash fixture lookup, not CV inference. An unsupported image becomes `UNCERTAIN` and goes to ground review.
 - Results: P01 `SKIP`, P03 `GROUND_REVIEW`, P02 `MOCK_ACTION_ELIGIBLE` only as labelled fixture.
 - Create mission, show human approval with checklist. Run drone simulation. Event timeline records mock test-water action (no pesticide).
 - Abort an optional second mission mid-way and show remaining targets unchanged.
@@ -27,7 +29,7 @@
 ## Scene 3 — Smart ovitrap updates monitoring (45 seconds)
 
 - Import a **new interval** collection from Block 1. Show egg-count adapter and sample metadata.
-- Re-import same exact sample: show no count increase (idempotency).
+- Re-import the same exact sample: show no count increase (idempotency). If a label needs correction, use the reviewer count-revision form and show the previous and corrected counts in the audit history.
 - Block 4 stays missing / servicing required.
 - State explicitly: eggs are sampled activity, not exact adult population nor dengue probability.
 
@@ -49,10 +51,26 @@
 
 ## Demo recovery
 
-- No model weights: preannotated aerial fixture; UI identifies `PREANNOTATED DEMO`.
+- No model weights: exact-hash human-authored aerial fixture; UI identifies `DEMO_PREANNOTATED_V1`, while unsupported images queue ground review.
 - No camera: fixed labelled egg sample images; egg count uses manual/synthetic ground truth.
 - No hardware: simulator; fake actuator explicitly simulated.
 - Backend offline: restart Compose from documentation, replay idempotent fixture, no fake success status.
+
+## Data analytics evidence
+
+On the dashboard, open **Drone Model Performance & Ovitrap Count Accuracy** to show `NOT_EVALUATED` for both models while no independent labels/checkpoints are installed. Open **Block Surveillance Quality & Trend** to show valid/expected interval denominators, provenance, collection/upload times and Block 4 `DATA_UNAVAILABLE`. As coordinator, choose **Run simulated allocation benchmark**; the persisted result compares uniform, static and adaptive under one eight-hour budget and is labelled `SIMULATED EXPERIMENT`. It may show uniform tying or exceeding adaptive on some scenario metrics. It demonstrates reproducible planning behavior, not field benefit.
+
+From the repository root, the data inventory/evaluator outputs can be reproduced with:
+
+```powershell
+python scripts/data_evaluation.py validate-dataset --dataset local-app-fixture-images-v1 --out data/evaluations
+python scripts/data_evaluation.py validate-dataset --dataset drone-aedes-habitat-candidate-v1 --out data/evaluations
+python scripts/data_evaluation.py eval-drone --out data/evaluations
+python scripts/data_evaluation.py eval-eggs --out data/evaluations
+python scripts/benchmark_allocation.py --out data/evaluations/allocation-benchmark.json
+```
+
+With no downloaded labelled data or checkpoint, all four commands correctly report `NOT_EVALUATED`; they do not create demo accuracy numbers.
 
 ## Judge Q&A
 

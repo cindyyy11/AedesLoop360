@@ -92,6 +92,7 @@ class Trap(Scoped, Base):
     name: Mapped[str]
     status: Mapped[str]
     safe_design_verified: Mapped[bool] = mapped_column(Boolean, default=True)
+    sampling_cadence_days: Mapped[int] = mapped_column(default=7, server_default="7")
     serviced_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     heartbeat_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
@@ -121,6 +122,16 @@ class Sample(Scoped, Base):
     digest: Mapped[str]
 
 
+class SampleRevision(Scoped, Base):
+    __tablename__ = "sample_revisions"
+    sample_id: Mapped[str] = mapped_column(ForeignKey("samples.id"), index=True)
+    reviewer_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    previous_egg_count: Mapped[int]
+    corrected_egg_count: Mapped[int]
+    media_id: Mapped[str] = mapped_column(ForeignKey("media.id"), index=True)
+    reason: Mapped[str]
+
+
 class Mission(Scoped, Base):
     __tablename__ = "missions"
     block_id: Mapped[str] = mapped_column(ForeignKey("blocks.id"), index=True)
@@ -131,6 +142,9 @@ class Mission(Scoped, Base):
         ForeignKey("users.id"), nullable=True, index=True
     )
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    approval_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class MissionEvent(Scoped, Base):
@@ -145,6 +159,7 @@ class MissionEvent(Scoped, Base):
 class Job(Scoped, Base):
     __tablename__ = "jobs"
     mission_id: Mapped[str] = mapped_column(ForeignKey("missions.id"), unique=True)
+    operator_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     status: Mapped[str] = mapped_column(default="PENDING", index=True)
     cursor: Mapped[int] = mapped_column(default=0)
     attempts: Mapped[int] = mapped_column(default=0)
@@ -202,6 +217,20 @@ class Allocation(Scoped, Base):
     status: Mapped[str] = mapped_column(default="PROPOSED")
 
 
+class AnalyticsRun(Scoped, Base):
+    __tablename__ = "analytics_runs"
+    __table_args__ = (UniqueConstraint("tenant_id", "run_id"),)
+    run_id: Mapped[str] = mapped_column(String, index=True)
+    run_type: Mapped[str] = mapped_column(index=True)
+    status: Mapped[str] = mapped_column(index=True)
+    source_mode: Mapped[str] = mapped_column(index=True)
+    run_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    metrics: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    artifacts: Mapped[list] = mapped_column(JSON, default=list)
+    limitations: Mapped[list] = mapped_column(JSON, default=list)
+    initiated_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+
+
 class Receipt(Scoped, Base):
     __tablename__ = "receipts"
     __table_args__ = (UniqueConstraint("tenant_id", "scope", "key"),)
@@ -223,3 +252,9 @@ class Audit(Scoped, Base):
 @event.listens_for(Audit, "before_delete")
 def immutable_audit(*_):
     raise ValueError("Audit events are append-only")
+
+
+@event.listens_for(SampleRevision, "before_update")
+@event.listens_for(SampleRevision, "before_delete")
+def immutable_sample_revision(*_):
+    raise ValueError("Sample revisions are append-only")

@@ -62,11 +62,11 @@ Recurring water accumulation e.g. **>=2 separately verified repeat issues within
 
 | Decision | Automated | Human action |
 |---|---|---|
-| Upload and score image | Yes | Low confidence may request review |
-| Count eggs for sample | Yes | Review ambiguous images/quality as needed |
+| Upload and classify demo evidence | Exact synthetic hash lookup only | Unsupported image is `UNCERTAIN` and needs ground review; no CV model is installed |
+| Count eggs for sample | Human-labelled fixture entry | Reviewer count correction appends a revision; poor-quality evidence stays invalid |
 | Rank block inspection priorities | Yes | Manager chooses operational plan |
 | Propose mission | Yes | Drone coordinator approves operation |
-| Simulate harmless target action | Yes, after approved demo state | Observer can stop instantly |
+| Simulate harmless target action | Yes, after approved demo state | Approval expires after 30 minutes; operator can abort |
 | Real drone flight | Not in MVP | Qualified operator and required regulatory approvals |
 | Real pesticide dispensation | Not in MVP | Qualified/licensed programme and applicable approvals |
 | Remove water-holding container/repair | Create task | Responsible worker does physical work |
@@ -76,7 +76,7 @@ Recurring water accumulation e.g. **>=2 separately verified repeat issues within
 
 - Trap goes offline → dashboard shows `DATA_UNAVAILABLE`, device service task, no numerical risk ranking from missing data.
 - Aerial photo has occlusion → `GROUND_REVIEW`; no spray event.
-- Wrong/expired approval → 409, event recorded; cannot simulate.
+- Wrong-role approval attempt → 403 and audit record. Expired/invalid approval → 409 and denied-execution audit record; cannot simulate.
 - Sensor replay → idempotently ignored/count unchanged.
 - Mission aborted → unvisited targets remain unacted; no success claim.
 - Repeated accumulation → engineering review, not endless additional pesticide suggestions.

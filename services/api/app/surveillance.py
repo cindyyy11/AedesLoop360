@@ -97,6 +97,11 @@ def summaries(db: Session, user: User, start, end) -> list[dict]:
             for s in in_window
             if s.validity == "VALID" and abs(s.sampling_effort_days - window_days) < 0.01
         ]
+        mismatched_effort = [
+            s
+            for s in in_window
+            if s.validity == "VALID" and abs(s.sampling_effort_days - window_days) >= 0.01
+        ]
         available = bool(valid) and any(effective_status(t) == "ACTIVE" for t in traps)
         assets = {a.id for a in all_assets if a.block_id == block.id}
         observations = [
@@ -130,6 +135,11 @@ def summaries(db: Session, user: User, start, end) -> list[dict]:
                 "excluded_samples": [s.id for s in in_window if s not in valid],
                 "interval_days": window_days,
                 "uncertainty": "Egg activity is not adult abundance, Aedes confirmation or dengue risk.",
+                "comparability_warning": (
+                    f"{len(mismatched_effort)} interval(s) excluded: sampling effort does not match the selected {window_days:g}-day window"
+                    if mismatched_effort
+                    else None
+                ),
             }
         )
     return result
