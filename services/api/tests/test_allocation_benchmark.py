@@ -22,7 +22,7 @@ def test_comparison_is_repeatable_and_uses_common_equal_constraints():
     second = benchmark()
     assert first == second
     assert first["mode"] == MODE == "SIMULATED EXPERIMENT"
-    assert len(first["results"]) == 3
+    assert len(first["results"]) == 4
     assert {result["staff_hours_used"] for result in first["results"]} == {8}
     assert {result["staff_hours_budget"] for result in first["results"]} == {8}
     assert {result["drone_hours_budget"] for result in first["results"]} == {2}
@@ -131,3 +131,69 @@ def test_export_writes_machine_and_human_readable_simulation_evidence(tmp_path):
     assert report["mode"] == "SIMULATED EXPERIMENT"
     assert "SIMULATED EXPERIMENT" in Path(outputs["markdown"]).read_text()
     assert "adaptive" in Path(outputs["csv"]).read_text()
+
+
+def test_benchmark_policies_spend_their_budget_instead_of_leaving_hours_idle():
+    sweep = benchmark()["budget_sweep"]
+    assert [row["staff_budget_hours"] for row in sweep] == [4, 6, 8, 10, 12, 14, 16]
+    for row in sweep:
+        for name in ("uniform", "static", "adaptive"):
+            assert row["strategies"][name]["staff_hours_used"] == row["staff_budget_hours"], name
+
+
+def test_current_planner_cannot_spend_more_than_two_extra_hours_per_block():
+    # Known limit of the shipped rules: one two-hour task per block, so a four-block
+    # township never uses more than 12 staff hours however large the budget.
+    for row in benchmark()["budget_sweep"]:
+        used = row["strategies"]["planner_v1"]["staff_hours_used"]
+        assert used == min(row["staff_budget_hours"], 12)
+
+
+def test_current_planner_rules_are_the_ones_the_benchmark_runs():
+    from app.allocation_rules import rank_blocks, select_tasks
+    from app.allocation_benchmark import _planner_block
+
+    scenario = default_scenario()
+    shaped = [_planner_block(b) for b in sorted(scenario.evidence, key=lambda b: b.block_id)]
+    expected, _excluded, _used = select_tasks(shaped, rank_blocks(shaped), 8)
+    tasks = by_strategy(benchmark(scenario))["planner_v1"]["tasks"]
+    assert [(t["block_id"], t["kind"], t["hours"]) for t in tasks] == [
+        (t["block_id"], t["kind"], t["hours"]) for t in expected
+    ]
+
+
+def test_budget_sweep_is_monotone_and_adaptive_never_trails_uniform_in_this_scenario():
+    sweep = benchmark()["budget_sweep"]
+    for name in ("uniform", "static", "planner_v1", "adaptive"):
+        covered = [row["strategies"][name]["covered"] for row in sweep]
+        assert covered == sorted(covered), name
+    for row in sweep:
+        assert row["strategies"]["adaptive"]["covered"] >= row["strategies"]["uniform"]["covered"]
+    # With only the reserved coverage hour per block there is nothing to prioritise.
+    first = sweep[0]["strategies"]
+    assert len({first[name]["covered"] for name in ("uniform", "static", "adaptive")}) == 1
+    # The shipped planner spends the offline block's reserved hour on an inspection
+    # instead of servicing the trap, so it covers one fewer scripted issue here.
+    assert first["planner_v1"]["covered"] == first["uniform"]["covered"] - 1
+
+
+def test_policies_never_see_scenario_truth():
+    base = default_scenario()
+    swapped = Scenario(
+        base.scenario_id,
+        base.evidence,
+        ScenarioTruth((("block-3", "LATENT_GROUND_SITE", 5),)),
+    )
+    for name in ("uniform", "static", "planner_v1", "adaptive"):
+        assert (
+            by_strategy(benchmark(base))[name]["tasks"]
+            == by_strategy(benchmark(swapped))[name]["tasks"]
+        )
+
+
+def test_adaptive_schedules_known_open_work_before_extra_inspections():
+    adaptive = by_strategy(benchmark())["adaptive"]
+    extras = [t["kind"] for t in adaptive["tasks"][4:]]
+    assert extras[0] == "ENGINEERING_REVIEW"
+    assert set(extras[1:]) <= {"REMOVE_SOURCE", "INSPECT_GROUND"}
+    assert adaptive["unsupported_treatment_actions"] == 0

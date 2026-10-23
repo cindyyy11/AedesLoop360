@@ -59,8 +59,16 @@ def register(summary_path: Path, tenant_id: str) -> str:
             artifacts=[
                 {
                     "kind": "summary",
+                    "name": summary_path.name,
                     "sha256": hashlib.sha256(summary_path.read_bytes()).hexdigest(),
-                }
+                },
+                *[
+                    {"kind": "evaluation_plot", **artifact}
+                    for artifact in report.get("artifacts", [])
+                    if isinstance(artifact, dict)
+                    and isinstance(artifact.get("name"), str)
+                    and isinstance(artifact.get("sha256"), str)
+                ],
             ],
             limitations=report.get("limitations", []),
             initiated_by=coordinator.id if coordinator else None,

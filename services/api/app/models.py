@@ -84,6 +84,10 @@ class Finding(Scoped, Base):
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     model_version: Mapped[str] = mapped_column(default="DEMO_PREANNOTATED_V1")
     reason: Mapped[str]
+    review_status: Mapped[str] = mapped_column(default="UNREVIEWED", server_default="UNREVIEWED")
+    reviewed_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    review_note: Mapped[str | None] = mapped_column(nullable=True)
 
 
 class Trap(Scoped, Base):
@@ -130,6 +134,25 @@ class SampleRevision(Scoped, Base):
     corrected_egg_count: Mapped[int]
     media_id: Mapped[str] = mapped_column(ForeignKey("media.id"), index=True)
     reason: Mapped[str]
+
+
+class EggAnalysis(Scoped, Base):
+    __tablename__ = "egg_analyses"
+    __table_args__ = (CheckConstraint("proposed_count IS NULL OR proposed_count >= 0"),)
+    trap_id: Mapped[str] = mapped_column(ForeignKey("traps.id"), index=True)
+    media_id: Mapped[str] = mapped_column(ForeignKey("media.id"), index=True)
+    roi: Mapped[list] = mapped_column(JSON)
+    status: Mapped[str]
+    proposed_count: Mapped[int | None] = mapped_column(nullable=True)
+    model_version: Mapped[str | None] = mapped_column(nullable=True)
+    reason: Mapped[str | None] = mapped_column(nullable=True)
+    details: Mapped[dict] = mapped_column(JSON)
+    confirmed_sample_id: Mapped[str | None] = mapped_column(
+        ForeignKey("samples.id"), nullable=True, unique=True
+    )
+    reviewer_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    accepted_count: Mapped[int | None] = mapped_column(nullable=True)
+    confirmation_reason: Mapped[str | None] = mapped_column(nullable=True)
 
 
 class Mission(Scoped, Base):

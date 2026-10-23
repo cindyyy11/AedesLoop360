@@ -70,6 +70,18 @@ def write_report(output: Path) -> dict:
         lines.append(
             f"| {row['strategy']} | {row['scripted_actionable_issues_covered']} / {row['scripted_actionable_issues']} | {recall} | {efficiency} | {cost} | {'Met' if row['minimum_coverage_met'] else 'Not met'} | {row['constraint_violations']} |"
         )
+    names = [row["strategy"] for row in report["results"]]
+    lines.extend(["", "## Budget sweep (issues covered / scripted issues)", ""])
+    lines.append("| Staff hours | " + " | ".join(names) + " |")
+    lines.append("|---:|" + "---:|" * len(names))
+    for row in report["budget_sweep"]:
+        cells = " | ".join(
+            f"{row['strategies'][name]['covered']} / {row['strategies'][name]['total']}"
+            for name in names
+        )
+        lines.append(f"| {row['staff_budget_hours']} | {cells} |")
+    notes = report["constraints"]["strategy_notes"]
+    lines.extend(["", *[f"- **{name}**: {notes[name]}" for name in names]])
     lines.extend(
         ["", "All policies use the same fictional issue labels, scenario and resource limits.", ""]
     )

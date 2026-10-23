@@ -36,7 +36,7 @@ def entity(model, **extra):
         if column.name in {"content", "password_hash", "digest"}:
             continue
         value_type = dict[str, Any] if isinstance(column.type, JSON) else column.type.python_type
-        if column.name in {"target_ids", "bbox"}:
+        if column.name in {"target_ids", "bbox", "roi"}:
             value_type = list[str] if column.name == "target_ids" else list[float]
         if column.nullable:
             value_type = value_type | None
@@ -75,6 +75,7 @@ FindingRecord = entity(models.Finding, eligibility=(str, ...))
 MissionRecord = entity(models.Mission)
 EventRecord = entity(models.MissionEvent)
 MediaRecord = entity(models.Media)
+EggAnalysisRecord = entity(models.EggAnalysis)
 ObservationRecord = entity(models.Observation)
 WorkRecord = entity(models.WorkOrder)
 JobRecord = entity(models.Job)
@@ -151,8 +152,14 @@ class LatestBenchmark(BaseModel):
     source_mode: str = "SIMULATED EXPERIMENT"
 
 
+class ScoreFactor(BaseModel):
+    label: str
+    points: float
+
+
 class Priority(Summary):
     score: float
+    factors: list[ScoreFactor] = []
     reasons: list[str]
     evidence_ids: list[str]
 

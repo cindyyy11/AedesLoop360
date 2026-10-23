@@ -1,6 +1,28 @@
 # Data and Evaluation Implementation Status
 
-## Fresh integration audit — 23 October 2026
+## Latest local drone dataset integration — 23 October 2026
+
+The YOLOv8 archive supplied by the user has been copied (the Downloads original is unchanged) and extracted into ignored local storage at `data/external/drone-aedes-yolov8-v1`. Its SHA-256 is `3f261dd83254d34f9eda537507845db1c0753b2880d2d4c8c522a9d03244676f`; it contains 2,821 images, 2,821 matching label files, and 4,916 valid boxes across five classes. Mendeley reports 2,821 images and CC BY 4.0, while the embedded Roboflow YAML says `license: Private`; both declarations are preserved in `LOCAL_SOURCE_MANIFEST.json`. No private-access control was bypassed. The source files were supplied locally by the user and are not being redistributed.
+
+The original published splits remain intact. Inspection found source-image IDs in all three published splits (e.g. related tiles from the same `DJI_####` image), so the training pipeline creates a deterministic group-disjoint split: 1,947 train images / 667 groups, 457 validation / 153 groups, and 417 test / 132 groups, with zero group overlap. The derived split has 4,916 boxes total. The held-out test split contains only 11 tire and 15 coconut-shell instances; class-level results for these rare categories are uncertain. The five labels are mapped to the app's canonical spellings without changing class IDs: `coconut_shell`, `drum`, `other_open_container`, `tyre`, `water_tank`.
+
+Reproducible local commands (run from the repo root):
+
+```powershell
+python scripts/prepare_drone_group_split.py --root data/external/drone-aedes-yolov8-v1 --seed 360
+python scripts/train_drone_yolo.py --data data/external/drone-aedes-yolov8-v1/data.grouped.yaml --out data/models/drone --epochs 10 --imgsz 416 --batch 8 --fraction 0.15 --threads 4 --name yolov8n-grouped-seed-360-fraction-15-sampled
+python scripts/evaluate_drone_yolo.py --checkpoint data/models/drone/yolov8n-grouped-seed-360-fraction-15-sampled/weights/best.pt --data data/external/drone-aedes-yolov8-v1/data.grouped.yaml --out data/evaluations/drone
+$summary = Get-ChildItem data/evaluations/drone -Filter 'drone-yolo-group-test-*.json' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+python scripts/register_evaluation.py --summary $summary.FullName --tenant tenant-demo
+```
+
+The current environment is CPU-only (Intel Core Ultra 7 155H; PyTorch 2.12.0+cpu). Training begins from the YOLOv8n architecture configuration without pretrained weights and uses a deterministic, hash-ordered 15% training subset to keep CPU time bounded; the training report records subset coverage and settings. This is a compute-limited baseline, not a production model. The full independent held-out test split is evaluated once after training. The detector integration writes candidate objects as `IMPORTED`/`UNCERTAIN`, never confirms a breeding site or authorizes intervention. Dataset and checkpoint files remain in ignored `data/`; no migration is required because analytics persistence already exists.
+
+Completed on this update: held-out test produced precision 0.8857, recall 0.0626, mAP@0.5 0.0585 and mAP@0.5:0.95 0.0240 over 417 images. The report was registered in `data/aedes-demo.sqlite`; `evaluation_cards()` reads it as `COMPLETED` for tenant-demo, while ovitrap remains `NOT_EVALUATED`. A smoke inference call against a training image using the actual checkpoint is used as a separate check of the upload adapter boundary. Dashboard evaluation cards now display persisted limitation statements alongside metrics. See [DATA_RESULTS_REPORT.md](DATA_RESULTS_REPORT.md) for measured class results and caveats.
+
+Ovitrap egg-image model integration remains **not started**: these three archives are aerial container-detection formats, not ovitrap images or egg counts. Existing ovitrap workflow and dashboard trends remain persisted sample/fixture integrations and should not be described as externally model-validated. The legacy audit below records the state before the user supplied these archives and is superseded only where this dated update gives newer evidence.
+
+## Historical pre-dataset integration audit — 23 October 2026
 
 **Conclusion: partially implemented; real dataset-to-model-to-application integration is not implemented.** This audit preserves the existing uncommitted application work. No model was trained, loaded or evaluated by this audit.
 
@@ -32,11 +54,11 @@
 
 Follow the three PowerShell terminals in `README.md` (migrate/seed/API, durable worker, Next.js). Open `/dashboard`, enter as coordinator, inspect the two NOT_EVALUATED cards, run the simulated allocation benchmark, and follow `docs/DEMO_RUNBOOK.md` for approved mission → labelled interval sample → refreshed plan → independent verification. That flow uses persisted synthetic evidence. The highest-value missing slice is a licensed dataset plus a reproducible checkpoint inference adapter, held-out run artifacts and resulting dashboard record; merely registering supplied predictions does not complete it.
 
-The first audit changed this document and `docs/IMPLEMENTATION_STATUS.md`; its generated local artifacts are under `data/audit-20261023/`. The subsequent inference slice is listed below.
+The first audit changed this document and `docs/IMPLEMENTATION_STATUS.md`; its generated local artifacts are under `data/audit-20261023/`. Its no-dataset conclusions were accurate at that time and are superseded by the dated dataset integration update above.
 
-## Drone inference slice in progress
+## Drone inference adapter history (23 October 2026)
 
-Added `services/api/app/drone_inference.py`, an optional local YOLO checkpoint adapter. The upload route now invokes it for non-fixture images when `AEDES_DRONE_MODEL_PATH` points to a checkpoint and the optional runtime is installed. Each returned box becomes an `IMPORTED` candidate finding with normalized coordinates, score and checkpoint hash prefix in its model version. All detections remain `UNCERTAIN` and require ground review. Empty detections, missing checkpoints, missing runtime and inference exceptions remain ground-review records. The exact synthetic fixture behavior is retained. This wires the model execution boundary; **no compatible trained checkpoint or external dataset is present yet**, so the current live configuration still returns `NOT_CONFIGURED`.
+Added `services/api/app/drone_inference.py`, an optional local YOLO checkpoint adapter. The upload route invokes it for non-fixture images when `AEDES_DRONE_MODEL_PATH` points to a checkpoint and the optional runtime is installed. Each returned box becomes an `IMPORTED` candidate finding with normalized coordinates, score and checkpoint hash prefix in its model version. All detections remain `UNCERTAIN` and require ground review. Empty detections, missing checkpoints, missing runtime and inference exceptions remain ground-review records. The exact synthetic fixture behavior is retained. The checkpoint is now locally configured by the runbook; without it the API returns `NOT_CONFIGURED`.
 
 Files added/changed in this slice: `services/api/app/drone_inference.py`, `services/api/requirements-ml.txt`, `services/api/tests/test_drone_inference.py`, `services/api/app/main.py`, `services/api/tests/test_loop.py`, and `docs/superpowers/plans/2026-10-23-drone-dataset-inference.md`. No migration is needed because the existing Media/Finding entities already preserve adapter, mode, class, box, confidence, model version and audit events.
 

@@ -4,6 +4,41 @@
  */
 
 export interface paths {
+    "/api/v1/ovitraps/{trap_id}/egg-analyses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Egg Analyses */
+        get: operations["list_egg_analyses_api_v1_ovitraps__trap_id__egg_analyses_get"];
+        put?: never;
+        /** Upload Egg Analysis */
+        post: operations["upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/egg-analyses/{analysis_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm Egg Analysis */
+        post: operations["confirm_egg_analysis_api_v1_egg_analyses__analysis_id__confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -186,6 +221,23 @@ export interface paths {
         get: operations["findings_api_v1_findings_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/findings/{entity_id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Review Finding */
+        post: operations["review_finding_api_v1_findings__entity_id__review_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -722,6 +774,17 @@ export interface components {
             /** Asset Id */
             asset_id: string;
         };
+        /** Body_upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post */
+        Body_upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post: {
+            /** File */
+            file: string;
+            /** Rights */
+            rights: string;
+            /** Captured At */
+            captured_at: string;
+            /** Roi */
+            roi: string;
+        };
         /** Budget */
         Budget: {
             /** Staff Hours */
@@ -748,6 +811,80 @@ export interface components {
             /** Checked Items */
             checked_items: string[];
         };
+        /** EggAnalysisRecord */
+        EggAnalysisRecord: {
+            /** Trap Id */
+            trap_id: string;
+            /** Media Id */
+            media_id: string;
+            /** Roi */
+            roi: number[];
+            /** Status */
+            status: string;
+            /** Proposed Count */
+            proposed_count: number | null;
+            /** Model Version */
+            model_version: string | null;
+            /** Reason */
+            reason: string | null;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /** Confirmed Sample Id */
+            confirmed_sample_id: string | null;
+            /** Reviewer Id */
+            reviewer_id: string | null;
+            /** Accepted Count */
+            accepted_count: number | null;
+            /** Confirmation Reason */
+            confirmation_reason: string | null;
+            /** Id */
+            id: string;
+            /** Tenant Id */
+            tenant_id: string;
+            /** Mode */
+            mode: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** EggConfirmationInput */
+        EggConfirmationInput: {
+            /** Source Sample Id */
+            source_sample_id: string;
+            /** Substrate Id */
+            substrate_id: string;
+            /**
+             * Interval Start
+             * Format: date-time
+             */
+            interval_start: string;
+            /**
+             * Interval End
+             * Format: date-time
+             */
+            interval_end: string;
+            /**
+             * Collected At
+             * Format: date-time
+             */
+            collected_at: string;
+            /** Sampling Effort Days */
+            sampling_effort_days: number;
+            /**
+             * Quality
+             * @default GOOD
+             * @enum {string}
+             */
+            quality: "GOOD" | "BLURRED" | "OCCLUDED";
+            /** Accepted Egg Count */
+            accepted_egg_count: number;
+            /** Reason */
+            reason: string;
+        };
         /** FindingRecord */
         FindingRecord: {
             /** Asset Id */
@@ -766,6 +903,14 @@ export interface components {
             model_version: string;
             /** Reason */
             reason: string;
+            /** Review Status */
+            review_status: string;
+            /** Reviewed By */
+            reviewed_by: string | null;
+            /** Reviewed At */
+            reviewed_at: string | null;
+            /** Review Note */
+            review_note: string | null;
             /** Id */
             id: string;
             /** Tenant Id */
@@ -779,6 +924,18 @@ export interface components {
             created_at: string;
             /** Eligibility */
             eligibility: string;
+        };
+        /** FindingReviewInput */
+        FindingReviewInput: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "CONFIRM" | "REJECT" | "RELABEL";
+            /** Reason */
+            reason: string;
+            /** Water State */
+            water_state?: ("DRY" | "VISIBLE_WATER" | "OCCLUDED") | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -914,6 +1071,17 @@ export interface components {
         Many_AuditRecord_: {
             /** Data */
             data: components["schemas"]["AuditRecord"][];
+            /**
+             * Source Mode
+             * @default SIMULATED
+             * @enum {string}
+             */
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
+        };
+        /** Many[EggAnalysisRecord] */
+        Many_EggAnalysisRecord_: {
+            /** Data */
+            data: components["schemas"]["EggAnalysisRecord"][];
             /**
              * Source Mode
              * @default SIMULATED
@@ -1208,6 +1376,26 @@ export interface components {
              */
             source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
+        /** One[EggAnalysisRecord] */
+        One_EggAnalysisRecord_: {
+            data: components["schemas"]["EggAnalysisRecord"];
+            /**
+             * Source Mode
+             * @default SIMULATED
+             * @enum {string}
+             */
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
+        };
+        /** One[FindingRecord] */
+        One_FindingRecord_: {
+            data: components["schemas"]["FindingRecord"];
+            /**
+             * Source Mode
+             * @default SIMULATED
+             * @enum {string}
+             */
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
+        };
         /** One[HistoryRecord] */
         One_HistoryRecord_: {
             data: components["schemas"]["HistoryRecord"];
@@ -1356,6 +1544,11 @@ export interface components {
             comparability_warning?: string | null;
             /** Score */
             score: number;
+            /**
+             * Factors
+             * @default []
+             */
+            factors: components["schemas"]["ScoreFactor"][];
             /** Reasons */
             reasons: string[];
             /** Evidence Ids */
@@ -1411,15 +1604,15 @@ export interface components {
             /**
              * Source
              * @default HUMAN_LABELLED_FIXTURE
-             * @constant
+             * @enum {string}
              */
-            source: "HUMAN_LABELLED_FIXTURE";
+            source: "HUMAN_LABELLED_FIXTURE" | "MODEL_ASSISTED_REVIEWED";
             /**
              * Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            mode: "SIMULATED";
+            mode: "SIMULATED" | "IMPORTED";
         };
         /** SampleRecord */
         SampleRecord: {
@@ -1510,6 +1703,13 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** ScoreFactor */
+        ScoreFactor: {
+            /** Label */
+            label: string;
+            /** Points */
+            points: number;
         };
         /** Summary */
         Summary: {
@@ -1725,6 +1925,111 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_egg_analyses_api_v1_ovitraps__trap_id__egg_analyses_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trap_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Many_EggAnalysisRecord_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                trap_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["One_EggAnalysisRecord_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_egg_analysis_api_v1_egg_analyses__analysis_id__confirm_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                analysis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EggConfirmationInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["One_SampleRecord_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     health_api_v1_health_get: {
         parameters: {
             query?: never;
@@ -2020,6 +2325,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Many_FindingRecord_"];
+                };
+            };
+        };
+    };
+    review_finding_api_v1_findings__entity_id__review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FindingReviewInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["One_FindingRecord_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

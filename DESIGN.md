@@ -10,6 +10,7 @@ Chosen deliberately against the generic AI-dashboard look: no gradients, no fros
 - Shape lock: 3px radius everywhere, 2px badges, 1.5-2px ink borders, hard offset shadows only on the login card and button hover. Panels are flat bordered sheets; section headings are uppercase with a signal-orange square.
 - Typography does the attention work: 52px extra-bold grotesque page headings, monospace for navigation, buttons, badges, table headers, KPI numerals and timestamps. Data reads as instrument labelling.
 - Overview is an index strip, not KPI cards: four mono numerals divided by hairlines, with the unavailable-data cell inverted to black with an orange numeral. Map blocks are flat solid tiles; assets are orange diamonds; tables have black header bars and lime-tint row hover.
+- Overview reading order (2026-10-23 clarity pass): a blue-ruled lede states that numbers are local SQLite / fixture-seeded and not dengue risk; then numbered chapters — **01 What we observed** (map, next steps, block table), **02 Trap interval trends**, **03 Model & planning evidence** (intentionally empty until held-out runs / coordinator benchmark). Suggested next steps read live `DATA_UNAVAILABLE` blocks instead of a fixed “Block 4” sentence.
 - Motion is limited to instant hover inversions and a 1px hard-shadow button press. There are no entrance animations; reduced-motion still disables transitions.
 - All API data, labels, roles and the SIMULATED invariants are unchanged; this refresh is presentation only.
 

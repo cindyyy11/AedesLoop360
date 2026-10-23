@@ -13,7 +13,7 @@ CHECKS = {"SIMULATED_MODE", "AUTHORIZED_TEST_ZONE", "NO_CHEMICAL_PAYLOAD"}
 
 
 def eligibility(finding: Finding, asset: Asset) -> str:
-    if finding.water_state == "DRY":
+    if finding.review_status == "REJECTED" or finding.water_state == "DRY":
         return "SKIP"
     if (
         not asset.permission
