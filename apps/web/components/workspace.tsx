@@ -67,9 +67,10 @@ export default function Workspace() {
   if (loading) return <Splash />;
   if (!user) return <main className="login-page">
     <section className="login-hero" aria-label="About AedesLoop 360">
-      <Image className="login-logo-big" src="/brand/aedesloop-360-logo.jpg" alt="AedesLoop 360: a drone circling a smart ovitrap in a loop" width={1024} height={1024} priority />
+      <figure className="login-figure"><Image className="login-logo-big" src="/brand/aedesloop-360-logo.jpg" alt="AedesLoop 360: a drone circling a smart ovitrap in a loop" width={1024} height={1024} priority /><figcaption>Fig. 1 · The AedesLoop loop</figcaption></figure>
       <div className="login-copy">
         <h1>See the problem. Fix it together.</h1>
+        <span className="login-rule" aria-hidden="true" />
         <p>Drone photos, ovitrap egg counts and the planning board, kept in one place.</p>
       </div>
       <ol className="login-steps" aria-label="How the loop works">
@@ -80,18 +81,21 @@ export default function Workspace() {
     </section>
     <section className="login-panel" aria-labelledby="login-title">
       <form className="login-card" onSubmit={e => { e.preventDefault(); void act(async () => { setUser(result(await api.POST("/api/v1/auth/login", {body: {username: role, password: `demo-${role}-360`}}))); if (role !== "coordinator") router.push(landingFor(role)); }, "Entered local demo"); }}>
+        <div className="login-card-top"><span>Access</span><span className="login-live"><i aria-hidden="true" />Demo mode</span></div>
         <h2 id="login-title">Enter the demo as</h2>
         <div className="role-cards" role="radiogroup" aria-label="Demo role">
           {demoRoles.map(([r, label, , blurb]) => <label key={r} className="role-card" data-selected={role === r}>
             <input type="radio" name="demo-role" value={r} checked={role === r} onChange={() => setRole(r)} />
             <span className="role-card-dot" aria-hidden="true" />
             <span className="role-card-text"><span className="role-card-title">{label}</span><span className="role-card-blurb">{blurb}</span></span>
+            <span className="role-card-no" aria-hidden="true">0{demoRoles.findIndex(d => d[0] === r) + 1}</span>
           </label>)}
         </div>
         <button type="submit" disabled={busy}>{busy ? "Entering…" : "Enter demo"}</button>
         {error && <p role="alert" className="error">{error}</p>}
         <small>Demo only. Fictional data, no real drones or chemicals.</small>
       </form>
+      <p className="login-foot">Fictional township · Simulated drone · Human-approved actions</p>
     </section>
   </main>;
   const title = path.startsWith("/assets/") ? "Asset evidence" : navigation.find(([url]) => url === path)?.[1] ?? "Overview";
