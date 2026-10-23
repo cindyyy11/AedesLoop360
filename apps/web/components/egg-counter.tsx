@@ -27,7 +27,7 @@ export function EggCounter({ trapId, trapName, user, act, version, busy }: Share
   const [liveOpen, setLiveOpen] = useState(false);
   const [mountedAt] = useState(() => new Date().toISOString());
   const drag = useRef<{ x: number; y: number } | null>(null);
-  const canReview = ["reviewer", "coordinator"].includes(user.role);
+  const canReview = ["coordinator"].includes(user.role);
   const validRegion = roi.every(Number.isFinite) && roi[0] >= 0 && roi[1] >= 0 && roi[2] <= 100 && roi[3] <= 100 && roi[2] > roi[0] && roi[3] > roi[1];
   useEffect(() => {
     let active = true;

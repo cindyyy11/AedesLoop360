@@ -70,7 +70,7 @@ test("3D flight rehearsal replays stored outcomes without writing anything", asy
 });
 
 test("draft mission shows a route preview and claims no outcome", async ({ page }) => {
-  await mockApi(page, "reviewer");
+  await mockApi(page, "coordinator");
   await page.goto("/drone/missions");
   await page.getByLabel("Mission", { exact: true }).selectOption("mission-draft");
   await expect(page.locator(".dronesim-side")).toContainText("planned route only");

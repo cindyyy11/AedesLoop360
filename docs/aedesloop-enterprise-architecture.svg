@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1248" viewBox="0 0 2048 1248" role="img" aria-labelledby="title desc">
+  <title id="title">AedesLoop 360 Enterprise Architecture</title>
+  <desc id="desc">AedesLoop 360 architecture showing field devices and users flowing through API and domain services into PostgreSQL, audit, analytics, and dashboards.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1b2630"/></marker>
+    <marker id="tealArrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#008c86"/></marker>
+    <filter id="shadow"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".16"/></filter>
+    <style>
+      .label{font:700 17px Arial,sans-serif;fill:#16222b}.sub{font:400 14px Arial,sans-serif;fill:#42515b}.tiny{font:600 13px Arial,sans-serif;fill:#64737c}.group{font:700 18px Arial,sans-serif;fill:#2c3b45}.title{font:700 31px Arial,sans-serif;fill:#1b2730}.kicker{font:700 14px Arial,sans-serif;fill:#008c86;letter-spacing:2px}.box{stroke:#34444f;stroke-width:2;filter:url(#shadow)}.line{stroke:#1b2630;stroke-width:3;fill:none;marker-end:url(#arrow)}.teal{stroke:#008c86;stroke-width:3;fill:none;marker-end:url(#tealArrow)}
+    </style>
+  </defs>
+  <rect width="2048" height="1248" fill="#f7f9fa"/>
+  <image href="../apps/web/public/brand/aedesloop-emblem-transparent.png" x="64" y="44" width="72" height="72"/>
+  <text x="158" y="70" class="kicker">AEDESLOOP 360</text>
+  <text x="158" y="108" class="title">Evidence-Aware Vector Control Platform</text>
+  <text x="1984" y="70" text-anchor="end" class="tiny">HACKATHON ARCHITECTURE • MVP / SIMULATED MODE</text>
+  <text x="1984" y="101" text-anchor="end" class="sub">Canonical block, asset, trap, observation and event IDs</text>
+
+  <!-- external actors -->
+  <rect x="42" y="160" width="250" height="932" rx="10" fill="#eef4f5" stroke="#9aabb3" stroke-width="2"/>
+  <text x="70" y="202" class="group">Field &amp; operators</text>
+  <g transform="translate(78 255)"><rect width="178" height="104" rx="10" fill="#fff" class="box"/><circle cx="50" cy="46" r="28" fill="#d9f3f0"/><path d="M33 46h34M50 29v34" stroke="#008c86" stroke-width="5"/><text x="94" y="43" class="label">Drone</text><text x="94" y="68" class="sub">aerial imagery</text></g>
+  <g transform="translate(78 405)"><rect width="178" height="104" rx="10" fill="#fff" class="box"/><circle cx="50" cy="46" r="28" fill="#d9f3f0"/><path d="M36 34h28v25H36zM41 65h18" fill="none" stroke="#008c86" stroke-width="4"/><text x="94" y="43" class="label">Smart</text><text x="94" y="68" class="sub">ovitraps</text></g>
+  <g transform="translate(78 555)"><rect width="178" height="104" rx="10" fill="#fff" class="box"/><circle cx="50" cy="46" r="28" fill="#d9f3f0"/><path d="M35 51c10-21 20 21 30 0" fill="none" stroke="#008c86" stroke-width="4"/><text x="94" y="43" class="label">Inspectors</text><text x="94" y="68" class="sub">field evidence</text></g>
+  <g transform="translate(78 705)"><rect width="178" height="104" rx="10" fill="#fff" class="box"/><circle cx="50" cy="46" r="28" fill="#fff1d3"/><path d="M38 47l9 9 17-20" fill="none" stroke="#c88400" stroke-width="5"/><text x="94" y="43" class="label">Coordinator</text><text x="94" y="68" class="sub">human approval</text></g>
+  <g transform="translate(78 855)"><rect width="178" height="104" rx="10" fill="#fff" class="box"/><circle cx="50" cy="46" r="28" fill="#f0e3f5"/><path d="M36 37h28v19H36zM42 65h16" fill="none" stroke="#71458c" stroke-width="4"/><text x="94" y="43" class="label">Dashboard</text><text x="94" y="68" class="sub">web application</text></g>
+
+  <!-- platform boundary -->
+  <rect x="335" y="160" width="1190" height="932" rx="12" fill="#fff" stroke="#5b6b75" stroke-width="2"/>
+  <text x="370" y="205" class="group">AedesLoop 360 application platform</text>
+  <rect x="370" y="235" width="1120" height="178" rx="8" fill="#e9f6f4" stroke="#56aaa2" stroke-width="2"/>
+  <text x="400" y="270" class="kicker">INGESTION &amp; ACCESS LAYER</text>
+  <g transform="translate(405 300)"><rect width="220" height="75" rx="9" fill="#fff" class="box"/><text x="20" y="32" class="label">API Gateway</text><text x="20" y="56" class="sub">OpenAPI + validation</text></g>
+  <g transform="translate(680 300)"><rect width="220" height="75" rx="9" fill="#fff" class="box"/><text x="20" y="32" class="label">Auth + RBAC</text><text x="20" y="56" class="sub">tenant-scoped access</text></g>
+  <g transform="translate(955 300)"><rect width="220" height="75" rx="9" fill="#fff" class="box"/><text x="20" y="32" class="label">Media + Telemetry</text><text x="20" y="56" class="sub">idempotent uploads</text></g>
+  <g transform="translate(1230 300)"><rect width="220" height="75" rx="9" fill="#fff" class="box"/><text x="20" y="32" class="label">Workflow Jobs</text><text x="20" y="56" class="sub">durable retries</text></g>
+
+  <rect x="370" y="450" width="1120" height="270" rx="8" fill="#f4f7f9" stroke="#aab7be" stroke-width="2"/>
+  <text x="400" y="485" class="kicker">DOMAIN &amp; INTELLIGENCE LAYER</text>
+  <g transform="translate(405 520)"><rect width="220" height="140" rx="9" fill="#dff4f0" class="box"/><text x="20" y="40" class="label">CV Evidence</text><text x="20" y="67" class="sub">candidate containers</text><text x="20" y="91" class="sub">confidence + review</text><text x="20" y="115" class="sub">uncertain → ground queue</text></g>
+  <g transform="translate(680 520)"><rect width="220" height="140" rx="9" fill="#dff4f0" class="box"/><text x="20" y="40" class="label">Planning Rules</text><text x="20" y="67" class="sub">quality-aware ranking</text><text x="20" y="91" class="sub">capacity + coverage</text><text x="20" y="115" class="sub">deterministic fallback</text></g>
+  <g transform="translate(955 520)"><rect width="220" height="140" rx="9" fill="#fff1d3" class="box"/><text x="20" y="40" class="label">Approval Gate</text><text x="20" y="67" class="sub">human mission review</text><text x="20" y="91" class="sub">safe mode interlock</text><text x="20" y="115" class="sub">mock action only</text></g>
+  <g transform="translate(1230 520)"><rect width="220" height="140" rx="9" fill="#dff4f0" class="box"/><text x="20" y="40" class="label">Operations</text><text x="20" y="67" class="sub">work orders</text><text x="20" y="91" class="sub">source reduction</text><text x="20" y="115" class="sub">verify separately</text></g>
+
+  <rect x="370" y="760" width="1120" height="272" rx="8" fill="#eef4fb" stroke="#8da8c6" stroke-width="2"/>
+  <text x="400" y="795" class="kicker">DATA, AUDIT &amp; ANALYTICS LAYER</text>
+  <g transform="translate(405 830)"><rect width="220" height="140" rx="9" fill="#fff" class="box"/><text x="20" y="43" class="label">PostgreSQL</text><text x="20" y="70" class="sub">blocks • assets • traps</text><text x="20" y="94" class="sub">samples • missions</text><text x="20" y="118" class="sub">migrations + constraints</text></g>
+  <g transform="translate(680 830)"><rect width="220" height="140" rx="9" fill="#fff" class="box"/><text x="20" y="43" class="label">Evidence Store</text><text x="20" y="70" class="sub">interval provenance</text><text x="20" y="94" class="sub">quality + source mode</text><text x="20" y="118" class="sub">no double counting</text></g>
+  <g transform="translate(955 830)"><rect width="220" height="140" rx="9" fill="#fff" class="box"/><text x="20" y="43" class="label">Audit Trail</text><text x="20" y="70" class="sub">append-only events</text><text x="20" y="94" class="sub">actor • time • reason</text><text x="20" y="118" class="sub">idempotency keys</text></g>
+  <g transform="translate(1230 830)"><rect width="220" height="140" rx="9" fill="#fff" class="box"/><text x="20" y="43" class="label">Analytics</text><text x="20" y="70" class="sub">trends + coverage</text><text x="20" y="94" class="sub">allocation benchmark</text><text x="20" y="118" class="sub">explainable reasons</text></g>
+
+  <!-- external integrations -->
+  <rect x="1565" y="160" width="440" height="932" rx="10" fill="#f4f1f8" stroke="#aa91b9" stroke-width="2"/>
+  <text x="1600" y="202" class="group">Experience &amp; controls</text>
+  <g transform="translate(1610 260)"><rect width="350" height="120" rx="9" fill="#fff" class="box"/><text x="25" y="42" class="label">Adaptive Command Dashboard</text><text x="25" y="70" class="sub">map • trends • missions • priorities</text><text x="25" y="94" class="sub">loading • error • offline states</text></g>
+  <g transform="translate(1610 450)"><rect width="350" height="120" rx="9" fill="#fff" class="box"/><text x="25" y="42" class="label">Review &amp; Operations Console</text><text x="25" y="70" class="sub">HITL queue • work orders</text><text x="25" y="94" class="sub">action ≠ verified effectiveness</text></g>
+  <g transform="translate(1610 640)"><rect width="350" height="120" rx="9" fill="#fff1d3" class="box"/><text x="25" y="42" class="label">Safety Controller</text><text x="25" y="70" class="sub">DISARMED by default</text><text x="25" y="94" class="sub">water-only bench mode</text></g>
+  <g transform="translate(1610 830)"><rect width="350" height="120" rx="9" fill="#fff" class="box"/><text x="25" y="42" class="label">Demo / Replay Controls</text><text x="25" y="70" class="sub">seeded fixtures • deterministic runs</text><text x="25" y="94" class="sub">SIMULATED / OBSERVED / IMPORTED</text></g>
+
+  <!-- arrows -->
+  <path d="M256 307H405" class="line"/><path d="M256 457H405" class="line"/><path d="M256 607H405" class="line"/><path d="M256 757H680" class="line"/><path d="M256 907H1610" class="line"/>
+  <path d="M625 337h55" class="line"/><path d="M900 337h55" class="line"/><path d="M1175 337h55" class="line"/>
+  <path d="M515 413V520" class="teal"/><path d="M790 413V520" class="teal"/><path d="M1065 413V520" class="teal"/><path d="M1340 413V520" class="teal"/>
+  <path d="M625 590h55" class="teal"/><path d="M900 590h55" class="teal"/><path d="M1175 590h55" class="teal"/>
+  <path d="M515 660V830" class="line"/><path d="M790 660V830" class="line"/><path d="M1065 660V830" class="line"/><path d="M1340 660V830" class="line"/>
+  <path d="M1490 895h120" class="line"/><path d="M1490 705h120" class="line"/><path d="M1490 515h120" class="line"/><path d="M1490 325h120" class="line"/>
+  <path d="M1230 900 C1120 1080 650 1080 515 970" class="teal"/>
+  <text x="820" y="1085" class="tiny">Feedback loop: interval evidence updates the next inspection priority</text>
+</svg>

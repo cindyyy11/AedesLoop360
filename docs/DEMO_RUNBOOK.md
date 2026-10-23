@@ -7,7 +7,7 @@
 For the interactive 3D presentation, follow [3D_TOWNSHIP.md](3D_TOWNSHIP.md): open Township, inspect assets, replay a previously approved and completed simulated mission, select offline Block 4, and show saved allocation reasons. The presentation preserves existing evidence and approval flows; it never executes a mission. The guide includes isolated-database validation and exact npm commands.
 
 1. Run documented local stack and migration/seed.
-2. Reset `fixtures/four_block_scenario.json` via admin-only demo reset.
+2. Reset `fixtures/four_block_scenario.json` via the documented demo reset.
 3. Click **Enter demo** to open the coordinator view; show the `SIMULATED` indicator and monitoring sample date range. Use **Switch to operator** only for the approved simulation step.
 4. Open simultaneous tabs: Township, Drone, Ovitrap, Planning, Operations. Do not depend on public network.
 
@@ -95,7 +95,7 @@ Measured on the current split: 300 images / 50 assumed site-direction groups; 18
 ## Scene 3 — Smart ovitrap updates monitoring (45 seconds)
 
 - Import a **new interval** collection from Block 1. Show egg-count adapter and sample metadata.
-- Re-import the same exact sample: show no count increase (idempotency). If a label needs correction, use the reviewer count-revision form and show the previous and corrected counts in the audit history.
+- Re-import the same exact sample: show no count increase (idempotency). If a label needs correction, use the coordinator count-revision form and show the previous and corrected counts in the audit history.
 - Block 4 stays missing / servicing required.
 - State explicitly: eggs are sampled activity, not exact adult population nor dengue probability.
 
@@ -109,7 +109,7 @@ Measured on the current split: 300 images / 50 assumed site-direction groups; 18
 
 - Open Asset P-03: previously corrected, subsequent repeated verified water accumulation after rain.
 - Trigger recurrence evaluation → engineering/physical source correction work order for drainage/saucer redesign.
-- Show worker completion still `PENDING_VERIFICATION`; reviewer records separate outcome, history updates.
+- Show worker completion still `PENDING_VERIFICATION`; coordinator records the separate outcome, history updates.
 
 ## Final close (15 seconds)
 

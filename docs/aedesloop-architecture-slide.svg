@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+  <title id="title">AedesLoop 360 Evidence-to-Action Vector Control Loop</title>
+  <desc id="desc">Technical architecture diagram showing drone inspection, CV evidence, canonical data, adaptive planning, human approval, safe simulated action, and smart ovitrap feedback.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071525"/><stop offset="1" stop-color="#0b2034"/></linearGradient>
+    <linearGradient id="hub" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#123c55"/><stop offset="1" stop-color="#0b263c"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#55e6e0"/></marker>
+    <marker id="arrowAmber" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#f5b94c"/></marker>
+    <style>
+      .title{font:700 42px Arial,sans-serif;fill:#fff;letter-spacing:1px}.sub{font:400 19px Arial,sans-serif;fill:#9bb4c4}.h{font:700 22px Arial,sans-serif;fill:#fff}.body{font:400 16px Arial,sans-serif;fill:#b7cbd5}.small{font:700 14px Arial,sans-serif;fill:#7fe9e1;letter-spacing:1px}.tiny{font:600 13px Arial,sans-serif;fill:#d5e3e9}.card{fill:#0d2a40;stroke:#20526c;stroke-width:2}.teal{stroke:#55e6e0;stroke-width:5;fill:none;marker-end:url(#arrow)}.amber{stroke:#f5b94c;stroke-width:5;fill:none;marker-end:url(#arrowAmber)}
+    </style>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <path d="M0 170H1920M0 900H1920M260 0V1080M1660 0V1080" stroke="#14344a" opacity=".45"/>
+  <g opacity=".18" fill="none" stroke="#55e6e0"><ellipse cx="955" cy="548" rx="660" ry="365"/><ellipse cx="955" cy="548" rx="545" ry="270"/></g>
+
+  <image href="../apps/web/public/brand/aedesloop-emblem-transparent.png" x="90" y="62" width="76" height="76"/>
+  <text x="190" y="94" class="small">AEDESLOOP 360</text>
+  <text x="190" y="138" class="title">Evidence-to-Action Vector Control Loop</text>
+  <text x="1720" y="96" text-anchor="end" class="tiny">HACKATHON SYSTEM ARCHITECTURE</text>
+  <text x="1720" y="123" text-anchor="end" class="sub">Every decision traceable • every action gated</text>
+
+  <!-- central hub -->
+  <circle cx="955" cy="530" r="164" fill="url(#hub)" stroke="#55e6e0" stroke-width="3" filter="url(#glow)"/>
+  <circle cx="955" cy="530" r="138" fill="none" stroke="#1e7180" stroke-width="1" stroke-dasharray="6 10"/>
+  <image href="../apps/web/public/brand/aedesloop-emblem-transparent.png" x="900" y="420" width="110" height="110"/>
+  <text x="955" y="575" text-anchor="middle" class="h">COMMAND INTELLIGENCE</text>
+  <text x="955" y="608" text-anchor="middle" class="body">Canonical IDs • evidence • audit</text>
+
+  <!-- loop arrows -->
+  <path d="M500 390 C580 290 700 250 790 290" class="teal"/>
+  <path d="M1120 290 C1240 250 1360 300 1435 390" class="teal"/>
+  <path d="M1510 520 C1550 650 1470 760 1345 790" class="amber"/>
+  <path d="M1130 820 C1030 890 870 895 760 825" class="teal"/>
+  <path d="M575 770 C450 710 405 590 455 480" class="teal"/>
+  <path d="M1250 780 C1180 700 1130 675 1085 670" class="amber"/>
+  <path d="M815 680 C730 700 660 735 590 770" class="teal"/>
+
+  <!-- nodes -->
+  <g transform="translate(300 275)"><rect width="330" height="140" rx="20" class="card"/><text x="24" y="38" class="small">01 / CAPTURE</text><text x="24" y="76" class="h">Drone / Aerial Image</text><text x="24" y="108" class="body">Approved zone • source • timestamp</text></g>
+  <g transform="translate(1290 275)"><rect width="330" height="140" rx="20" class="card"/><text x="24" y="38" class="small">02 / INTERPRET</text><text x="24" y="76" class="h">CV Candidate Detection</text><text x="24" y="108" class="body">Confidence • occlusion • review state</text></g>
+  <g transform="translate(1450 490)"><rect width="330" height="140" rx="20" class="card"/><text x="24" y="38" class="small">03 / STORE</text><text x="24" y="76" class="h">Canonical Evidence Store</text><text x="24" y="108" class="body">Block • asset • trap • observation IDs</text></g>
+  <g transform="translate(1230 760)"><rect width="360" height="140" rx="20" class="card"/><text x="24" y="38" class="small">04 / PRIORITISE</text><text x="24" y="76" class="h">Adaptive Planning</text><text x="24" y="108" class="body">Rules • capacity • quality-aware reasons</text></g>
+  <g transform="translate(750 800)"><rect width="390" height="140" rx="20" fill="#332d1b" stroke="#f5b94c" stroke-width="2"/><text x="24" y="38" style="font:700 14px Arial;fill:#f5b94c;letter-spacing:1px">05 / HUMAN-IN-THE-LOOP</text><text x="24" y="76" class="h">Human Approval Gate</text><text x="24" y="108" class="body">Coordinator approves • operator executes</text></g>
+  <g transform="translate(270 760)"><rect width="390" height="140" rx="20" class="card"/><text x="24" y="38" class="small">06 / ACT</text><text x="24" y="76" class="h">Safe Mock Mission</text><text x="24" y="108" class="body">Water-only • disarmed by default • logged</text></g>
+  <g transform="translate(130 480)"><rect width="330" height="140" rx="20" class="card"/><text x="24" y="38" class="small">07 / MEASURE</text><text x="24" y="76" class="h">Smart Ovitrap Data</text><text x="24" y="108" class="body">Interval sample • quality • service state</text></g>
+
+  <!-- platform backbone -->
+  <rect x="90" y="962" width="1740" height="78" rx="18" fill="#081c2d" stroke="#1f4860"/>
+  <text x="120" y="992" class="small">PLATFORM BACKBONE</text>
+  <text x="120" y="1022" class="body">API + RBAC</text><text x="420" y="1022" class="body">Domain Services</text><text x="770" y="1022" class="body">PostgreSQL + Migrations</text><text x="1200" y="1022" class="body">Append-only Audit Trail</text><text x="1650" y="1022" class="body">Deterministic Replay</text>
+  <path d="M340 1000h45M700 1000h45M1120 1000h45M1570 1000h45" stroke="#55e6e0" stroke-width="2"/>
+
+  <!-- guardrails -->
+  <g transform="translate(1640 160)"><rect width="190" height="86" rx="14" fill="#2b2215" stroke="#f5b94c"/><text x="16" y="28" style="font:700 12px Arial;fill:#f5b94c">SAFETY BOUNDARIES</text><text x="16" y="50" class="tiny">DATA_UNAVAILABLE ≠ LOW_RISK</text><text x="16" y="70" class="tiny">Eggs ≠ adults ≠ dengue risk</text></g>
+  <g transform="translate(90 160)"><rect width="240" height="86" rx="14" fill="#2b2215" stroke="#f5b94c"/><text x="16" y="28" style="font:700 12px Arial;fill:#f5b94c">RECORD MODES</text><text x="16" y="51" class="tiny">SIMULATED   OBSERVED   IMPORTED</text><text x="16" y="71" class="tiny">Action recorded ≠ verified effective</text></g>
+</svg>

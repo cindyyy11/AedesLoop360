@@ -1,0 +1,17 @@
+.git
+.next
+.next-*
+node_modules
+**/node_modules
+data
+.pytest_cache
+.ruff_cache
+apps/web
+**/*.pt
+**/*.pth
+!deploy/models/**
+*.db
+*.sqlite
+.env
+.env.*
+deploy/.env.deploy

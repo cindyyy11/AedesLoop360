@@ -3,6 +3,7 @@
 .env.*
 deploy/.env.deploy
 !.env.example
+!**/.env.example
 
 # Local databases and demo data
 *.db
@@ -14,18 +15,26 @@ data/
 venv/
 __pycache__/
 *.py[cod]
+*.egg-info/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
 
 # JavaScript dependencies and generated build output
 node_modules/
+.npm-cache-local/
+.npm/
 .next/
 .next-*/
 out/
 dist/
 build/
 *.tsbuildinfo
+
+# Hosting / CLI local state (keep railway.toml, .railwayignore, Dockerfiles)
+.vercel/
+.netlify/
+.railway/
 
 # Test output and coverage
 test-results/
@@ -35,6 +44,10 @@ coverage/
 # OS/editor noise
 .DS_Store
 Thumbs.db
+*.log
 
 # Packaged model checkpoints (see scripts/package_models.py)
 deploy/models/
+
+# Copied into the API root by services/api/vercel_build.py for Vercel deploys
+services/api/fixtures/

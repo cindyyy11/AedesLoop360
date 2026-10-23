@@ -26,7 +26,7 @@ def setup(tmp_path, monkeypatch):
     db = Session(engine)
     db.add_all([Tenant(id="t", name="Test"), Tenant(id="other", name="Other")])
     db.flush()
-    user = User(id="u", tenant_id="t", username="reviewer", password_hash="unused", role="reviewer")
+    user = User(id="u", tenant_id="t", username="coordinator", password_hash="unused", role="coordinator")
     db.add(user)
     db.add(Block(id="b", tenant_id="t", name="Fictional", x=0, y=0))
     db.flush()
@@ -131,7 +131,7 @@ def test_roles_tenant_roi_and_offline_quality(setup):
     with pytest.raises(HTTPException) as error:
         proposal(setup)
     assert error.value.status_code == 403
-    user.role = "reviewer"
+    user.role = "coordinator"
     user.tenant_id = "other"
     with pytest.raises(HTTPException) as error:
         proposal(setup)
@@ -183,7 +183,7 @@ def test_read_scope_invalid_upload_and_direct_review_bypass(setup):
         list_egg_analyses(trap.id, db, user)
     assert error.value.status_code == 403
     user.tenant_id = "t"
-    user.role = "reviewer"
+    user.role = "coordinator"
     body = confirmation()
     sample = SampleInput(
         **body.model_dump(exclude={"accepted_egg_count", "reason"}),

@@ -95,7 +95,7 @@ def test_drone_gates_order_retry_and_abort():
         ).status_code
         == 409
     )
-    inspector = client("inspector")
+    inspector = client("operator")
     assert (
         inspector.post(
             f"{API}/drones/missions/{mid}/decision",
@@ -107,7 +107,7 @@ def test_drone_gates_order_retry_and_abort():
     assert any(
         event["entity_id"] == mid
         and event["action"] == "MISSION_DECISION_DENIED_ROLE"
-        and event["actor_id"] == "user-inspector"
+        and event["actor_id"] == "user-operator"
         for event in denied
     )
     approve(c, mid)
@@ -268,7 +268,7 @@ def test_sample_count_correction_is_audited_and_append_only():
     body = sample_payload("revision", trap="trap-b2-1", days_ago=21)
     path = API + "/ovitraps/trap-b2-1/samples"
     sample = c.post(path, json=body, headers={"Idempotency-Key": "revision-import"}).json()["data"]
-    reviewer = client("reviewer")
+    reviewer = client("coordinator")
     revision_path = f"{API}/samples/{sample['id']}/revisions"
     payload = {
         "corrected_egg_count": 73,
@@ -281,7 +281,7 @@ def test_sample_count_correction_is_audited_and_append_only():
     record = revised.json()["data"]
     assert record["previous_egg_count"] == 100
     assert record["corrected_egg_count"] == 73
-    assert record["reviewer_id"] == "user-reviewer"
+    assert record["reviewer_id"] == "user-coordinator"
     assert (
         reviewer.post(
             revision_path, json=payload, headers={"Idempotency-Key": "revision-1"}
@@ -297,7 +297,7 @@ def test_sample_count_correction_is_audited_and_append_only():
 
 
 def test_recurrence_work_followup_audit_persistence():
-    inspector, reviewer, coordinator = client("inspector"), client("reviewer"), client()
+    inspector, reviewer, coordinator = client("operator"), client("coordinator"), client()
     payload = {
         "asset_id": "asset-p03",
         "observed_at": (now() - timedelta(days=1)).isoformat(),
@@ -321,7 +321,7 @@ def test_recurrence_work_followup_audit_persistence():
     path = f"{API}/work-orders/{work['id']}"
     assert (
         coordinator.patch(
-            path, json={"action": "ASSIGN", "assignee_id": "user-inspector"}
+            path, json={"action": "ASSIGN", "assignee_id": "user-operator"}
         ).status_code
         == 200
     )
@@ -468,9 +468,9 @@ def make_finding(label, water_state="VISIBLE_WATER"):
 def test_finding_review_roles_reject_relabel_and_active_mission_guard():
     fid = make_finding("finding-review-reject")
     body = {"decision": "REJECT", "reason": "Not a water-holding container"}
-    for role in ("operator", "coordinator", "inspector"):
+    for role in ("operator",):
         assert client(role).post(f"{API}/findings/{fid}/review", json=body).status_code == 403
-    reviewer = client("reviewer")
+    reviewer = client("coordinator")
     seen = next(f for f in reviewer.get(API + "/findings").json()["data"] if f["id"] == fid)
     assert seen["review_status"] == "UNREVIEWED"
     assert seen["eligibility"] == "MOCK_ACTION_ELIGIBLE"
@@ -492,7 +492,7 @@ def test_finding_review_roles_reject_relabel_and_active_mission_guard():
     assert done.status_code == 200, done.text
     data = done.json()["data"]
     assert data["review_status"] == "REJECTED"
-    assert data["reviewed_by"] == "user-reviewer"
+    assert data["reviewed_by"] == "user-coordinator"
     assert data["eligibility"] == "SKIP"
     audit_log = client("coordinator").get(API + "/audit").json()["data"]
     assert any(e["entity_id"] == fid and e["action"] == "FINDING_REVIEWED" for e in audit_log)

@@ -24,7 +24,7 @@ def setup(tmp_path, monkeypatch):
     db.flush()
     users = {
         role: User(id=f"u-{role}", tenant_id="t", username=role, password_hash="x", role=role)
-        for role in ("coordinator", "operator", "reviewer", "inspector")
+        for role in ("coordinator", "operator", "viewer")
     }
     db.add_all(users.values())
     db.add(Block(id="b", tenant_id="t", name="Fictional", x=0, y=0))
@@ -97,7 +97,7 @@ def test_pass_photos_are_deterministic_per_trap_and_distinct_between_traps():
 
 def test_only_operator_or_coordinator_may_run_a_pass(setup):
     db, users = setup
-    for role in ("reviewer", "inspector"):
+    for role in ("viewer",):
         with pytest.raises(HTTPException) as error:
             drone_capture.run_pass(db, users[role], ["trap-a"], f"deny-{role}")
         assert error.value.status_code == 403
@@ -109,7 +109,7 @@ def test_only_operator_or_coordinator_may_run_a_pass(setup):
     assert not db.scalars(select(EggAnalysis)).all()
 
 
-def test_operator_cannot_confirm_and_reviewer_confirmation_is_simulated(setup):
+def test_operator_cannot_confirm_and_coordinator_confirmation_is_simulated(setup):
     db, users = setup
     _, analyses, _ = drone_capture.run_pass(db, users["operator"], ["trap-a"], "confirm-pass")
     db.commit()
@@ -127,7 +127,7 @@ def test_operator_cannot_confirm_and_reviewer_confirmation_is_simulated(setup):
     with pytest.raises(HTTPException) as error:
         egg_analysis.confirm(db, users["operator"], analyses[0].id, body, "op-confirm")
     assert error.value.status_code == 403
-    sample = egg_analysis.confirm(db, users["reviewer"], analyses[0].id, body, "rev-confirm")
+    sample = egg_analysis.confirm(db, users["coordinator"], analyses[0].id, body, "rev-confirm")
     assert sample.mode == "SIMULATED"
     assert sample.source == "DRONE_SIM_REVIEWED"
     assert sample.review_status == "CONFIRMED_HUMAN"

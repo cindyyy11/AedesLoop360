@@ -77,7 +77,7 @@ npm run dev
 
 The added `apps/web/package-lock.json` pins the npm dependency tree. Use `npm ci` for clean installs; use `npm install` when intentionally changing dependencies, then review the package and lockfile changes together.
 
-Open `http://127.0.0.1:3000/dashboard` and click **Enter demo**. This opens the coordinator view without a role or password picker. Use **Switch to operator** in the top bar when you want to demonstrate simulated mission execution; switch back to coordinator for approvals. The API continues to enforce each role's permissions. Inspector, reviewer and admin accounts remain seeded for the deeper acceptance scenarios, but are not part of the normal prototype entry flow.
+Open `http://127.0.0.1:3000/dashboard` and click **Enter demo**. This opens the coordinator view without a role or password picker. Use **Switch to operator** in the top bar when you want to demonstrate simulated mission execution; switch back to coordinator for approvals. The API continues to enforce each role's permissions. The demo has two roles: **coordinator** (plans, approves, reviews counts, verifies outcomes, audit and settings) and **operator** (field operator: drone missions, uploads, site observations and assigned work). Local credentials are `<role> / demo-<role>-360`.
 
 To reset the demo, stop the API and worker with Ctrl+C and use a new SQLite filename, for example `aedes-demo-reset-1.sqlite`, in the same `AEDES_DATABASE_URL` setting in the API and worker terminals. Run the migration and seed commands again. The previous database and audit history remain intact. Seeding an existing database is idempotent and preserves its records.
 

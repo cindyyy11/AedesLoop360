@@ -35,7 +35,7 @@ const blurbs: Record<string, string> = {
   "Evidence & system": "Background jobs and the audit log.",
   "Asset evidence": "History of one site.",
 };
-const demoRoles = [["coordinator", "Coordinator", "/dashboard"], ["operator", "Drone operator", "/drone/missions"], ["inspector", "Field inspector", "/operations"], ["reviewer", "Quality reviewer", "/ovitraps"], ["admin", "Administrator", "/settings"]] as const;
+const demoRoles = [["coordinator", "Coordinator", "/dashboard", "Plans rounds, approves missions, reviews counts and checks results."], ["operator", "Field operator", "/drone/missions", "Runs simulated drone missions, uploads photos and does site visits."]] as const;
 const landingFor = (role: string) => demoRoles.find(([r]) => r === role)?.[2] ?? "/dashboard";
 export type RunAction = (fn: () => Promise<unknown>, message: string) => Promise<void>;
 
@@ -65,7 +65,39 @@ export default function Workspace() {
   // On phones the nav scrolls sideways; keep the current page in view.
   useEffect(() => { document.querySelector('.sidebar nav a[aria-current="page"]')?.scrollIntoView({ inline: "center", block: "nearest" }); }, [path, loading, user]);
   if (loading) return <Splash />;
-  if (!user) return <main className="login"><div className="login-logo"><Image src="/brand/aedesloop-360-logo.jpg" alt="AedesLoop 360 - Smart Mosquito Control" width={1024} height={1024} priority /></div><h1>See the problem.<br/>Fix it together.</h1><p>Pick a role to try the demo.</p><label className="role-picker">Enter as<select value={role} onChange={e => setRole(e.target.value)}>{demoRoles.map(([r, label]) => <option key={r} value={r}>{label}</option>)}</select></label><button disabled={busy} onClick={() => void act(async () => { setUser(result(await api.POST("/api/v1/auth/login", {body: {username: role, password: `demo-${role}-360`}}))); if (role !== "coordinator") router.push(landingFor(role)); }, "Entered local demo")}>Enter demo</button>{error && <p role="alert" className="error">{error}</p>}<small>Demo only · fictional data · no real drones or chemicals.</small></main>;
+  if (!user) return <main className="login-page">
+    <section className="login-hero" aria-label="About AedesLoop 360">
+      <figure className="login-figure"><Image className="login-logo-big" src="/brand/aedesloop-360-logo.jpg" alt="AedesLoop 360: a drone circling a smart ovitrap in a loop" width={1024} height={1024} priority /><figcaption>Fig. 1 · The AedesLoop loop</figcaption></figure>
+      <div className="login-copy">
+        <h1>See the problem. Fix it together.</h1>
+        <span className="login-rule" aria-hidden="true" />
+        <p>Drone photos, ovitrap egg counts and the planning board, kept in one place.</p>
+      </div>
+      <ol className="login-steps" aria-label="How the loop works">
+        <li><b>1</b><span><strong>Drone</strong> finds containers that may hold water</span></li>
+        <li><b>2</b><span><strong>Ovitrap</strong> counts eggs for each collection interval</span></li>
+        <li><b>3</b><span><strong>Dashboard</strong> plans the next round</span></li>
+      </ol>
+    </section>
+    <section className="login-panel" aria-labelledby="login-title">
+      <form className="login-card" onSubmit={e => { e.preventDefault(); void act(async () => { setUser(result(await api.POST("/api/v1/auth/login", {body: {username: role, password: `demo-${role}-360`}}))); if (role !== "coordinator") router.push(landingFor(role)); }, "Entered local demo"); }}>
+        <div className="login-card-top"><span>Access</span><span className="login-live"><i aria-hidden="true" />Demo mode</span></div>
+        <h2 id="login-title">Enter the demo as</h2>
+        <div className="role-cards" role="radiogroup" aria-label="Demo role">
+          {demoRoles.map(([r, label, , blurb]) => <label key={r} className="role-card" data-selected={role === r}>
+            <input type="radio" name="demo-role" value={r} checked={role === r} onChange={() => setRole(r)} />
+            <span className="role-card-dot" aria-hidden="true" />
+            <span className="role-card-text"><span className="role-card-title">{label}</span><span className="role-card-blurb">{blurb}</span></span>
+            <span className="role-card-no" aria-hidden="true">0{demoRoles.findIndex(d => d[0] === r) + 1}</span>
+          </label>)}
+        </div>
+        <button type="submit" disabled={busy}>{busy ? "Entering…" : "Enter demo"}</button>
+        {error && <p role="alert" className="error">{error}</p>}
+        <small>Demo only. Fictional data, no real drones or chemicals.</small>
+      </form>
+      <p className="login-foot">Fictional township · Simulated drone · Human-approved actions</p>
+    </section>
+  </main>;
   const title = path.startsWith("/assets/") ? "Asset evidence" : navigation.find(([url]) => url === path)?.[1] ?? "Overview";
   const shared = {user, act, version, busy};
   const canSwitchDemoRole = ["coordinator", "operator"].includes(user.role);
@@ -80,6 +112,6 @@ function System({user, version}: Shared) {
   const [audits, setAudits] = useState<Schema["AuditRecord"][]>([]);
   const [error, setError] = useState("");
   const [auditQuery, setAuditQuery] = useState("");
-  useEffect(() => { let active = true; (async () => { try { const j = result(await api.GET("/api/v1/jobs")); const a = ["coordinator", "admin"].includes(user.role) ? result(await api.GET("/api/v1/audit")).data : []; if (active) {setJobs(j.data); setAudits(a);} } catch(e) { if(active) setError(String(e)); } })(); return () => {active=false;}; }, [version, user.role]);
-  return <><Panel title="Adapters & deployment"><dl className="facts"><dt>Drone</dt><dd>Simulation only · hardware not connected</dd><dt>Vision</dt><dd>Pre-annotated demo data</dd><dt>Egg counting</dt><dd>Human-labelled demo images</dd><dt>Location</dt><dd>Fictional map</dd></dl><details className="fold"><summary>Reset the demo</summary><p>Stop services, set a fresh AEDES_DATABASE_URL, then migrate and seed. Old audit history stays in the previous database.</p></details></Panel>{error && <p role="alert" className="error">{error}</p>}<Panel title="Durable worker jobs">{jobs.length ? jobs.map(j => <div className="list-row" key={j.id}><span>{j.mission_id}</span><Badge>{j.status} · step {j.cursor}</Badge>{j.error && <span>{j.error}</span>}</div>) : <Empty>No simulation jobs queued.</Empty>}</Panel><Panel title="Append-only audit trail">{audits.length > 0 && <label className="audit-filter">Filter by action, entity or actor<input type="search" value={auditQuery} onChange={e => setAuditQuery(e.target.value)} placeholder="e.g. MISSION or user-operator"/></label>}{audits.length ? audits.filter(a => `${a.action} ${a.entity_id} ${a.actor_id}`.toLowerCase().includes(auditQuery.trim().toLowerCase())).map(a => <div className="list-row" key={a.id}><div><strong>{a.action.replaceAll("_", " ")}</strong><small>{a.entity_id} · {a.actor_id}</small></div><time>{new Date(a.created_at).toISOString()}</time></div>) : <Empty>{["admin", "coordinator"].includes(user.role) ? "No recorded actions yet." : "Audit viewing requires coordinator or admin."}</Empty>}</Panel></>;
+  useEffect(() => { let active = true; (async () => { try { const j = result(await api.GET("/api/v1/jobs")); const a = ["coordinator"].includes(user.role) ? result(await api.GET("/api/v1/audit")).data : []; if (active) {setJobs(j.data); setAudits(a);} } catch(e) { if(active) setError(String(e)); } })(); return () => {active=false;}; }, [version, user.role]);
+  return <><Panel title="Adapters & deployment"><dl className="facts"><dt>Drone</dt><dd>Simulation only · hardware not connected</dd><dt>Vision</dt><dd>Pre-annotated demo data</dd><dt>Egg counting</dt><dd>Human-labelled demo images</dd><dt>Location</dt><dd>Fictional map</dd></dl><details className="fold"><summary>Reset the demo</summary><p>Stop services, set a fresh AEDES_DATABASE_URL, then migrate and seed. Old audit history stays in the previous database.</p></details></Panel>{error && <p role="alert" className="error">{error}</p>}<Panel title="Durable worker jobs">{jobs.length ? jobs.map(j => <div className="list-row" key={j.id}><span>{j.mission_id}</span><Badge>{j.status} · step {j.cursor}</Badge>{j.error && <span>{j.error}</span>}</div>) : <Empty>No simulation jobs queued.</Empty>}</Panel><Panel title="Append-only audit trail">{audits.length > 0 && <label className="audit-filter">Filter by action, entity or actor<input type="search" value={auditQuery} onChange={e => setAuditQuery(e.target.value)} placeholder="e.g. MISSION or user-operator"/></label>}{audits.length ? audits.filter(a => `${a.action} ${a.entity_id} ${a.actor_id}`.toLowerCase().includes(auditQuery.trim().toLowerCase())).map(a => <div className="list-row" key={a.id}><div><strong>{a.action.replaceAll("_", " ")}</strong><small>{a.entity_id} · {a.actor_id}</small></div><time>{new Date(a.created_at).toISOString()}</time></div>) : <Empty>{["coordinator"].includes(user.role) ? "No recorded actions yet." : "Audit viewing requires the coordinator role."}</Empty>}</Panel></>;
 }
