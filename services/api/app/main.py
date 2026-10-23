@@ -1,9 +1,13 @@
 import hashlib
 import io
 import os
+from contextlib import asynccontextmanager
 from datetime import datetime
+from pathlib import Path
 from typing import Annotated
 
+from alembic import command
+from alembic.config import Config
 from fastapi import (
     Depends,
     FastAPI,
@@ -89,8 +93,46 @@ from .security import check_password, create_session, current_user, require
 from .surveillance import effective_status, engineering_referral, ingest, summaries
 from .egg_routes import router as egg_router
 from .live_routes import router as live_router
+from .seed import seed as seed_demo
 
-app = FastAPI(title="AedesLoop 360", version="0.1.0")
+
+def _origin_allowed(origin: str | None) -> bool:
+    if not origin:
+        return True
+    allowed = {
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        os.environ.get("AEDES_WEB_ORIGIN") or "",
+    }
+    for extra in (os.environ.get("AEDES_WEB_ORIGINS") or "").split(","):
+        if extra.strip():
+            allowed.add(extra.strip())
+    if origin in allowed:
+        return True
+    # Preview deployments share *.vercel.app; enable explicitly for the hosted demo.
+    if os.environ.get("AEDES_ALLOW_VERCEL_APP_ORIGINS", "0") == "1":
+        return origin.startswith("https://") and origin.endswith(".vercel.app")
+    return False
+
+
+def _migrate_and_seed() -> None:
+    """Idempotent bootstrap for serverless /tmp SQLite or a configured Postgres URL."""
+    if os.environ.get("AEDES_AUTO_MIGRATE", "1") != "1":
+        return
+    # migrations/env.py uses app.db.engine, which already respects AEDES_DATABASE_URL / Vercel /tmp.
+    config = Config(str(Path(__file__).resolve().parents[1] / "alembic.ini"))
+    command.upgrade(config, "head")
+    if os.environ.get("AEDES_SEED_DEMO", "1") == "1":
+        seed_demo()
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    _migrate_and_seed()
+    yield
+
+
+app = FastAPI(title="AedesLoop 360", version="0.1.0", lifespan=lifespan)
 app.include_router(egg_router)
 app.include_router(live_router)
 DB = Annotated[Session, Depends(session)]
@@ -102,16 +144,7 @@ P = "/api/v1"
 @app.middleware("http")
 async def origin_gate(request: Request, call_next):
     origin = request.headers.get("origin")
-    if (
-        request.method not in {"GET", "HEAD", "OPTIONS"}
-        and origin
-        and origin
-        not in {
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            os.environ.get("AEDES_WEB_ORIGIN"),
-        }
-    ):
+    if request.method not in {"GET", "HEAD", "OPTIONS"} and not _origin_allowed(origin):
         return JSONResponse(
             {"code": "ORIGIN_DENIED", "message": "Origin not allowed"}, status_code=403
         )

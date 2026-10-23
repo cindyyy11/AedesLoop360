@@ -38,3 +38,6 @@ Thumbs.db
 
 # Packaged model checkpoints (see scripts/package_models.py)
 deploy/models/
+
+# Copied into the API root by services/api/vercel_build.py for Vercel deploys
+services/api/fixtures/
