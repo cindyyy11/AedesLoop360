@@ -1,14 +1,13 @@
 import { test, expect, type Page } from "@playwright/test";
 
-/* Needs a Chromium-compatible browser with a fake camera. Set AEDES_FAKE_CAMERA_MJPEG to a file of concatenated JPEG frames
+/* Needs a Chromium-compatible browser. The camera test uses a fake camera: set AEDES_FAKE_CAMERA_MJPEG to a file of concatenated JPEG frames
    (for example a drone tile repeated) and run against an API that has AEDES_DRONE_MODEL_PATH set. */
 const fake = process.env.AEDES_FAKE_CAMERA_MJPEG;
-test.skip(!fake, "AEDES_FAKE_CAMERA_MJPEG is not set");
 test.use({
   permissions: ["camera"],
   launchOptions: {
     executablePath: process.env.AEDES_BROWSER_EXECUTABLE,
-    args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream", `--use-file-for-fake-video-capture=${fake}`],
+    args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream", ...(fake ? [`--use-file-for-fake-video-capture=${fake}`] : [])],
   },
 });
 
@@ -23,6 +22,7 @@ async function enter(page: Page) {
 const findingCount = async (page: Page) => (await (await page.request.get("/api/v1/findings")).json()).data.length;
 
 test("live camera frames show UNCERTAIN candidates and store nothing until saved", async ({ page }) => {
+  test.skip(!fake, "AEDES_FAKE_CAMERA_MJPEG is not set");
   await page.goto("/missions");
   await enter(page);
   await page.getByRole("link", { name: /Drone missions/i }).click();
@@ -48,6 +48,27 @@ test("live camera frames show UNCERTAIN candidates and store nothing until saved
   await panel.getByRole("button", { name: "Save frame for ground review" }).click();
   await expect(panel.getByText(/^Saved .*YOLO_LOCAL_V1:DETECTED/)).toBeVisible({ timeout: 20000 });
   expect(await findingCount(page)).toBeGreaterThan(before);
+
+  await panel.getByRole("button", { name: "Stop" }).click();
+  await expect(panel.getByText("No feed running.")).toBeVisible();
+});
+
+// The video-file source: a clip of the drone tile slowly panning, played from disk instead of the camera.
+const clip = process.env.AEDES_TEST_VIDEO;
+test("a video file is analysed like a camera and tracked across frames", async ({ page }) => {
+  test.skip(!clip, "AEDES_TEST_VIDEO is not set");
+  await page.goto("/missions");
+  await enter(page);
+  await page.getByRole("link", { name: /Drone missions/i }).click();
+  const panel = page.locator("section[aria-labelledby='live-title']");
+  const before = await findingCount(page);
+
+  await panel.locator('input[type="file"]').setInputFiles(clip!);
+  await expect(panel.getByRole("status").filter({ hasText: /\d+ candidate\(s\) in view · \d+ distinct track\(s\) this session · \d+ ms model time/ })).toBeVisible({ timeout: 55000 });
+  await expect(panel.getByRole("status").filter({ hasText: /^[1-9]\d* candidate/ })).toBeVisible({ timeout: 15000 });
+  // A slowly panning scene keeps one identity instead of splitting into a new track per frame.
+  await expect(panel.getByRole("status").filter({ hasText: /1 distinct track\(s\) this session/ })).toBeVisible();
+  expect(await findingCount(page)).toBe(before);
 
   await panel.getByRole("button", { name: "Stop" }).click();
   await expect(panel.getByText("No feed running.")).toBeVisible();
