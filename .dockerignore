@@ -8,4 +8,5 @@ data
 .venv
 **/__pycache__
 **/test-results
-deploy/models
+# Keep packaged checkpoints for Railway (scripts/package_models.py -> deploy/models).
+# Do not ignore deploy/models when building deploy/Dockerfile.railway.

@@ -1,5 +1,7 @@
 # Test Plan, Acceptance Criteria, Quality Gates
 
+Public-data candidate audit (23 October 2026): `python scripts/audit_egg_external_candidate.py --metadata data/tests/aeeggcounter-metadata.json` reproduces the Harvard Dataverse candidate rejection with zero explicit negative pairs and no inference. Repository metadata/README access succeeded; visual inspection found detector overlays in a purported original. The attempted download/evaluation was deliberately stopped before scoring. This is a source-quality audit, not a passing model evaluation. Source evidence and missing inputs are in `docs/EGG_FIELD_VALIDATION.md`.
+
 ## 1. Test layers
 
 - **Unit:** Pydantic/domain validation, scoring, mission/work-order state transitions, sample uniqueness, recurrence, permission predicates.

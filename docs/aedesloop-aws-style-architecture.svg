@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1350" viewBox="0 0 2400 1350" role="img" aria-labelledby="title desc">
+  <title id="title">AedesLoop 360 AWS-style system architecture</title>
+  <desc id="desc">Left-to-right reference architecture for drone inspection, smart ovitrap surveillance, adaptive planning and safe human-approved operations.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#253746"/></marker>
+    <marker id="arrowTeal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#0d9f9a"/></marker>
+    <style>
+      .title{font:700 38px Arial,sans-serif;fill:#173042}.subtitle{font:400 20px Arial,sans-serif;fill:#607382}.label{font:700 20px Arial,sans-serif;fill:#173042}.body{font:400 17px Arial,sans-serif;fill:#4f6673}.tiny{font:600 14px Arial,sans-serif;fill:#546c78}.section{font:700 18px Arial,sans-serif;fill:#173042;letter-spacing:1px}.box{fill:#fff;stroke:#93a7b1;stroke-width:2}.service{fill:#fff;stroke:#b8c6cc;stroke-width:2}.serviceTitle{font:700 18px Arial,sans-serif;fill:#173042}.line{stroke:#253746;stroke-width:3;fill:none;marker-end:url(#arrow)}.tealLine{stroke:#0d9f9a;stroke-width:4;fill:none;marker-end:url(#arrowTeal)}
+    </style>
+  </defs>
+  <rect width="2400" height="1350" fill="#f7f9fa"/>
+  <image href="../apps/web/public/brand/aedesloop-emblem-transparent.png" x="75" y="52" width="74" height="74"/>
+  <text x="175" y="88" class="title">AedesLoop 360 System Architecture</text>
+  <text x="175" y="122" class="subtitle">Evidence-aware vector control: inspect → interpret → approve → act safely → verify → learn</text>
+  <text x="2315" y="86" text-anchor="end" class="tiny">HACKATHON REFERENCE ARCHITECTURE</text>
+  <text x="2315" y="112" text-anchor="end" class="tiny">All locations and observations are fictional or simulated</text>
+
+  <!-- external sources -->
+  <rect x="55" y="190" width="300" height="1000" rx="10" fill="#fff" stroke="#687f8b" stroke-width="3"/>
+  <text x="90" y="235" class="section">FIELD &amp; USERS</text>
+  <text x="90" y="266" class="body">Authorised inputs and approvals</text>
+  <g transform="translate(90 330)"><rect width="230" height="125" rx="10" fill="#e9f7f6" stroke="#0d9f9a" stroke-width="2"/><circle cx="50" cy="55" r="27" fill="#0d9f9a"/><path d="M38 55h24M50 43v24" stroke="#fff" stroke-width="4"/><text x="95" y="48" class="serviceTitle">Drone imagery</text><text x="95" y="76" class="tiny">Aerial candidates</text><text x="95" y="98" class="tiny">SIMULATED / IMPORTED</text></g>
+  <g transform="translate(90 510)"><rect width="230" height="125" rx="10" fill="#e9f7f6" stroke="#0d9f9a" stroke-width="2"/><circle cx="50" cy="55" r="27" fill="#0d9f9a"/><path d="M37 65h26M42 51h16M47 41h6" stroke="#fff" stroke-width="4"/><text x="95" y="48" class="serviceTitle">Smart ovitraps</text><text x="95" y="76" class="tiny">Egg interval data</text><text x="95" y="98" class="tiny">OBSERVED / SIMULATED</text></g>
+  <g transform="translate(90 690)"><rect width="230" height="125" rx="10" fill="#fff5dd" stroke="#e5a92f" stroke-width="2"/><circle cx="50" cy="55" r="27" fill="#e5a92f"/><path d="M37 55h26M50 42v26" stroke="#fff" stroke-width="4"/><text x="95" y="48" class="serviceTitle">Field teams</text><text x="95" y="76" class="tiny">Evidence + source removal</text><text x="95" y="98" class="tiny">Human decisions</text></g>
+  <g transform="translate(90 870)"><rect width="230" height="125" rx="10" fill="#fff5dd" stroke="#e5a92f" stroke-width="2"/><circle cx="50" cy="55" r="27" fill="#e5a92f"/><path d="M40 43h20v24H40zM44 39h12" fill="none" stroke="#fff" stroke-width="3"/><text x="95" y="48" class="serviceTitle">Coordinator</text><text x="95" y="76" class="tiny">Approve / assign / review</text><text x="95" y="98" class="tiny">RBAC protected</text></g>
+  <g transform="translate(90 1050)"><rect width="230" height="92" rx="10" fill="#fcebea" stroke="#d86b63" stroke-width="2"/><text x="18" y="30" class="serviceTitle">Safety boundary</text><text x="18" y="58" class="tiny">No chemical dosing</text><text x="18" y="79" class="tiny">No autonomous flight</text></g>
+
+  <!-- main application boundary -->
+  <rect x="405" y="180" width="1490" height="1010" rx="14" fill="#fff" stroke="#1f6c83" stroke-width="4"/>
+  <rect x="405" y="180" width="1490" height="70" rx="12" fill="#e8f2f5"/>
+  <image href="../apps/web/public/brand/aedesloop-emblem-transparent.png" x="435" y="197" width="38" height="38"/>
+  <text x="490" y="225" class="label">AEDESLOOP 360 APPLICATION BOUNDARY</text>
+  <text x="1860" y="224" text-anchor="end" class="tiny">Tenant-scoped • auditable • fail-closed</text>
+
+  <!-- layer boxes -->
+  <rect x="455" y="285" width="1390" height="205" rx="10" fill="#eef9f8" stroke="#9bcfca" stroke-width="2"/>
+  <text x="490" y="325" class="section">1. INGESTION &amp; EVIDENCE</text>
+  <text x="490" y="353" class="body">Every observation keeps source, interval, quality, mode and canonical IDs</text>
+  <g transform="translate(490 380)"><rect width="235" height="80" rx="8" class="service"/><text x="18" y="32" class="serviceTitle">Media intake</text><text x="18" y="58" class="tiny">Images + metadata</text></g>
+  <g transform="translate(765 380)"><rect width="235" height="80" rx="8" class="service"/><text x="18" y="32" class="serviceTitle">CV / egg analysis</text><text x="18" y="58" class="tiny">Candidate + count proposal</text></g>
+  <g transform="translate(1040 380)"><rect width="235" height="80" rx="8" class="service"/><text x="18" y="32" class="serviceTitle">Validation</text><text x="18" y="58" class="tiny">Quality + review state</text></g>
+  <g transform="translate(1315 380)"><rect width="235" height="80" rx="8" class="service"/><text x="18" y="32" class="serviceTitle">Canonical IDs</text><text x="18" y="58" class="tiny">Block / asset / trap</text></g>
+  <g transform="translate(1590 380)"><rect width="210" height="80" rx="8" class="service"/><text x="18" y="32" class="serviceTitle">Idempotency</text><text x="18" y="58" class="tiny">No double counting</text></g>
+
+  <rect x="455" y="520" width="1390" height="235" rx="10" fill="#f5f2fb" stroke="#c8b9e4" stroke-width="2"/>
+  <text x="490" y="560" class="section">2. INTELLIGENCE &amp; COORDINATION</text>
+  <text x="490" y="588" class="body">Deterministic rules surface priorities; humans approve consequential actions</text>
+  <g transform="translate(490 615)"><rect width="275" height="100" rx="8" class="service"/><text x="18" y="34" class="serviceTitle">Adaptive planner</text><text x="18" y="62" class="tiny">Coverage • capacity</text><text x="18" y="83" class="tiny">Evidence-weighted reasons</text></g>
+  <g transform="translate(805 615)"><rect width="275" height="100" rx="8" class="service"/><text x="18" y="34" class="serviceTitle">Mission manager</text><text x="18" y="62" class="tiny">Draft → reviewed → approved</text><text x="18" y="83" class="tiny">Simulated execution only</text></g>
+  <g transform="translate(1120 615)"><rect width="275" height="100" rx="8" class="service"/><text x="18" y="34" class="serviceTitle">Human approval</text><text x="18" y="62" class="tiny">Coordinator + operator</text><text x="18" y="83" class="tiny">RBAC + expiry + audit</text></g>
+  <g transform="translate(1435 615)"><rect width="365" height="100" rx="8" fill="#fff5dd" stroke="#e5a92f" stroke-width="2"/><text x="18" y="34" class="serviceTitle">Safety interlock</text><text x="18" y="62" class="tiny">Mock actuator DISARMED by default</text><text x="18" y="83" class="tiny">Water-only • emergency stop</text></g>
+
+  <rect x="455" y="785" width="1390" height="205" rx="10" fill="#eef3f5" stroke="#b9c7cd" stroke-width="2"/>
+  <text x="490" y="825" class="section">3. OPERATIONS &amp; VERIFICATION</text>
+  <g transform="translate(490 850)"><rect width="275" height="100" rx="8" class="service"/><text x="18" y="34" class="serviceTitle">Safe mock mission</text><text x="18" y="62" class="tiny">Targeted clear-water action</text><text x="18" y="83" class="tiny">Event log + skipped reasons</text></g>
+  <g transform="translate(805 850)"><rect width="275" height="100" rx="8" class="service"/><text x="18" y="34" class="serviceTitle">Work orders</text><text x="18" y="62" class="tiny">Inspect • remove • repair</text><text x="18" y="83" class="tiny">Assign → start → complete</text></g>
+  <g transform="translate(1120 850)"><rect width="275" height="100" rx="8" class="service"/><text x="18" y="34" class="serviceTitle">Follow-up verify</text><text x="18" y="62" class="tiny">Separate from action recorded</text><text x="18" y="83" class="tiny">Recurrence escalation</text></g>
+  <g transform="translate(1435 850)"><rect width="365" height="100" rx="8" class="service"/><text x="18" y="34" class="serviceTitle">Command dashboard</text><text x="18" y="62" class="tiny">Map • trends • inbox • planning</text><text x="18" y="83" class="tiny">Loading / offline / quality states</text></g>
+
+  <!-- data layer -->
+  <rect x="455" y="1020" width="1390" height="125" rx="10" fill="#edf7fd" stroke="#9ac8df" stroke-width="2"/>
+  <text x="490" y="1060" class="section">4. DATA &amp; GOVERNANCE</text>
+  <g transform="translate(490 1080)"><rect width="260" height="48" rx="7" fill="#fff" stroke="#b8c6cc"/><text x="18" y="31" class="tiny">PostgreSQL + migrations</text></g>
+  <g transform="translate(790 1080)"><rect width="260" height="48" rx="7" fill="#fff" stroke="#b8c6cc"/><text x="18" y="31" class="tiny">Append-only audit events</text></g>
+  <g transform="translate(1090 1080)"><rect width="260" height="48" rx="7" fill="#fff" stroke="#b8c6cc"/><text x="18" y="31" class="tiny">Tenant + RBAC checks</text></g>
+  <g transform="translate(1390 1080)"><rect width="260" height="48" rx="7" fill="#fff" stroke="#b8c6cc"/><text x="18" y="31" class="tiny">Deterministic replay</text></g>
+
+  <!-- right side outputs -->
+  <rect x="1950" y="180" width="390" height="1010" rx="10" fill="#fff" stroke="#687f8b" stroke-width="3"/>
+  <text x="1985" y="235" class="section">OUTPUTS &amp; CONTROLS</text>
+  <text x="1985" y="266" class="body">What the platform makes visible</text>
+  <g transform="translate(1985 330)"><rect width="320" height="110" rx="10" fill="#e9f7f6" stroke="#0d9f9a" stroke-width="2"/><text x="20" y="37" class="serviceTitle">Operational view</text><text x="20" y="65" class="tiny">Block priorities + task queue</text><text x="20" y="87" class="tiny">Evidence and uncertainty shown</text></g>
+  <g transform="translate(1985 490)"><rect width="320" height="110" rx="10" fill="#e9f7f6" stroke="#0d9f9a" stroke-width="2"/><text x="20" y="37" class="serviceTitle">Monitoring view</text><text x="20" y="65" class="tiny">Valid intervals + trap health</text><text x="20" y="87" class="tiny">DATA_UNAVAILABLE ≠ LOW_RISK</text></g>
+  <g transform="translate(1985 650)"><rect width="320" height="110" rx="10" fill="#fff5dd" stroke="#e5a92f" stroke-width="2"/><text x="20" y="37" class="serviceTitle">Audit &amp; review</text><text x="20" y="65" class="tiny">Who approved what and when</text><text x="20" y="87" class="tiny">Model/source provenance</text></g>
+  <g transform="translate(1985 810)"><rect width="320" height="150" rx="10" fill="#fcebea" stroke="#d86b63" stroke-width="2"/><text x="20" y="37" class="serviceTitle">Explicit boundaries</text><text x="20" y="68" class="tiny">Eggs ≠ adults</text><text x="20" y="90" class="tiny">Eggs ≠ confirmed Aedes</text><text x="20" y="112" class="tiny">Action ≠ biological effect</text></g>
+  <g transform="translate(1985 1010)"><rect width="320" height="95" rx="10" fill="#fff" stroke="#b8c6cc"/><text x="20" y="35" class="serviceTitle">Modes</text><text x="20" y="65" class="tiny">SIMULATED • OBSERVED • IMPORTED</text></g>
+
+  <!-- arrows -->
+  <path d="M325 392H485" class="tealLine"/><path d="M325 572H485" class="tealLine"/><path d="M325 752H485" class="line"/><path d="M325 932H485" class="line"/>
+  <path d="M1845 665H1980" class="tealLine"/><path d="M1845 900H1980" class="line"/>
+  <path d="M750 420H765M1000 420H1040M1275 420H1315M1550 420H1590" class="line"/>
+  <path d="M765 665H805M1080 665H1120M1395 665H1435" class="line"/>
+  <path d="M765 900H805M1080 900H1120M1395 900H1435" class="line"/>
+  <path d="M1620 1010C1700 1000 1780 980 1780 940V720" class="tealLine"/>
+  <text x="1635" y="970" class="tiny">feedback loop</text>
+</svg>
