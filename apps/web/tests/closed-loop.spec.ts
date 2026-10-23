@@ -41,8 +41,8 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await expect(page.getByText("MISSION_COMPLETED",{exact:true})).toBeVisible({timeout:20000});
   await expect(page.getByText("SKIPPED",{exact:true})).toBeVisible();
   await expect(page.getByText("MOCK_ACTION_RECORDED",{exact:true})).toBeVisible();
-  const groundReview=page.getByText("GROUND_REVIEW",{exact:true});
-  await expect(groundReview).toHaveCount(2);
+  // Scope to the timeline: live-detection runs can add extra GROUND_REVIEW candidates to the findings list.
+  const groundReview=page.locator(".timeline-event").getByText("GROUND_REVIEW",{exact:true});
   await expect(groundReview.first()).toBeVisible();
   await login(page,"coordinator");
   await page.getByLabel("PNG / JPEG · maximum 5 MB").setInputFiles("../../fixtures/images/aerial-001.png");
@@ -80,14 +80,20 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await expect(page.getByText("NEEDS_REVIEW",{exact:true})).toBeVisible();
   await login(page,"reviewer");
   await page.getByRole("button",{name:"Confirm evidence"}).click();
+  // The work queue defaults to the board; the list view carries the headings and status badges asserted below.
+  const listView=page.getByRole("button",{name:"List",exact:true});
+  await listView.click();
   await expect(page.getByRole("heading",{name:"ENGINEERING REVIEW",exact:true})).toBeVisible();
   await login(page,"coordinator");
+  await listView.click();
   await page.locator("article").filter({hasText:"ENGINEERING REVIEW"}).getByRole("button",{name:"Assign inspector"}).click();
   await login(page,"inspector");
+  await listView.click();
   await page.getByRole("button",{name:"Start work"}).click();
   await page.getByRole("button",{name:"Record action complete"}).click();
   await expect(page.getByText("ACTION COMPLETED PENDING VERIFICATION",{exact:true})).toBeVisible();
   await login(page,"reviewer");
+  await listView.click();
   await page.getByRole("button",{name:"Verify resolved"}).click();
   await expect(page.getByText("VERIFIED RESOLVED",{exact:true})).toBeVisible();
   await page.goto("/dashboard");

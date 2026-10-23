@@ -79,51 +79,79 @@ export function Overview({ version, mapOnly, user, busy }: Shared & { mapOnly: b
       {mapOnly && <Township3D version={version} />}
       {!mapOnly && (
         <>
-          <aside className="overview-lede" aria-label="How to read this page">
-            <p>
-              <strong>This is a local demonstration overview.</strong> Numbers come from your SQLite
-              database — seeded from the fictional <code>four_block_scenario.json</code> fixture, then
-              updated when you run the loop (imports, reviews, missions). They are not live trap
-              telemetry, not a public dataset feed, and not dengue risk.
-            </p>
+          <details className="overview-lede">
+            <summary>How to read this page</summary>
             <ul>
-              <li>Egg counts ≠ adult mosquitoes ≠ confirmed Aedes ≠ human disease risk.</li>
-              <li>
-                <code>DATA_UNAVAILABLE</code> means missing observations — never treat it as low risk.
-              </li>
-              <li>Candidate containers from imagery still need ground review before action.</li>
+              <li>Numbers come from the local demo database, not live traps.</li>
+              <li>Egg counts are not adult mosquitoes or disease risk.</li>
+              <li><code>DATA_UNAVAILABLE</code> means no data, never low risk.</li>
+              <li>Drone-spotted containers need a ground check before any action.</li>
             </ul>
-          </aside>
+          </details>
+
+          <nav className="start-here" aria-label="Start here">
+            <h2>Start here</h2>
+            <ol>
+              <li className={unavailableBlocks.length ? "attention" : undefined}>
+                <Link href="/ovitraps">
+                  <b>1</b>
+                  <strong>Check the traps</strong>
+                  <span>{unavailableBlocks.length ? `${unavailableBlocks.length} block${unavailableBlocks.length === 1 ? "" : "s"} not reporting` : "All blocks reporting"}</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/drone/missions">
+                  <b>2</b>
+                  <strong>Review the drone flight</strong>
+                  <span>Approve, fly, replay</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/planning">
+                  <b>3</b>
+                  <strong>Plan the next round</strong>
+                  <span>Send people where it matters</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/operations">
+                  <b>4</b>
+                  <strong>Track the jobs</strong>
+                  <span>{unresolved} site{unresolved === 1 ? "" : "s"} still open</span>
+                </Link>
+              </li>
+            </ol>
+          </nav>
 
           <section className="overview-strip" aria-label="Monitoring summary">
             <div>
               <strong>{blocks.length}</strong>
-              <span>Registered blocks</span>
+              <span>Blocks</span>
             </div>
             <div>
               <strong>
                 {valid}
                 <em> / {expected}</em>
               </strong>
-              <span>Valid trap intervals · persisted</span>
+              <span>Trap readings received</span>
             </div>
             <div>
               <strong>{unresolved}</strong>
-              <span>Unresolved verified sources</span>
+              <span>Sites still open</span>
             </div>
             <div className={unavailableBlocks.length ? "amber" : undefined}>
               <strong>{unavailableBlocks.length}</strong>
-              <span>Blocks with unavailable data</span>
+              <span>Blocks with no data</span>
             </div>
           </section>
 
           <Chapter
             index="01"
-            title="What we observed"
-            blurb="Schematic map and interval coverage from persisted block records. Pins are fictional assets — coordinates have no real-world accuracy."
+            title="Where things stand"
+            blurb="Tap a pin to see a site."
           >
             <div className="overview-layout">
-              <Panel title="Township at a glance" aside={<Badge>Fictional schematic</Badge>}>
+              <Panel title="Township at a glance" aside={<Badge>Fictional map</Badge>}>
                 <div className="map">
                   <div className="map-road road-v" />
                   <div className="map-road road-h" />
@@ -152,52 +180,46 @@ export function Overview({ version, mapOnly, user, busy }: Shared & { mapOnly: b
                   ))}
                   <div className="map-key">
                     <span className="pin-key" />
-                    Registered asset · select to inspect
+                    Site · tap to open
                   </div>
                 </div>
                 {current ? (
                   <div className="selected-asset">
                     <strong>{current.name}</strong>
                     <p>
-                      {current.id} · {current.accessible ? "Ground accessible" : "Elevated"} · SIMULATED
+                      {current.accessible ? "Reachable on foot" : "Elevated"}
                     </p>
-                    <Link href={`/assets/${current.id}`}>Open asset evidence →</Link>
+                    <Link href={`/assets/${current.id}`}>Open site history →</Link>
                   </div>
                 ) : (
-                  <p className="muted">Select an asset marker to inspect its evidence and history.</p>
+                  <p className="muted">Tap a pin on the map.</p>
                 )}
               </Panel>
 
-              <Panel title="Suggested next steps" aside={<Badge>Demo path</Badge>}>
+              <Panel title="What to do next">
                 {unavailableBlocks.length > 0 ? (
                   <div className="decision">
-                    <Badge>Equipment workflow</Badge>
-                    <h3>Restore {unavailableBlocks.map((b) => b.name).join(", ")} visibility.</h3>
-                    <p>
-                      Offline or missing trap intervals are labelled DATA_UNAVAILABLE. Service those
-                      traps and keep baseline ground coverage — do not treat the blank as a low reading.
-                    </p>
+                    <Badge>Fix first</Badge>
+                    <h3>{unavailableBlocks.map((b) => b.name).join(", ")}: traps are not reporting.</h3>
+                    <p>No data is not good news. Service the traps.</p>
                     <Link className="button secondary" href="/planning">
                       Review allocation
                     </Link>
                   </div>
                 ) : (
                   <div className="decision">
-                    <Badge>Coverage intact</Badge>
-                    <h3>All registered blocks report valid intervals.</h3>
-                    <p>Continue planning from the latest persisted samples.</p>
+                    <Badge>All good</Badge>
+                    <h3>Every block is reporting.</h3>
+                    <p>Plan the next round.</p>
                     <Link className="button secondary" href="/planning">
                       Open planning
                     </Link>
                   </div>
                 )}
                 <div className="decision">
-                  <Badge>Human in the loop</Badge>
-                  <h3>Three candidates. Three outcomes.</h3>
-                  <p>
-                    Dry → skip. Occluded → ground review. Eligible fictional target → approved
-                    simulation. No real flight or chemical control.
-                  </p>
+                  <Badge>Drone</Badge>
+                  <h3>Review the drone mission.</h3>
+                  <p>Dry: skip. Hidden: send someone to look. Eligible: approve.</p>
                   <Link className="button secondary" href="/drone/missions">
                     Review drone mission
                   </Link>
@@ -207,7 +229,7 @@ export function Overview({ version, mapOnly, user, busy }: Shared & { mapOnly: b
 
             <Panel
               title="Surveillance by block"
-              aside={<span className="muted">Valid intervals only · source metadata from API</span>}
+              
             >
               <div className="table-wrap">
                 <table>
@@ -249,10 +271,10 @@ export function Overview({ version, mapOnly, user, busy }: Shared & { mapOnly: b
 
           <Chapter
             index="02"
-            title="Trap interval trends"
-            blurb="Eggs per valid trap interval by collection window. Empty or unavailable bars mean missing effort — not zero mosquitoes."
+            title="Egg trends"
+            blurb="Missing bars mean no data, not zero eggs."
           >
-            <Panel title="Block surveillance quality & trend" aside={<Badge>Persisted sample intervals</Badge>}>
+            <Panel title="Eggs per trap, by week">
               <div className="analytics-grid">
                 {surveillance.map((block) => (
                   <article className="analytics-block" key={block.block_id}>
@@ -261,8 +283,7 @@ export function Overview({ version, mapOnly, user, busy }: Shared & { mapOnly: b
                       <Badge>{block.status.replaceAll("_", " ")}</Badge>
                     </div>
                     <p>
-                      {block.valid_trap_intervals} valid / {block.expected_trap_intervals} expected
-                      intervals ·{" "}
+                      {block.valid_trap_intervals} of {block.expected_trap_intervals} readings ·{" "}
                       {block.completeness == null
                         ? "coverage unavailable"
                         : `${Math.round(block.completeness * 100)}% coverage`}
@@ -307,11 +328,14 @@ export function Overview({ version, mapOnly, user, busy }: Shared & { mapOnly: b
                           : "No interval history in the selected window."}
                       </Empty>
                     )}
-                    <small className="muted">
-                      Observed: {block.series.at(-1)?.latest_collected_at ?? "none"} · Uploaded:{" "}
-                      {block.series.at(-1)?.latest_uploaded_at ?? "none"} · Source:{" "}
-                      {block.source_modes.join(", ") || "none"}
-                    </small>
+                    <details className="fold">
+                      <summary>Source details</summary>
+                      <small className="muted">
+                        Observed: {block.series.at(-1)?.latest_collected_at ?? "none"} · Uploaded:{" "}
+                        {block.series.at(-1)?.latest_uploaded_at ?? "none"} · Source:{" "}
+                        {block.source_modes.join(", ") || "none"}
+                      </small>
+                    </details>
                     {block.comparability_warning && (
                       <p className="warning-text">{block.comparability_warning}</p>
                     )}
@@ -323,9 +347,10 @@ export function Overview({ version, mapOnly, user, busy }: Shared & { mapOnly: b
 
           <Chapter
             index="03"
-            title="Model & planning evidence"
-            blurb="Secondary panels. Empty states are intentional — this demo does not invent model scores or field impact."
+            title="Advanced: model checks"
+            blurb="For analysts. Most people can skip this."
             secondary
+            collapsible
           >
             <Panel
               title="Drone detection & ovitrap count evaluation"
@@ -387,19 +412,13 @@ export function Overview({ version, mapOnly, user, busy }: Shared & { mapOnly: b
                   </article>
                 ))}
               </div>
-              <p className="muted">
-                Candidate-container detections do not verify water, larvae, Aedes species or treatment
-                eligibility. Egg count is not adult abundance or dengue risk.
-              </p>
+              <p className="muted">Detections are candidates only. They do not confirm water, larvae or species.</p>
             </Panel>
 
-            <Panel title="Adaptive vs uniform / static allocation" aside={<Badge>SIMULATED EXPERIMENT</Badge>}>
+            <Panel title="Adaptive vs fixed allocation" aside={<Badge>Simulated</Badge>}>
               {strategies.length ? (
                 <>
-                  <p className="muted">
-                    Same scripted four-block truth and resource constraints for all strategies. Results
-                    measure task coverage, not field or biological impact.
-                  </p>
+                  <p className="muted">Same scenario for every strategy. Measures task coverage only.</p>
                   <div className="table-wrap">
                     <table>
                       <thead>
@@ -478,13 +497,24 @@ function Chapter({
   blurb,
   children,
   secondary = false,
+  collapsible = false,
 }: {
   index: string;
   title: string;
   blurb: string;
   children: React.ReactNode;
   secondary?: boolean;
+  collapsible?: boolean;
 }) {
+  if (collapsible)
+    return (
+      <details className="overview-chapter is-secondary chapter-fold">
+        <summary>
+          {title} <small>{blurb}</small>
+        </summary>
+        {children}
+      </details>
+    );
   return (
     <section className={`overview-chapter${secondary ? " is-secondary" : ""}`} aria-labelledby={`chapter-${index}`}>
       <header className="chapter-head">

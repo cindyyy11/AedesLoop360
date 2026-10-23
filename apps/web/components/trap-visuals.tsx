@@ -20,16 +20,7 @@ export const ago = (now: number, iso: string) => {
 const short = (iso: string) => iso.slice(5, 10);
 
 export function FlowStrip() {
-  const steps = [
-    ["Photo", "Take a picture of the egg paddle from the trap"],
-    ["Model counts", "The model proposes how many eggs it sees"],
-    ["Reviewer confirms", "A person checks and accepts or corrects the count"],
-    ["Trap history", "It becomes one dated interval on the trap chart"],
-  ];
-  return <div className="flow" role="group" aria-label="What this page does">
-    <p className="flow-lede"><strong>What this does:</strong> turns a photo of an ovitrap paddle into a checked egg count for one trap, and tracks those counts over time. Eggs only: not adult mosquitoes, species or dengue risk.</p>
-    <ol>{steps.map(([h, p], i) => <li key={h}><b>{i + 1}</b><span><strong>{h}</strong><small>{p}</small></span></li>)}</ol>
-  </div>;
+  return <p className="flow-lede" role="note"><strong>Photo in, checked egg count out.</strong> Pick a trap, then add a count.</p>;
 }
 
 export function SummaryStrip({ traps, current, ordered, cadence, overdueDays }: { traps: Trap[]; current?: Trap; ordered: Sample[]; cadence: number; overdueDays: number | null }) {
