@@ -1,5 +1,9 @@
 # Implementation Status
 
+## Independent field data audit — 23 October 2026
+
+A fresh scan of the repository and ignored `data/` folders found only the existing drone training/test archive, public egg images, the user paddle dataset used in model work, synthetic fixtures and screenshots. No independent Malaysian field-validation collection or verified zero-egg set is present. `scripts/audit_field_validation.py` now checks a future local intake for human site-independence attestation, required labels, exact overlap with the existing image collections, valid YOLO boxes, technician counts and collection intervals. Its current output is `MISSING_DATA` with `evaluation_performed=false`; it does not claim new accuracy. The required local folder format is in [FIELD_VALIDATION.md](FIELD_VALIDATION.md).
+
 ## Production-build browser run (23 October 2026)
 
 All Playwright specs against a **production build** (`AEDES_API_ORIGIN=http://127.0.0.1:18002 AEDES_NEXT_DIST_DIR=.next-audit npm run build`, then `next start`): the build and its TypeScript step passed, and the run gave **24 passed, 1 skipped** (`township-3d-live.spec.ts`, which skips itself) in 2.6 minutes. Stack: fresh SQLite, API, worker, Edge, real drone and egg checkpoints, a fake camera for the drone and egg specs, and a VP8 clip for the video-file spec. This is the first run of the live-detection, live egg preview, tracker, video-file and refused-camera specs against a production build; the camera test took 30 s because the first frame waits on the model load. Caveat: `closed-loop.spec.ts` and `egg-upload.spec.ts` had uncommitted edits from the other workstream in the working tree during the run, so those two ran as edited, not as committed. Not covered: a real phone or webcam, and drone footage with real camera motion.

@@ -32,7 +32,9 @@
     ".next-audit/types/**/*.ts",
     ".next-audit/dev/types/**/*.ts",
     ".next-ui/types/**/*.ts",
-    ".next-ui/dev/types/**/*.ts"
+    ".next-ui/dev/types/**/*.ts",
+    ".next-egg-completion/types/**/*.ts",
+    ".next-egg-completion/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
