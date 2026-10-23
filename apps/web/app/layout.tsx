@@ -6,5 +6,9 @@ export const metadata: Metadata = {
   icons: { icon: "/brand/aedesloop-emblem-transparent.png", apple: "/brand/aedesloop-emblem-transparent.png" },
 };
 export default function Layout({ children }: Readonly<{children: React.ReactNode}>) {
-  return <html lang="en"><body>{children}</body></html>;
+  // Browser extensions (e.g. Grammarly) inject attributes such as
+  // data-gr-ext-installed onto <body> before React hydrates, which would
+  // otherwise surface as a hydration mismatch. Suppress warnings for this
+  // element's own attributes only; children are still checked normally.
+  return <html lang="en"><body suppressHydrationWarning>{children}</body></html>;
 }

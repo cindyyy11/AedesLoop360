@@ -45,11 +45,12 @@
 
 **Files:**
 - Modify: `services/api/app/main.py`
-- Modify: `services/api/tests/test_loop.py`
+- Create: `services/api/tests/test_drone_upload.py`
+- Modify: `services/api/tests/test_loop.py` (update the configured-model-missing adapter label)
 
 **Behavior:** Exact fixture hash retains existing fixture path. Other images run the configured detector; each detection is persisted as an `IMPORTED`, `UNCERTAIN` candidate with confidence, checkpoint-derived model version, and review rationale. If not configured or inference fails, preserve a whole-image ground-review finding with an honest reason. No inference result is automatically eligible for action.
 
-- [x] Add route-level test for a detected candidate and preserve the missing-model path test.
+- [x] Add upload-function/persistence test for a detected candidate and preserve the missing-model path test.
 - [x] Implement the integration while keeping current upload response and tenant/audit behavior.
 
 ### Task 4: Record setup, training, evaluation and limitations
@@ -59,9 +60,11 @@
 - Modify: `docs/DATA_RESULTS_REPORT.md`
 - Modify: `docs/DEMO_RUNBOOK.md`
 
-- [ ] Document the published CC BY 4.0 aerial dataset candidate (DOI 10.17632/vr3kkt9mvn.1), emphasizing that publisher-declared 2,821 images and split have not been locally verified.
-- [ ] Give exact optional dependency/model setup and evaluator commands, and explain that no real metrics exist until dataset, checkpoint, and held-out predictions are supplied.
-- [ ] Run targeted tests/lint; record exact outcomes. Full E2E is only claimed if run.
+- [x] Document the published CC BY 4.0 aerial dataset candidate (DOI 10.17632/vr3kkt9mvn.1), emphasizing that publisher-declared 2,821 images and split have not been locally verified.
+- [x] Give exact optional dependency/model setup and evaluator commands, and explain that no real metrics exist until dataset, checkpoint, and held-out predictions are supplied.
+- [x] Run targeted tests/lint; record exact outcomes. Full E2E is only claimed if run.
+
+**Execution note:** The detector unit tests and upload function/persistence integration test pass using a fake detector. The HTTP TestClient/browser round trip remains blocked by sandbox loopback socket initialization. External dataset metadata retrieval also failed because DNS/network is unavailable. Ultralytics 8.4.63 and PyTorch are installed; no compatible checkpoint, dataset archive, training run, held-out score or dashboard metric was available in this environment.
 
 ## Out of scope for this slice
 

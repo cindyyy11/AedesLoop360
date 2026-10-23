@@ -10,15 +10,19 @@ from . import models
 
 T = TypeVar("T")
 
+# Canonical record-mode vocabulary (AGENTS.md): every envelope must accept
+# any of these, because e.g. media upload legitimately returns IMPORTED.
+Mode = Literal["SIMULATED", "BENCH_TEST", "OBSERVED", "IMPORTED"]
+
 
 class One(BaseModel, Generic[T]):
     data: T
-    source_mode: Literal["SIMULATED"] = "SIMULATED"
+    source_mode: Mode = "SIMULATED"
 
 
 class Many(BaseModel, Generic[T]):
     data: list[T]
-    source_mode: Literal["SIMULATED"] = "SIMULATED"
+    source_mode: Mode = "SIMULATED"
 
 
 class AnalyticsMany(BaseModel, Generic[T]):

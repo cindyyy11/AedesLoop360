@@ -2200,7 +2200,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2222,7 +2227,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2244,7 +2254,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2266,7 +2281,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2288,7 +2308,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2310,7 +2335,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2332,7 +2362,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2354,7 +2389,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2376,7 +2416,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2398,7 +2443,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2420,7 +2470,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2442,7 +2497,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2464,7 +2524,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2874,7 +2939,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2892,7 +2962,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2910,7 +2985,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2928,7 +3008,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2946,7 +3031,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2964,7 +3054,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -2982,7 +3077,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -3000,7 +3100,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }
@@ -3018,7 +3123,12 @@
           },
           "source_mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
             "title": "Source Mode",
             "default": "SIMULATED"
           }

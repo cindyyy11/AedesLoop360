@@ -418,7 +418,10 @@ async def upload(
         db.flush()
         audit(db, user, finding.id, "UNCERTAIN_UPLOAD_QUEUED", {"media_id": row.id})
     db.commit()
-    return item(row)
+    return {
+        "data": record(row),
+        "source_mode": "SIMULATED" if original_finding else "IMPORTED",
+    }
 
 
 @app.get(P + "/media/{entity_id}")
