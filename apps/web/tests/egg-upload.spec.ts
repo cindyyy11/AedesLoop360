@@ -15,6 +15,8 @@ test("coordinator counts eggs from a photo, confirms it, and sees it in the trap
   const day = (d: Date) => d.toISOString().slice(0, 10);
   const start = new Date(Date.UTC(2020, 0, 1) + (Math.floor(Date.now() / 60000) % 200) * 8 * 86400000);
   const end = new Date(start.getTime() + 7 * 86400000);
+  // The first count waits on the model load; wait for the API to report it ready instead of racing the dev proxy.
+  await expect.poll(async () => (await (await page.request.get("/api/v1/health")).json()).models?.egg, { timeout: 120000 }).toBe("READY");
   await page.goto("/ovitraps");
   await enter(page);
 
