@@ -11,6 +11,7 @@ import csv
 import hashlib
 import json
 import math
+import re
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -355,17 +356,46 @@ def validate_dataset(
             "Dataset files are not configured or the configured root does not exist."
         )
         return result
-    images_dir = root_value / entry.get("images_subdir", "images")
-    labels_dir_value = entry.get("labels_subdir", "labels")
-    labels_dir = root_value / labels_dir_value if labels_dir_value else None
-    if not images_dir.is_dir():
-        result["errors"].append(f"Image directory not found: {images_dir}")
-        return result
-    images = sorted(
-        path
-        for path in images_dir.rglob("*")
-        if path.is_file() and path.suffix.lower() in IMAGE_SUFFIXES
-    )
+    split_image_dirs = entry.get("split_image_dirs")
+    split_label_dirs = entry.get("split_label_dirs")
+    image_root_by_path: dict[Path, Path] = {}
+    label_root_by_path: dict[Path, Path] = {}
+    if split_image_dirs:
+        images = []
+        if not isinstance(split_image_dirs, dict) or not isinstance(split_label_dirs, dict):
+            raise ValueError("split_image_dirs and split_label_dirs must be split-to-path objects")
+        for split_name, relative_images in split_image_dirs.items():
+            if split_name not in SPLIT_NAMES or split_name not in split_label_dirs:
+                raise ValueError(f"Unsupported or unlabeled split layout: {split_name}")
+            image_root = root_value / relative_images
+            label_root = root_value / split_label_dirs[split_name]
+            if not image_root.is_dir():
+                result["errors"].append(f"Image directory not found: {image_root}")
+                continue
+            split_images = [
+                path
+                for path in image_root.rglob("*")
+                if path.is_file() and path.suffix.lower() in IMAGE_SUFFIXES
+            ]
+            for image in split_images:
+                image_root_by_path[image] = image_root
+                label_root_by_path[image] = label_root
+            images.extend(split_images)
+        images.sort()
+        images_dir = root_value
+        labels_dir = root_value
+    else:
+        images_dir = root_value / entry.get("images_subdir", "images")
+        labels_dir_value = entry.get("labels_subdir", "labels")
+        labels_dir = root_value / labels_dir_value if labels_dir_value else None
+        if not images_dir.is_dir():
+            result["errors"].append(f"Image directory not found: {images_dir}")
+            return result
+        images = sorted(
+            path
+            for path in images_dir.rglob("*")
+            if path.is_file() and path.suffix.lower() in IMAGE_SUFFIXES
+        )
     result["files_found"] = len(images)
     if not images:
         result["errors"].append("No supported image files found.")
@@ -423,6 +453,12 @@ def validate_dataset(
         dataset_hash.update(relative.encode())
         dataset_hash.update(content_hash.encode())
         group = group_metadata.get(relative) or group_metadata.get(image.name)
+        group_pattern = entry.get("group_id_regex")
+        if not group and group_pattern:
+            match = re.match(group_pattern, image.stem)
+            group = match.group("group") if match and "group" in match.groupdict() else None
+            if not group:
+                result["errors"].append(f"Cannot derive a source group from {relative}.")
         if group_csv and not group:
             result["errors"].append(f"No group metadata for image {relative}.")
         if not group:
@@ -436,7 +472,12 @@ def validate_dataset(
         group_splits[group].add(split)
         mapping[relative] = {"group_id": group, "split": split, "sha256": content_hash}
         if labels_dir is not None:
-            label_path = labels_dir / Path(relative).with_suffix(".txt")
+            if image in label_root_by_path:
+                label_path = label_root_by_path[image] / image.relative_to(
+                    image_root_by_path[image]
+                ).with_suffix(".txt")
+            else:
+                label_path = labels_dir / Path(relative).with_suffix(".txt")
             if not label_path.is_file():
                 labels_missing.append(relative)
             else:

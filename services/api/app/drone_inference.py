@@ -103,9 +103,7 @@ def infer_candidates(
                 digest_builder.update(chunk)
         digest = digest_builder.hexdigest()[:12]
         version = f"{checkpoint.stem}@{digest}"
-        return InferenceResult(
-            "DETECTED" if detections else "NO_DETECTIONS", version, detections
-        )
+        return InferenceResult("DETECTED" if detections else "NO_DETECTIONS", version, detections)
     except ImportError:
         return InferenceResult(
             "DEPENDENCY_UNAVAILABLE",

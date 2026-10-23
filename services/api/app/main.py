@@ -71,6 +71,7 @@ from .models import (
 from .repository import audit, get, receipt, record, replay, rows
 from .schemas import (
     Decision,
+    FindingReviewInput,
     HealthResponse,
     ItemResponse,
     Login,
@@ -86,8 +87,10 @@ from .schemas import (
 )
 from .security import check_password, create_session, current_user, require
 from .surveillance import effective_status, engineering_referral, ingest, summaries
+from .egg_routes import router as egg_router
 
 app = FastAPI(title="AedesLoop 360", version="0.1.0")
+app.include_router(egg_router)
 DB = Annotated[Session, Depends(session)]
 Actor = Annotated[User, Depends(current_user)]
 Key = Annotated[str, Header(alias="Idempotency-Key", min_length=1, max_length=128)]
@@ -292,6 +295,36 @@ def findings(db: DB, user: Actor):
     }
 
 
+@app.post(P + "/findings/{entity_id}/review", response_model=One[FindingRecord])
+def review_finding(entity_id: str, body: FindingReviewInput, db: DB, user: Actor):
+    require(user, "reviewer")
+    row = get(db, Finding, entity_id, user)
+    before = {"water_state": row.water_state, "review_status": row.review_status}
+    if body.decision == "RELABEL":
+        # A relabel can change what an approved mission would do, so it may not
+        # touch a target held by a mission awaiting review, approved or running.
+        live = {"READY_FOR_REVIEW", "APPROVED", "SIMULATING"}
+        if any(m.status in live and row.id in m.target_ids for m in rows(db, Mission, user)):
+            raise HTTPException(409, "Finding is in an active mission; abort or complete it first")
+        row.water_state = body.water_state
+    row.review_status = {"CONFIRM": "CONFIRMED", "REJECT": "REJECTED", "RELABEL": "RELABELLED"}[
+        body.decision
+    ]
+    row.reviewed_by = user.id
+    row.reviewed_at = now()
+    row.review_note = body.reason
+    db.flush()
+    audit(db, user, row.id, "FINDING_REVIEWED", {**body.model_dump(), "before": before})
+    db.commit()
+    return {
+        "data": {
+            **record(row),
+            "eligibility": drone.eligibility(row, get(db, Asset, row.asset_id, user)),
+        },
+        "source_mode": "SIMULATED",
+    }
+
+
 @app.post(P + "/media", response_model=One[MediaRecord])
 async def upload(
     db: DB,
@@ -330,11 +363,7 @@ async def upload(
         else None
     )
     inference = None if original_finding else drone_inference.infer_candidates(content)
-    adapter = (
-        "DEMO_PREANNOTATED_V1"
-        if original_finding
-        else f"YOLO_LOCAL_V1:{inference.status}"
-    )
+    adapter = "DEMO_PREANNOTATED_V1" if original_finding else f"YOLO_LOCAL_V1:{inference.status}"
     row = Media(
         tenant_id=user.tenant_id,
         sha256=sha,

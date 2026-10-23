@@ -9,6 +9,30 @@
 - **Reliability:** worker down/retry, invalid images, stale devices, duplicate events, restart persistence, network disconnect.
 - **Evaluation:** held-out CV/egg image metrics, fixed vs adaptive comparisons under identical budgets.
 
+## Egg-count model-assisted review — 23 October 2026
+
+Acceptance scenario: the reviewer selects a trap, uploads a matched image with declared rights and UTC capture time, manually selects the complete substrate ROI, and receives a persisted `ESTIMATED` or explicit unavailable status. A proposal alone creates no interval. The reviewer confirms/corrects its count with a unique collection interval, sample effort, quality and rationale; only then is the imported interval visible in trends. Replaying the same idempotency key returns the existing record, while an already-used sample/image/substrate interval is rejected. Offline traps remain invalid. The API service suite checks role/tenant boundaries, no pre-confirmation sample, null failure, overrides, audit, retries, duplicate interval handling and generic endpoint bypass.
+
+Reproduce the group split and selected-model result from the ignored local data:
+
+```powershell
+python scripts/prepare_user_egg_data.py
+python scripts/train_egg_counter.py --manifest data/external/user-ovitrap-monitor/grouped-v1/manifest.json --out data/models/eggs/user-paddle-v1 --pretrained data/models/pretrained/resnet18-f37072fd.pth --neural-epochs 6
+python scripts/evaluate_egg_counter.py --manifest data/external/user-ovitrap-monitor/grouped-v1/manifest.json --comparison data/models/eggs/user-paddle-v1/validation-comparison.json --out data/models/eggs/user-paddle-v1/held-out-evaluation.json
+```
+
+The experiment selected texture ridge using validation only, then scored one held-out test set. It measured image MAE 9.56 eggs and site-direction group MAE 6.40 on 57 images from 10 groups (95% group-bootstrap interval 2.72–10.87). Treat it as exploratory: the grouping key interpretation is unverified, the public-only checkpoint was scored on all 300 user images before this split, and no zero-count samples exist. This is not evidence of species accuracy, population abundance, field effectiveness or dengue-risk prediction.
+
+Persisted workflow validation:
+
+```powershell
+$env:PYTHONPATH='services/api'
+$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'
+python -c "import platform; platform.machine=lambda:'AMD64'; import pytest; raise SystemExit(pytest.main(['services/api/tests/test_egg_analysis.py','services/api/tests/test_egg_data.py','services/api/tests/test_egg_vision.py','-q','--basetemp=.pytest_cache/egg-final','--tb=short']))"
+```
+
+On this Windows host the `platform.machine` override avoids a Python WMI crash, and `--basetemp` keeps pytest temporary files inside the workspace. The frontend passed TypeScript, scoped ESLint and production build. Migration 007 upgraded an isolated SQLite database and its five foreign keys were inspected. No dedicated Playwright egg-upload flow was run; use the reviewer steps above against the local demo stack for manual acceptance.
+
 ## 2. Core acceptance scenarios (all P0 unless noted)
 
 | ID | Scenario | Expected result |
@@ -55,6 +79,9 @@
 | AC-40 | No valid trap intervals or offline device | Analytics shows `DATA_UNAVAILABLE`, null egg rate and servicing need |
 | AC-41 | Run adaptive benchmark as coordinator | Uniform/static/adaptive share fixed truth and budget; result persists as `SIMULATED EXPERIMENT` |
 | AC-42 | Operator runs adaptive benchmark | API denies benchmark execution |
+| AC-43 | Fine-tune local pretrained drone detector | Record official source checkpoint URL/hash, keep source-image groups disjoint, and train only on grouped train images |
+| AC-44 | Evaluate candidate detector | Evaluate selected checkpoint once on grouped test images; preserve per-class metrics, dataset/checkpoint hashes, plots and limitations in a tenant-scoped dashboard record |
+| AC-45 | Upload a non-fixture image with checkpoint configured | Candidate boxes stay `IMPORTED` and `UNCERTAIN`; an empty model result queues ground review; no automatic intervention |
 
 ## 3. Quality gates
 
@@ -96,6 +123,8 @@ Report dataset name/license, unique site splits, count of test images, metric de
 
 The incremental analytics checks are runnable with `PYTHONPATH=services/api python -m pytest services/api/tests/test_analytics.py services/api/tests/test_data_evaluation.py services/api/tests/test_allocation_benchmark.py -q` from the repository root. These cover report status/provenance, unavailable intervals, benchmark persistence/idempotency, role denial, metric formulas and deterministic shared-budget scenario behavior. They do not replace `test_loop.py` or the Playwright closed-loop test.
 
+For AC-43–45, reproduce the grouped split and train/evaluate/register commands in [DEMO_RUNBOOK.md](DEMO_RUNBOOK.md). Run `PYTHONPATH=services/api python -m pytest services/api/tests/test_drone_group_split.py services/api/tests/test_drone_inference.py services/api/tests/test_drone_upload.py -q` for split and adapter checks. Inspect `data/evaluations/drone/drone-yolo-group-test-*.json` and the dashboard card for actual metrics and limitations. The browser upload round trip with the trained checkpoint still requires a separate live stack check.
+
 ## 7. 3D presentation acceptance (additive; does not replace AC-01–AC-38)
 
 - 3D-01: Township renders registered blocks/assets and supports orbit, zoom, reset and HTML evidence selection.
@@ -105,5 +134,22 @@ The incremental analytics checks are runnable with `PYTHONPATH=services/api pyth
 - 3D-05: At 390px there is no horizontal page overflow; missing WebGL keeps HTML evidence usable and disables camera controls.
 - 3D-06: Empty township and failed API reads do not fabricate records; retry is available.
 - 3D-07: Live isolated-database test creates and approves a mission as coordinator, simulates as operator, waits for the real worker, and verifies skip/review/mock events and saved plan in the scene.
+- 3D-08: Egg-count overlay (chapter 2 or toggle) draws columns from persisted `eggs_per_interval`, fainter with fewer valid intervals; `DATA_UNAVAILABLE` blocks are hatched with no column; legend states it is not adults or risk. Covered by `township-3d.spec.ts` "loop chapter, egg overlay and day/night".
+- 3D-09: Recorded replay shows the route over event assets, a hover beam and per-kind tag (SKIPPED / UNCERTAIN ground review / RECORDED not verified effective). Visual replay only; no telemetry.
+- 3D-10: Chapter 4 "Close the loop" steps Detect, Plan, Approve, Record action, Verify from stored events/plans only; Verify states follow-up is separate and shows no inferred result.
+- 3D-11: Day/night toggle, camera fly-to on selection, shadows and pulsing trap glow; `prefers-reduced-motion` and hidden tabs snap to final state with no continuous animation. Visual quality was checked only via software-rendered headless screenshots.
 
 Reproduction and limits: [3D_TOWNSHIP.md](3D_TOWNSHIP.md). Fixture and live browser checks are separate from model evaluation and biological impact.
+
+### Finding review and planning factors
+
+- `test_finding_review_roles_reject_relabel_and_active_mission_guard` (services/api/tests/test_loop.py): only the reviewer role may review (operator, coordinator and inspector get 403); RELABEL requires a water state and other decisions refuse one (422); REJECT yields `SKIP` and an audit event; RELABEL to DRY yields `SKIP`; RELABEL is refused (409) once a mission under review holds the finding, while REJECT stays allowed.
+- `test_samples_dedup_quality_and_planning_feedback` now also asserts every block priority has factors that sum to its score.
+- Run each API test file on its own with `PYTHONPATH=services/api:.`; the files set `AEDES_DATABASE_URL` at import time, so combining them in one pytest process shares one database and fails. Use `--basetemp` outside the system temp folder if Windows denies `pytest-of-<user>`.
+- Browser check (manual, Playwright with Edge against a scratch database): reviewer rejects the asset-p02 candidate and the row changes from MOCK_ACTION_ELIGIBLE to SKIP; inspector login lands on /operations. No automated Playwright spec covers these yet.
+
+### Allocation benchmark properties
+
+`test_allocation_benchmark.py` also checks that every policy spends its full budget across the 4 to 16 hour sweep, that coverage never decreases with budget, that adaptive never trails uniform in the scripted scenario, that changing the scripted truth does not change any policy's tasks, and that adaptive schedules recurrence and verified-source work before extra inspections. Run with `PYTHONPATH=services/api:.`.
+
+`test_allocation_benchmark.py` also covers the aligned planner: the benchmark's `planner_v1` row is produced by `allocation_rules.select_tasks`; the shipped planner is bounded at 12 staff hours for four blocks (a documented limit, asserted so a future change must update it); and at 4 staff hours it covers one fewer scripted issue than the other policies. Behaviour-preservation of the extraction was checked by comparing allocation results before and after for six budgets (a manual golden comparison, not an automated test).

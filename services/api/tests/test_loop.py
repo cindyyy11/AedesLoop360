@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.db import SessionLocal, now  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import Asset, Media, Mission, Sample  # noqa: E402
+from app.models import Asset, Finding, Media, Mission, Sample  # noqa: E402
 from app.seed import fixture_png, media, seed  # noqa: E402
 from app.worker import tick  # noqa: E402
 
@@ -221,6 +221,10 @@ def test_samples_dedup_quality_and_planning_feedback():
         return next(b["score"] for b in run["result"]["block_priorities"] if b["id"] == "block-1")
 
     assert score(after) != score(before)
+    for run in (before, after):
+        for block in run["result"]["block_priorities"]:
+            assert block["factors"], block["id"]
+            assert round(sum(f["points"] for f in block["factors"]), 2) == block["score"]
     assert after["result"]["budget_used"]["staff_hours"] <= 8
     assert (
         len(
@@ -451,3 +455,82 @@ def test_upload_links_exact_fixture_and_queues_uncertain_review():
     finding = next(f for f in c.get(API + "/findings").json()["data"] if f["media_id"] == row["id"])
     assert finding["water_state"] == "UNCERTAIN"
     assert finding["eligibility"] == "GROUND_REVIEW"
+
+
+def make_finding(label, water_state="VISIBLE_WATER"):
+    with SessionLocal.begin() as db:
+        aerial = db.get(Media, "media-aerial-001")
+        db.add(
+            Finding(
+                id=label,
+                tenant_id=aerial.tenant_id,
+                asset_id="asset-p02",
+                media_id=aerial.id,
+                water_state=water_state,
+                bbox=[0.1, 0.1, 0.2, 0.2],
+                reason="Review test candidate",
+            )
+        )
+    return label
+
+
+def test_finding_review_roles_reject_relabel_and_active_mission_guard():
+    fid = make_finding("finding-review-reject")
+    body = {"decision": "REJECT", "reason": "Not a water-holding container"}
+    for role in ("operator", "coordinator", "inspector"):
+        assert client(role).post(f"{API}/findings/{fid}/review", json=body).status_code == 403
+    reviewer = client("reviewer")
+    seen = next(f for f in reviewer.get(API + "/findings").json()["data"] if f["id"] == fid)
+    assert seen["review_status"] == "UNREVIEWED"
+    assert seen["eligibility"] == "MOCK_ACTION_ELIGIBLE"
+
+    # A relabel needs a water state; other decisions must not carry one.
+    assert (
+        reviewer.post(
+            f"{API}/findings/{fid}/review", json={"decision": "RELABEL", "reason": "Looks dry now"}
+        ).status_code
+        == 422
+    )
+    assert (
+        reviewer.post(
+            f"{API}/findings/{fid}/review", json={**body, "water_state": "DRY"}
+        ).status_code
+        == 422
+    )
+    done = reviewer.post(f"{API}/findings/{fid}/review", json=body)
+    assert done.status_code == 200, done.text
+    data = done.json()["data"]
+    assert data["review_status"] == "REJECTED"
+    assert data["reviewed_by"] == "user-reviewer"
+    assert data["eligibility"] == "SKIP"
+    audit_log = client("coordinator").get(API + "/audit").json()["data"]
+    assert any(e["entity_id"] == fid and e["action"] == "FINDING_REVIEWED" for e in audit_log)
+
+    relabel_id = make_finding("finding-review-relabel")
+    relabelled = reviewer.post(
+        f"{API}/findings/{relabel_id}/review",
+        json={"decision": "RELABEL", "reason": "Dry on inspection", "water_state": "DRY"},
+    )
+    assert relabelled.status_code == 200, relabelled.text
+    assert relabelled.json()["data"]["water_state"] == "DRY"
+    assert relabelled.json()["data"]["eligibility"] == "SKIP"
+
+    # Once a mission holds the target, relabelling is refused; rejecting stays allowed.
+    held = make_finding("finding-review-held")
+    coordinator = client("coordinator")
+    mission = coordinator.post(
+        API + "/drones/missions", json={"block_id": "block-1", "target_ids": [held], "mode": "SIMULATED"}
+    )
+    assert mission.status_code == 200, mission.text
+    mid = mission.json()["data"]["id"]
+    assert coordinator.post(f"{API}/drones/missions/{mid}/review").status_code == 200
+    blocked = reviewer.post(
+        f"{API}/findings/{held}/review",
+        json={"decision": "RELABEL", "reason": "Changing mind", "water_state": "OCCLUDED"},
+    )
+    assert blocked.status_code == 409
+    assert (
+        reviewer.post(f"{API}/findings/{held}/review", json={**body}).json()["data"]["eligibility"]
+        == "SKIP"
+    )
+

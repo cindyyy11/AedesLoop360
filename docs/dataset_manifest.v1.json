@@ -8,23 +8,32 @@
       "name": "Drone Imagery Dataset of Aedes Mosquito Breeding Habitats",
       "source_url": "https://data.mendeley.com/datasets/vr3kkt9mvn/1",
       "doi": "10.17632/vr3kkt9mvn.1",
-      "licence": "CC BY 4.0 (declared by project specification; verify against source record before reuse)",
-      "licence_status": "CANDIDATE_DECLARATION_UNVERIFIED",
-      "metadata_status": "CANDIDATE_DECLARATION_NOT_DOWNLOADED",
+      "licence": "Mendeley Data record: CC BY 4.0; embedded Roboflow export YAML: Private (conflicting metadata)",
+      "licence_status": "SOURCE_RECORD_CC_BY_4_0_EXPORT_METADATA_CONFLICT",
+      "metadata_status": "LOCALLY_DOWNLOADED_AND_LABELS_VERIFIED",
       "declared_metadata": {
         "image_count": 2821,
         "image_dimensions": "512x512",
-        "classes": ["water_tank", "drum", "tyre", "coconut_shell", "other_open_container"],
+        "classes": ["coconut_shell", "drum", "other_open_container", "tyre", "water_tank"],
         "published_split": {"train": 0.7, "validation": 0.15, "test": 0.15}
       },
-      "classes": ["water_tank", "drum", "tyre", "coconut_shell", "other_open_container"],
-      "configured_root": null,
-      "images_subdir": "images",
-      "labels_subdir": "labels",
+      "classes": ["coconut_shell", "drum", "other_open_container", "tyre", "water_tank"],
+      "configured_root": "../data/external/drone-aedes-yolov8-v1",
+      "split_image_dirs": {
+        "train": "train/images",
+        "validation": "valid/images",
+        "test": "test/images"
+      },
+      "split_label_dirs": {
+        "train": "train/labels",
+        "validation": "valid/labels",
+        "test": "test/labels"
+      },
+      "group_id_regex": "(?P<group>.+?)(?:_tile_.*|$)",
       "warnings": [
-        "No dataset files are configured or asserted as obtained.",
+        "Source Mendeley record declares CC BY 4.0; the export metadata says Private. Do not redistribute until this discrepancy is clarified.",
         "Candidate-container labels do not confirm standing water, larvae, Aedes species, treatment eligibility, or dengue risk.",
-        "Potential near-duplicate frames and flight/site leakage across the published split must be checked with source grouping metadata."
+        "Tiles from the same source aerial image cross the publisher's split; use the deterministic source-group split for model training and held-out evaluation."
       ]
     },
     {

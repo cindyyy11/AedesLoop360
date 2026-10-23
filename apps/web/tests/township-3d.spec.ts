@@ -75,6 +75,36 @@ test("3D evidence, recorded replay and chapters are read-only on desktop and mob
   expect(errors).toEqual([]);
 });
 
+test("loop chapter, egg overlay and day/night are read-only and honest", async ({ page }, testInfo) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  const writes = await mockApi(page);
+  await page.goto("/township");
+  const experience = page.getByRole("region", { name: "3D township walkthrough" });
+  await expect(page.getByTestId("township-canvas").locator("canvas")).toBeVisible();
+  await page.getByRole("button", { name: "Keep monitoring visible" }).click();
+  await expect(page.getByRole("button", { name: "Egg-count overlay" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Switch to day" }).click();
+  await expect(page.getByRole("button", { name: "Switch to night" })).toBeVisible();
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: testInfo.outputPath("township-heat-day.png") });
+  await page.getByRole("button", { name: "Close the loop" }).click();
+  await expect(experience).toContainText("Feedback loop · stage 1 of 5: Detect");
+  await expect(experience).toContainText("candidate containers, not confirmed larval sites");
+  await page.getByRole("button", { name: /Approve/ }).click();
+  await expect(experience).toContainText("cannot bypass the gate");
+  await page.waitForTimeout(1500);
+  await page.getByRole("button", { name: /Record action/ }).click();
+  await expect(experience).toContainText("not a biologically effective one");
+  await page.getByRole("button", { name: /Verify/ }).click();
+  await expect(experience).toContainText("separate follow-up verification");
+  await page.getByLabel("Inspect a block, asset or trap").selectOption("trap-1");
+  await page.waitForTimeout(1800);
+  await page.screenshot({ path: testInfo.outputPath("township-loop.png") });
+  expect(writes).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
 test("WebGL fallback retains evidence and reduced-motion presentation", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.addInitScript(() => {

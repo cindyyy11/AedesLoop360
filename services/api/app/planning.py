@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .allocation_rules import rank_blocks, select_tasks
 from .models import Allocation, Asset, User, WorkOrder
 from .repository import audit, digest, rows
 from .schemas import PlanInput
@@ -18,66 +19,8 @@ def allocate(db: Session, user: User, body: PlanInput) -> Allocation:
         "parameters": body.model_dump(mode="json"),
         "policy": "ADAPTIVE_RULES_V1",
     }
-    ranked = []
-    for block in blocks:
-        score = (
-            3 * block["unresolved_sources"]
-            + (block["eggs_per_interval"] or 0) / 10
-            + (4 if block["status"] == "DATA_UNAVAILABLE" else 0)
-        )
-        ranked.append(
-            {
-                **block,
-                "score": round(score, 2),
-                "reasons": [
-                    f"{block['unresolved_sources']} unresolved verified sources",
-                    f"{block['valid_intervals']}/{block['expected_intervals']} valid comparable intervals",
-                    "NO_DRONE_NEEDED: accessible or occluded sources use ground inspection",
-                ],
-                "evidence_ids": block["sample_ids"] + block["observation_ids"],
-            }
-        )
-    ranked.sort(key=lambda b: (-b["score"], b["id"]))
-    tasks = [
-        {
-            "id": f"baseline:{b['id']}",
-            "block_id": b["id"],
-            "kind": "INSPECT_GROUND",
-            "hours": 1,
-            "reason": "Minimum routine coverage",
-        }
-        for b in blocks
-    ]
-    used = float(len(tasks))
-    excluded = []
-    for block in ranked:
-        kind = (
-            "SERVICE_TRAP"
-            if block["status"] == "DATA_UNAVAILABLE"
-            else "REMOVE_SOURCE"
-            if block["unresolved_sources"]
-            else "INSPECT_GROUND"
-        )
-        if used + 2 <= body.budget.staff_hours:
-            tasks.append(
-                {
-                    "id": f"priority:{block['id']}",
-                    "block_id": block["id"],
-                    "kind": kind,
-                    "hours": 2,
-                    "reason": "; ".join(block["reasons"]),
-                    "evidence_ids": block["evidence_ids"],
-                }
-            )
-            used += 2
-        else:
-            excluded.append(
-                {
-                    "block_id": block["id"],
-                    "kind": kind,
-                    "reason": "Staff budget exhausted; baseline retained",
-                }
-            )
+    ranked = rank_blocks(blocks)
+    tasks, excluded, used = select_tasks(blocks, ranked, body.budget.staff_hours)
     result = {
         "block_priorities": ranked,
         "recommended_tasks": tasks,

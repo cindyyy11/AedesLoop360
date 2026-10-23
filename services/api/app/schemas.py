@@ -23,11 +23,13 @@ class SampleInput(Input):
     egg_count: int = Field(ge=0, le=10000)
     media_id: str
     quality: Literal["GOOD", "BLURRED", "OCCLUDED"] = "GOOD"
-    source: Literal["HUMAN_LABELLED_FIXTURE"] = "HUMAN_LABELLED_FIXTURE"
-    mode: Literal["SIMULATED"] = "SIMULATED"
+    source: Literal["HUMAN_LABELLED_FIXTURE", "MODEL_ASSISTED_REVIEWED"] = "HUMAN_LABELLED_FIXTURE"
+    mode: Literal["SIMULATED", "IMPORTED"] = "SIMULATED"
 
     @model_validator(mode="after")
     def interval(self):
+        if (self.source == "HUMAN_LABELLED_FIXTURE") != (self.mode == "SIMULATED"):
+            raise ValueError("Fixture evidence must be simulated; reviewed imports must be imported")
         days = (self.interval_end - self.interval_start).total_seconds() / 86400
         if days <= 0 or abs(days - self.sampling_effort_days) > 0.01:
             raise ValueError("Sampling effort must match a positive collection interval")
@@ -82,6 +84,18 @@ class ObservationInput(Input):
 class ReviewInput(Input):
     confirmed: bool
     reason: str = Field(min_length=8, max_length=1000)
+
+
+class FindingReviewInput(Input):
+    decision: Literal["CONFIRM", "REJECT", "RELABEL"]
+    reason: str = Field(min_length=8, max_length=1000)
+    water_state: Literal["DRY", "VISIBLE_WATER", "OCCLUDED"] | None = None
+
+    @model_validator(mode="after")
+    def relabel_needs_state(self):
+        if (self.decision == "RELABEL") != (self.water_state is not None):
+            raise ValueError("water_state is required for RELABEL and only allowed with it")
+        return self
 
 
 class WorkUpdate(Input):

@@ -22,7 +22,11 @@ def effective_status(trap: Trap) -> str:
     return "ACTIVE"
 
 
-def ingest(db: Session, user: User, trap_id: str, body: SampleInput, key: str) -> Sample:
+def ingest(
+    db: Session, user: User, trap_id: str, body: SampleInput, key: str, *, reviewed: bool = False
+) -> Sample:
+    if body.source == "MODEL_ASSISTED_REVIEWED" and not reviewed:
+        raise HTTPException(422, "Model-assisted evidence requires the analysis confirmation endpoint")
     trap = get(db, Trap, trap_id, user)
     db.scalar(select(Trap).where(Trap.id == trap.id).with_for_update())
     payload = body.model_dump(mode="json")
@@ -59,6 +63,7 @@ def ingest(db: Session, user: User, trap_id: str, body: SampleInput, key: str) -
         trap_id=trap_id,
         tenant_id=user.tenant_id,
         **body.model_dump(),
+        review_status="CONFIRMED_HUMAN" if reviewed else "CONFIRMED_FIXTURE",
         validity="VALID" if valid else "INVALID",
         digest=digest(payload),
     )

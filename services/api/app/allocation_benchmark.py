@@ -6,7 +6,9 @@ budgets. The result measures scripted task coverage, never biological impact.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
+
+from .allocation_rules import rank_blocks, select_tasks
 
 MODE = "SIMULATED EXPERIMENT"
 
@@ -103,18 +105,53 @@ def _ordered_blocks(evidence: tuple[BlockEvidence, ...], strategy: str) -> list[
     raise ValueError(f"Unknown strategy: {strategy}")
 
 
-def _task_kind(block: BlockEvidence, strategy: str) -> str:
-    # Current hard data-availability constraint applies to every policy.
-    if block.offline_traps:
-        return "SERVICE_TRAP"
+def _planner_block(b: BlockEvidence) -> dict:
+    """Shape scenario evidence like the summaries the production planner receives."""
+    return {
+        "id": b.block_id,
+        "status": "MONITORING" if b.egg_counts else "DATA_UNAVAILABLE",
+        "unresolved_sources": b.unresolved_verified_sources,
+        "eggs_per_interval": b.egg_signal,
+        "valid_intervals": len(b.egg_counts),
+        "expected_intervals": b.expected_traps,
+        "sample_ids": [],
+        "observation_ids": [],
+    }
+
+
+def _extra_candidates(
+    evidence: tuple[BlockEvidence, ...], strategy: str, rounds: int
+) -> list[tuple[str, str]]:
+    """Ordered (block, task kind) candidates for hours beyond the reserved minimum.
+
+    Built from evidence and declared constraints only; scenario truth never enters.
+    Offline blocks receive servicing in the reserved minimum, never an empty-data
+    inspection presented as surveillance.
+    """
     if strategy != "adaptive":
-        return "INSPECT_GROUND"
-    if block.recurring_verified_assets:
-        return "ENGINEERING_REVIEW"
-    if block.unresolved_verified_sources:
-        return "REMOVE_SOURCE"
+        # Routine patrol: keep cycling the policy's fixed block order.
+        order = [b for b in _ordered_blocks(evidence, strategy) if not b.offline_traps]
+        return [(b.block_id, "INSPECT_GROUND") for _ in range(rounds) for b in order]
+    # Act on known open work first: a recurring asset needs a permanent fix
+    # (weight 6), each unresolved verified source needs removal (weight 5), then
+    # extra inspections ranked by egg signal with diminishing returns per block.
     # Rising eggs alone request ground inspection and never treatment.
-    return "INSPECT_GROUND"
+    items: list[tuple[float, str, int, int, str]] = []
+    for b in evidence:
+        items += [
+            (-6.0, b.block_id, 0, i, "ENGINEERING_REVIEW")
+            for i in range(b.recurring_verified_assets)
+        ]
+        items += [
+            (-5.0, b.block_id, 1, i, "REMOVE_SOURCE") for i in range(b.unresolved_verified_sources)
+        ]
+        if not b.offline_traps:
+            items += [
+                (-(b.egg_signal or 0) / 10 / (r + 1), b.block_id, 2, r, "INSPECT_GROUND")
+                for r in range(rounds)
+            ]
+    items.sort()
+    return [(block_id, kind) for _w, block_id, _o, _i, kind in items]
 
 
 def _plan_tasks(
@@ -131,6 +168,12 @@ def _plan_tasks(
     if staff_budget_hours < len(blocks):
         raise ValueError("Staff budget must cover the one-hour-per-block coverage guardrail")
 
+    if strategy == "planner_v1":
+        # The rules the application runs today, executed unchanged.
+        shaped = [_planner_block(b) for b in sorted(evidence, key=lambda b: b.block_id)]
+        chosen, _excluded, _used = select_tasks(shaped, rank_blocks(shaped), staff_budget_hours)
+        return [{"block_id": t["block_id"], "kind": t["kind"], "hours": t["hours"]} for t in chosen]
+
     # Equal minimum coverage is reserved first; offline blocks receive service,
     # never an empty-data inspection presented as surveillance.
     tasks = [
@@ -142,17 +185,12 @@ def _plan_tasks(
         for bid in sorted(blocks)
     ]
     used = len(tasks)
-    for block in _ordered_blocks(evidence, strategy):
+    # Every policy spends what it is allowed to: hours are not left idle while
+    # the policy still has candidate work.
+    for block_id, kind in _extra_candidates(evidence, strategy, staff_budget_hours):
         if used + 2 > staff_budget_hours:
             break
-        kind = _task_kind(block, strategy)
-        # Avoid duplicate servicing/referral tasks already covered by the
-        # reserved minimum. Continue to lower-ranked blocks for the next slot.
-        if kind in {"SERVICE_TRAP", "ENGINEERING_REVIEW"} and any(
-            t["block_id"] == block.block_id and t["kind"] == kind for t in tasks
-        ):
-            continue
-        tasks.append({"block_id": block.block_id, "kind": kind, "hours": 2})
+        tasks.append({"block_id": block_id, "kind": kind, "hours": 2})
         used += 2
     return tasks
 
@@ -236,14 +274,49 @@ def _allocate(scenario: Scenario, strategy: str) -> dict:
             task["kind"] == "DRONE_SURVEY" and not blocks[task["block_id"]].drone_permission
             for task in tasks
         ),
-        "interpretation": "Scripted scenario task coverage only; not biological efficacy or field evidence.",
+        "interpretation": "Scripted scenario task coverage only; not biological efficacy or field evidence. Verified-source and recurrence work is credited only to policies that schedule it, so the gap reflects acting on known open work under an equal budget, not an effect size.",
     }
+
+
+STRATEGIES = ("uniform", "static", "planner_v1", "adaptive")
+STRATEGY_NOTES = {
+    "uniform": "Routine patrol: every block in turn, inspection only.",
+    "static": "Frozen schedule from an old snapshot, inspection only.",
+    "planner_v1": "The planner rules the application runs today (one two-hour task per block).",
+    "adaptive": "Proposed, not yet in the application: spends the whole budget on known open work first.",
+}
+
+
+def budget_sweep(scenario: Scenario, last_hour: int = 16) -> list[dict]:
+    """Coverage of each policy across staff budgets, so one budget is never cherry-picked."""
+    floor = len(scenario.evidence)
+    sweep = []
+    for hours in range(floor, max(floor, last_hour) + 1, 2):
+        rows = {
+            name: _allocate(replace(scenario, staff_budget_hours=hours), name)
+            for name in STRATEGIES
+        }
+        sweep.append(
+            {
+                "staff_budget_hours": hours,
+                "strategies": {
+                    name: {
+                        "covered": row["scripted_actionable_issues_covered"],
+                        "total": row["scripted_actionable_issues"],
+                        "recall": row["scripted_issue_recall"],
+                        "staff_hours_used": row["staff_hours_used"],
+                    }
+                    for name, row in rows.items()
+                },
+            }
+        )
+    return sweep
 
 
 def benchmark(scenario: Scenario | None = None) -> dict:
     """Compare uniform, frozen static, and adaptive policies under equal limits."""
     scenario = scenario or default_scenario()
-    results = [_allocate(scenario, name) for name in ("uniform", "static", "adaptive")]
+    results = [_allocate(scenario, name) for name in STRATEGIES]
     return {
         "mode": MODE,
         "constraints": {
@@ -252,9 +325,11 @@ def benchmark(scenario: Scenario | None = None) -> dict:
             "staff_hour_cost": scenario.staff_hour_cost,
             "drone_hour_cost": scenario.drone_hour_cost,
             "independent_truth": asdict(scenario.truth),
+            "strategy_notes": STRATEGY_NOTES,
             "seed": 0,
         },
         "results": results,
+        "budget_sweep": budget_sweep(scenario),
     }
 
 

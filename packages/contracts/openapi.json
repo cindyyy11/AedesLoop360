@@ -5,6 +5,163 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/v1/ovitraps/{trap_id}/egg-analyses": {
+      "post": {
+        "summary": "Upload Egg Analysis",
+        "operationId": "upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post",
+        "parameters": [
+          {
+            "name": "trap_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trap Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_EggAnalysisRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Egg Analyses",
+        "operationId": "list_egg_analyses_api_v1_ovitraps__trap_id__egg_analyses_get",
+        "parameters": [
+          {
+            "name": "trap_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trap Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_EggAnalysisRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/egg-analyses/{analysis_id}/confirm": {
+      "post": {
+        "summary": "Confirm Egg Analysis",
+        "operationId": "confirm_egg_analysis_api_v1_egg_analyses__analysis_id__confirm_post",
+        "parameters": [
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Analysis Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EggConfirmationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_SampleRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "summary": "Health",
@@ -342,6 +499,55 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Many_FindingRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/findings/{entity_id}/review": {
+      "post": {
+        "summary": "Review Finding",
+        "operationId": "review_finding_api_v1_findings__entity_id__review_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FindingReviewInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_FindingRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1758,6 +1964,35 @@
         ],
         "title": "Body_upload_api_v1_media_post"
       },
+      "Body_upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "rights": {
+            "type": "string",
+            "title": "Rights"
+          },
+          "captured_at": {
+            "type": "string",
+            "title": "Captured At"
+          },
+          "roi": {
+            "type": "string",
+            "title": "Roi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "rights",
+          "captured_at",
+          "roi"
+        ],
+        "title": "Body_upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post"
+      },
       "Budget": {
         "properties": {
           "staff_hours": {
@@ -1832,6 +2067,220 @@
         ],
         "title": "Decision"
       },
+      "EggAnalysisRecord": {
+        "properties": {
+          "trap_id": {
+            "type": "string",
+            "title": "Trap Id"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "roi": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Roi"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "proposed_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed Count"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "confirmed_sample_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed Sample Id"
+          },
+          "reviewer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewer Id"
+          },
+          "accepted_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted Count"
+          },
+          "confirmation_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Reason"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trap_id",
+          "media_id",
+          "roi",
+          "status",
+          "proposed_count",
+          "model_version",
+          "reason",
+          "details",
+          "confirmed_sample_id",
+          "reviewer_id",
+          "accepted_count",
+          "confirmation_reason",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "EggAnalysisRecord"
+      },
+      "EggConfirmationInput": {
+        "properties": {
+          "source_sample_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source Sample Id"
+          },
+          "substrate_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Substrate Id"
+          },
+          "interval_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval Start"
+          },
+          "interval_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval End"
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Collected At"
+          },
+          "sampling_effort_days": {
+            "type": "number",
+            "maximum": 31.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Sampling Effort Days"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "GOOD",
+              "BLURRED",
+              "OCCLUDED"
+            ],
+            "title": "Quality",
+            "default": "GOOD"
+          },
+          "accepted_egg_count": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Accepted Egg Count"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_sample_id",
+          "substrate_id",
+          "interval_start",
+          "interval_end",
+          "collected_at",
+          "sampling_effort_days",
+          "accepted_egg_count",
+          "reason"
+        ],
+        "title": "EggConfirmationInput"
+      },
       "FindingRecord": {
         "properties": {
           "asset_id": {
@@ -1876,6 +2325,44 @@
             "type": "string",
             "title": "Reason"
           },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "reviewed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed By"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          },
+          "review_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Note"
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -1908,6 +2395,10 @@
           "confidence",
           "model_version",
           "reason",
+          "review_status",
+          "reviewed_by",
+          "reviewed_at",
+          "review_note",
           "id",
           "tenant_id",
           "mode",
@@ -1915,6 +2406,48 @@
           "eligibility"
         ],
         "title": "FindingRecord"
+      },
+      "FindingReviewInput": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "CONFIRM",
+              "REJECT",
+              "RELABEL"
+            ],
+            "title": "Decision"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          },
+          "water_state": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "DRY",
+                  "VISIBLE_WATER",
+                  "OCCLUDED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Water State"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision",
+          "reason"
+        ],
+        "title": "FindingReviewInput"
       },
       "HTTPValidationError": {
         "properties": {
@@ -2269,6 +2802,33 @@
           "data"
         ],
         "title": "Many[AuditRecord]"
+      },
+      "Many_EggAnalysisRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EggAnalysisRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[EggAnalysisRecord]"
       },
       "Many_FindingRecord_": {
         "properties": {
@@ -2978,6 +3538,52 @@
         ],
         "title": "One[AnalyticsRunRecord]"
       },
+      "One_EggAnalysisRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EggAnalysisRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[EggAnalysisRecord]"
+      },
+      "One_FindingRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/FindingRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[FindingRecord]"
+      },
       "One_HistoryRecord_": {
         "properties": {
           "data": {
@@ -3325,6 +3931,14 @@
             "type": "number",
             "title": "Score"
           },
+          "factors": {
+            "items": {
+              "$ref": "#/components/schemas/ScoreFactor"
+            },
+            "type": "array",
+            "title": "Factors",
+            "default": []
+          },
           "reasons": {
             "items": {
               "type": "string"
@@ -3457,13 +4071,19 @@
           },
           "source": {
             "type": "string",
-            "const": "HUMAN_LABELLED_FIXTURE",
+            "enum": [
+              "HUMAN_LABELLED_FIXTURE",
+              "MODEL_ASSISTED_REVIEWED"
+            ],
             "title": "Source",
             "default": "HUMAN_LABELLED_FIXTURE"
           },
           "mode": {
             "type": "string",
-            "const": "SIMULATED",
+            "enum": [
+              "SIMULATED",
+              "IMPORTED"
+            ],
             "title": "Mode",
             "default": "SIMULATED"
           }
@@ -3675,6 +4295,24 @@
           "created_at"
         ],
         "title": "SampleRevisionRecord"
+      },
+      "ScoreFactor": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "points": {
+            "type": "number",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "points"
+        ],
+        "title": "ScoreFactor"
       },
       "Summary": {
         "properties": {
