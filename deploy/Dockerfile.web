@@ -1,0 +1,20 @@
+FROM node:24-slim AS build
+WORKDIR /repo
+COPY packages /repo/packages
+COPY apps/web/package.json apps/web/package-lock.json /repo/apps/web/
+RUN cd apps/web && npm ci
+COPY apps/web /repo/apps/web
+# The /api rewrite target is fixed at build time by Next.js.
+ARG AEDES_API_ORIGIN=http://api:8000
+ENV AEDES_API_ORIGIN=$AEDES_API_ORIGIN
+RUN cd apps/web && npm run build
+
+FROM node:24-slim
+ENV NODE_ENV=production
+WORKDIR /repo
+COPY --from=build /repo /repo
+RUN useradd --system --uid 10001 aedes && chown -R aedes /repo/apps/web/.next
+USER aedes
+WORKDIR /repo/apps/web
+EXPOSE 3000
+CMD ["npx", "next", "start", "--hostname", "0.0.0.0", "--port", "3000"]

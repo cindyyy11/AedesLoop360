@@ -212,3 +212,7 @@ Reduced on-screen text across the web app and added a guided entry point. UI onl
 - Backend fix found during testing: an egg analysis with no configured model (`NOT_CONFIGURED`) stored `details=None`, so `POST /egg-analyses` and the inbox returned HTTP 500 on response validation. `egg_analysis.propose_from` now stores `{}`. Rows already saved with a null `details` still fail until patched.
 - Not done: a "simple mode" that hides IDs and tables; plain-language names for raw IDs and status codes; role-based landing pages beyond the existing login redirect.
 - `egg-upload.spec.ts` was intermittently failing on the "Eggs you accept" value check. Most likely cause is a test race: after the "Image analysis persisted" message the card can still show the previous analysis until the list refetch lands, so the test read a stale count. A later failure showed the test filling a form on a different card than the one it submitted, so the spec now selects the card by analysis id from the POST response (5 of 5 runs passed afterwards). `ResultCard` is now keyed by analysis id so the confirm form cannot keep state from a previous result.
+
+## Containerised deployment (23 October 2026)
+
+Added `compose.deploy.yaml`, `deploy/` (API/worker and web Dockerfiles, entrypoint, ML runtime requirements), `scripts/package_models.py` and [DEPLOYMENT.md](DEPLOYMENT.md). Partial: compose config validates and the checkpoints load, but images were never built and the stack never ran because the Docker engine was unavailable. PostgreSQL migrations remain unverified.

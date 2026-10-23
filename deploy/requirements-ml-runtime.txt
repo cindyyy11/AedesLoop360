@@ -1,0 +1,6 @@
+# Inference-only dependencies for the shipped checkpoints (YOLOv8 drone model, scikit-learn egg model).
+ultralytics==8.4.63
+scikit-learn==1.7.0
+joblib==1.5.1
+numpy==2.2.6
+opencv-python-headless==4.13.0.92
