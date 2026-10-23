@@ -1191,3 +1191,89 @@ button.mx-cell.val:hover, button.mx-cell.val:focus-visible { outline: 3px solid 
 .inbox-list { display: grid; gap: 16px; margin-top: 12px; }
 .inbox-item { border: 2px solid var(--ink); padding: 12px; background: var(--surface); }
 .inbox-item > header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+
+/* Drone mission page + 3D flight rehearsal */
+.safety-strip { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0 0 16px; padding: 0; }
+.safety-strip li { font: 10px/1 var(--mono); letter-spacing: .5px; text-transform: uppercase; padding: 7px 10px; background: var(--lime-tint); border: 1px solid var(--lime); color: var(--ink); }
+.next-step { display: grid; gap: 4px; margin: 14px 0; padding: 12px 16px; border-left: 4px solid var(--lime); background: var(--surface-alt); }
+.next-step span { font: 10px var(--mono); text-transform: uppercase; letter-spacing: 1px; color: var(--ink-soft); }
+.next-step p { margin: 0; color: var(--ink); }
+.dronesim { display: grid; grid-template-columns: minmax(0, 1fr) 320px; border: 1px solid var(--line); min-width: 0; }
+.dronesim-stage { min-width: 0; align-self: start; }
+.dronesim-viewport { position: relative; height: clamp(380px, 56vh, 600px); overflow: hidden; background: #b9dcf0; }
+.dronesim-canvas { position: absolute; inset: 0; }
+.dronesim-canvas canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.dronesim-pov { position: absolute; top: 12px; right: 12px; width: min(36%, 340px); aspect-ratio: 16 / 9; border: 2px solid #fff; box-shadow: 0 0 0 1px #0a2547, 0 6px 18px rgba(10, 37, 71, .35); pointer-events: none; overflow: hidden; }
+.dronesim-pov[data-view=pov] { inset: 0; width: auto; aspect-ratio: auto; border: 0; box-shadow: none; }
+.dronesim-pov-tag { position: absolute; right: 6px; bottom: 6px; font: 9px var(--mono); color: #fff; background: rgba(10, 37, 71, .7); padding: 3px 6px; }
+.dronesim-bbox { position: absolute; border: 2px solid #21b6ff; }
+.dronesim-bbox[data-state=OCCLUDED] { border-style: dashed; border-color: #ffa24d; }
+.dronesim-bbox[data-state=DRY] { border-color: #c7d3db; }
+.dronesim-bbox span { position: absolute; left: -2px; top: -18px; white-space: nowrap; font: 9px var(--mono); background: #0a2547; color: #fff; padding: 2px 5px; max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+.dronesim-hud { position: absolute; left: 12px; top: 12px; display: grid; grid-template-columns: repeat(2, auto); gap: 6px 18px; padding: 10px 12px; background: rgba(10, 37, 71, .78); color: #fff; pointer-events: none; }
+.dronesim-hud small { color: #9fc4dc; font: 9px var(--mono); text-transform: uppercase; }
+.dronesim-hud b { font: 600 14px var(--mono); }
+.dronesim-badges { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 6px; pointer-events: none; }
+.dronesim-badges span { font: 10px var(--mono); background: var(--lime); color: var(--ink); padding: 4px 8px; }
+.dronesim-play-big { position: absolute; left: 50%; bottom: 56px; transform: translateX(-50%); font-size: 15px; padding: 14px 22px; }
+.dronesim-controls { display: grid; gap: 10px; padding: 12px 16px; background: var(--surface-alt); border-top: 1px solid var(--line); }
+.dronesim-transport, .dronesim-views { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.dronesim-views button[aria-pressed=true] { background: var(--ink); color: #fff; box-shadow: inset 0 -3px var(--lime); }
+.dronesim-speed { display: grid; gap: 2px; font-size: 11px; }
+.dronesim-scrub { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; font: 11px var(--mono); }
+.dronesim-scrub input { width: 100%; }
+.dronesim-side { padding: 18px; border-left: 1px solid var(--line); min-width: 0; overflow-wrap: anywhere; }
+.dronesim-side h3 { margin: 0 0 6px; }
+.dronesim-targets { list-style: none; margin: 12px 0; padding: 0; display: grid; gap: 8px; }
+.dronesim-targets button { display: flex; gap: 10px; width: 100%; text-align: left; align-items: flex-start; }
+.dronesim-targets li.current button { background: var(--ink); color: #fff; box-shadow: inset 4px 0 var(--lime); }
+.dronesim-targets li.current small { color: #cfe3f0; }
+.dronesim-n { font: 700 13px var(--mono); min-width: 20px; }
+.dronesim-outcome[data-kind=MOCK_ACTION_RECORDED] { color: #0a6ea3; }
+.dronesim-outcome[data-kind=GROUND_REVIEW] { color: #b25d00; }
+.dronesim-targets li.current .dronesim-outcome { color: #cfe3f0; }
+.dronesim-safety { border: 1px solid var(--line); padding: 10px 12px; font-size: 12px; background: var(--lime-tint); }
+.dronesim-safety ul { margin: 6px 0 0; padding-left: 18px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 1100px) { .dronesim { grid-template-columns: minmax(0, 1fr); } .dronesim-side { border-left: 0; border-top: 1px solid var(--line); } }
+@media (max-width: 600px) { .dronesim-viewport { height: 340px; } .dronesim-pov { width: 44%; } .dronesim-hud { padding: 6px 8px; gap: 4px 10px; top: auto; bottom: 44px; } .dronesim-hud b { font-size: 12px; } }
+
+/* Plain-language pass: less text on screen, detail on demand. */
+.mode-banner { padding: 7px 40px; font-size: 12px; }
+.content { padding-top: 30px; }
+.page-heading { margin-bottom: 24px; padding-bottom: 18px; }
+.page-heading h1 { margin: 0 0 6px; }
+.page-heading p { font-size: 15px; }
+details.overview-lede { padding: 12px 18px; border-top: 1.5px solid var(--ink); margin-bottom: 18px; }
+details.overview-lede summary { font-size: 14px; color: var(--ink-soft); }
+details.overview-lede ul { margin-top: 10px; }
+details.disclaimer { border-top: 1px solid var(--line); padding: 14px 0 0; margin-top: 24px; font-size: 12.5px; line-height: 1.6; }
+details.disclaimer summary { color: var(--muted); font-weight: 600; }
+details.disclaimer p { margin: 8px 0 0; }
+details.chapter-fold { border-top: 1px solid var(--line); padding: 14px 0; }
+details.chapter-fold > summary { font-size: 17px; font-weight: 800; color: var(--ink); }
+details.chapter-fold > summary small { margin-left: 10px; font-weight: 500; color: var(--muted); font-size: 13px; }
+details.chapter-fold[open] > summary { margin-bottom: 16px; }
+details.fold > summary { color: var(--ink-soft); font-size: 13px; font-weight: 600; padding: 6px 0; }
+details.fold > p, details.fold > small { margin: 6px 0 0; display: block; }
+button, .button { min-height: 44px; }
+.text-button { min-height: 36px; }
+@media (max-width: 760px) { .mode-banner { padding: 6px 16px; } .content { padding-top: 20px; } }
+
+/* Start here: the four-step path through the product. */
+.start-here { margin: 0 0 22px; }
+.start-here h2 { font-size: 13px; font-family: var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 10px; }
+.start-here h2::before { display: none; }
+.start-here ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.start-here a { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; min-height: 84px; padding: 14px 16px; border: 1.5px solid var(--ink); background: var(--surface); color: var(--ink); text-decoration: none; }
+.start-here a:hover { background: var(--surface-alt); }
+.start-here b { grid-row: span 2; width: 32px; height: 32px; display: grid; place-items: center; background: var(--ink); color: #fff; font: 700 14px var(--mono); }
+.start-here strong { font-size: 16px; line-height: 1.2; }
+.start-here span { font-size: 13px; color: var(--ink-soft); }
+.start-here .attention a { border-left: 8px solid var(--signal); }
+.start-here .attention b { background: var(--signal); color: var(--ink); }
+@media (max-width: 900px) { .start-here ol { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .start-here ol { grid-template-columns: 1fr; } }
+/* Phone nav scrolls sideways: fade the right edge so it reads as scrollable. */
+@media (max-width: 760px) { .sidebar nav { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); padding-right: 28px; } }
+.start-here li { display: flex; } .start-here li > a { flex: 1; }

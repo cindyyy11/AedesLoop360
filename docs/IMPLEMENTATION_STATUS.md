@@ -174,3 +174,15 @@ Added `POST /api/v1/drones/trap-passes` and `GET /api/v1/egg-analyses/inbox`, an
 - Tests: `services/api/tests/test_drone_capture.py` (6) and `apps/web/tests/drone-inbox.spec.ts`.
 - Not real: no aircraft, no flight link, and the "photo" is generated, not captured. A pass returns all results in one request; the inbox only looks live because the page re-fetches every 5 seconds. Anything that can call the endpoint appears in the inbox the same way.
 - Known gap: running the whole backend suite in one process fails 2 tests in `test_loop.py` (`test_sample_count_correction_is_audited_and_append_only`, `test_recurrence_work_followup_audit_persistence`). They fail the same way on the previous commit because the test modules share one database engine, and `test_loop.py` passes 9/9 when run alone. `test_allocation_benchmark.py` and `test_data_evaluation.py` fail to import `scripts.*` when run from `services/api`.
+
+## Plain-language UI pass and Start here path (23 October 2026)
+
+Reduced on-screen text across the web app and added a guided entry point. UI only: no API contract or migration changes.
+
+- Every page has a one-line subtitle instead of the "Observe / Plan / Inspect / Verify" header. The SIMULATED banner is one line. The evidence-boundary disclaimers (egg counts are not adult abundance, species or dengue risk; a recorded action is not proof it worked) moved into a collapsed "How to read these numbers" footer. The same boundaries stay visible where they matter: `DATA_UNAVAILABLE` labels, "NOT SURVEILLANCE YET", `Mock actuator DISARMED`, and the human-approval steps.
+- Overview: new **Start here** section (four numbered links: traps, drone flight, planning, jobs) driven by the loaded block data; the explainer is a collapsed "How to read this page"; model and benchmark panels sit under a collapsed "Advanced: model checks".
+- Phone navigation scrolls sideways with a faded right edge, and the current page scrolls into view.
+- Buttons are at least 44px tall.
+- Backend fix found during testing: an egg analysis with no configured model (`NOT_CONFIGURED`) stored `details=None`, so `POST /egg-analyses` and the inbox returned HTTP 500 on response validation. `egg_analysis.propose_from` now stores `{}`. Rows already saved with a null `details` still fail until patched.
+- Not done: a "simple mode" that hides IDs and tables; plain-language names for raw IDs and status codes; role-based landing pages beyond the existing login redirect.
+- Known gap: `egg-upload.spec.ts` passed 2 of 4 runs on a fresh stack (fails on the "Eggs you accept" value check). Not investigated; `egg-counter.tsx` was not changed here.
