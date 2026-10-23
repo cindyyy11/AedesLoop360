@@ -5,6 +5,10 @@ from pydantic import AwareDatetime, Field, model_validator
 from .schemas import Input
 
 
+class TrapPassInput(Input):
+    trap_ids: list[str] = Field(min_length=1, max_length=8)
+
+
 class EggConfirmationInput(Input):
     source_sample_id: str = Field(min_length=1, max_length=100)
     substrate_id: str = Field(min_length=1, max_length=100)

@@ -162,6 +162,76 @@
         }
       }
     },
+    "/api/v1/egg-analyses/inbox": {
+      "get": {
+        "summary": "Egg Analysis Inbox",
+        "description": "Proposals still waiting for a human decision, across all traps.",
+        "operationId": "egg_analysis_inbox_api_v1_egg_analyses_inbox_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_EggAnalysisRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/trap-passes": {
+      "post": {
+        "summary": "Simulate Trap Pass",
+        "operationId": "simulate_trap_pass_api_v1_drones_trap_passes_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrapPassInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_TrapPassResult_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "summary": "Health",
@@ -1644,7 +1714,7 @@
           },
           "artifacts": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/EvaluationArtifact"
             },
             "type": "array",
             "title": "Artifacts"
@@ -2170,6 +2240,21 @@
             ],
             "title": "Confirmation Reason"
           },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "capture_pass_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capture Pass Id"
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -2202,6 +2287,8 @@
           "reviewer_id",
           "accepted_count",
           "confirmation_reason",
+          "source",
+          "capture_pass_id",
           "id",
           "tenant_id",
           "mode",
@@ -2280,6 +2367,29 @@
           "reason"
         ],
         "title": "EggConfirmationInput"
+      },
+      "EvaluationArtifact": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "name",
+          "sha256"
+        ],
+        "title": "EvaluationArtifact"
       },
       "FindingRecord": {
         "properties": {
@@ -3722,6 +3832,29 @@
         ],
         "title": "One[SampleRevisionRecord]"
       },
+      "One_TrapPassResult_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TrapPassResult"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[TrapPassResult]"
+      },
       "One_WorkOrderRecord_": {
         "properties": {
           "data": {
@@ -4073,7 +4206,8 @@
             "type": "string",
             "enum": [
               "HUMAN_LABELLED_FIXTURE",
-              "MODEL_ASSISTED_REVIEWED"
+              "MODEL_ASSISTED_REVIEWED",
+              "DRONE_SIM_REVIEWED"
             ],
             "title": "Source",
             "default": "HUMAN_LABELLED_FIXTURE"
@@ -4635,6 +4769,72 @@
           "reason"
         ],
         "title": "Task"
+      },
+      "TrapPassInput": {
+        "properties": {
+          "trap_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Trap Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "trap_ids"
+        ],
+        "title": "TrapPassInput"
+      },
+      "TrapPassResult": {
+        "properties": {
+          "pass_id": {
+            "type": "string",
+            "title": "Pass Id"
+          },
+          "analyses": {
+            "items": {
+              "$ref": "#/components/schemas/EggAnalysisRecord"
+            },
+            "type": "array",
+            "title": "Analyses"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/TrapPassSkip"
+            },
+            "type": "array",
+            "title": "Skipped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pass_id",
+          "analyses",
+          "skipped"
+        ],
+        "title": "TrapPassResult"
+      },
+      "TrapPassSkip": {
+        "properties": {
+          "trap_id": {
+            "type": "string",
+            "title": "Trap Id"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trap_id",
+          "reason"
+        ],
+        "title": "TrapPassSkip"
       },
       "TrapRecord": {
         "properties": {

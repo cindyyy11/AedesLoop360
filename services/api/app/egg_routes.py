@@ -6,10 +6,10 @@ from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Uploa
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import egg_analysis
-from .contracts import EggAnalysisRecord, Many, One, SampleRecord
+from . import drone_capture, egg_analysis
+from .contracts import EggAnalysisRecord, Many, One, SampleRecord, TrapPassResult
 from .db import session
-from .egg_schemas import EggConfirmationInput
+from .egg_schemas import EggConfirmationInput, TrapPassInput
 from .models import EggAnalysis, Trap, User
 from .repository import get, record
 from .security import current_user, require
@@ -66,3 +66,26 @@ def confirm_egg_analysis(
     row = egg_analysis.confirm(db, user, analysis_id, body, key)
     db.commit()
     return {"data": record(row), "source_mode": "IMPORTED"}
+
+
+@router.get("/egg-analyses/inbox", response_model=Many[EggAnalysisRecord])
+def egg_analysis_inbox(db: DB, user: Actor):
+    """Proposals still waiting for a human decision, across all traps."""
+    rows = db.scalars(
+        select(EggAnalysis)
+        .where(EggAnalysis.tenant_id == user.tenant_id, EggAnalysis.confirmed_sample_id.is_(None))
+        .order_by(EggAnalysis.created_at.desc(), EggAnalysis.id)
+        .limit(50)
+    ).all()
+    mixed = {row.mode for row in rows} != {"IMPORTED"} and bool(rows)
+    return {"data": [record(row) for row in rows], "source_mode": "SIMULATED" if mixed else "IMPORTED"}
+
+
+@router.post("/drones/trap-passes", response_model=One[TrapPassResult])
+def simulate_trap_pass(body: TrapPassInput, db: DB, user: Actor, key: Key):
+    pass_id, analyses, skipped = drone_capture.run_pass(db, user, body.trap_ids, key)
+    db.commit()
+    return {
+        "data": {"pass_id": pass_id, "analyses": [record(a) for a in analyses], "skipped": skipped},
+        "source_mode": "SIMULATED",
+    }

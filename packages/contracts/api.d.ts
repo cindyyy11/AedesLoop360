@@ -39,6 +39,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/egg-analyses/inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Egg Analysis Inbox
+         * @description Proposals still waiting for a human decision, across all traps.
+         */
+        get: operations["egg_analysis_inbox_api_v1_egg_analyses_inbox_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/drones/trap-passes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Simulate Trap Pass */
+        post: operations["simulate_trap_pass_api_v1_drones_trap_passes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -672,7 +709,7 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /** Artifacts */
-            artifacts: string[];
+            artifacts: components["schemas"]["EvaluationArtifact"][];
             /** Limitations */
             limitations: string[];
             /** Initiated By */
@@ -839,6 +876,10 @@ export interface components {
             accepted_count: number | null;
             /** Confirmation Reason */
             confirmation_reason: string | null;
+            /** Source */
+            source: string;
+            /** Capture Pass Id */
+            capture_pass_id: string | null;
             /** Id */
             id: string;
             /** Tenant Id */
@@ -884,6 +925,15 @@ export interface components {
             accepted_egg_count: number;
             /** Reason */
             reason: string;
+        };
+        /** EvaluationArtifact */
+        EvaluationArtifact: {
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Sha256 */
+            sha256: string;
         };
         /** FindingRecord */
         FindingRecord: {
@@ -1456,6 +1506,16 @@ export interface components {
              */
             source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
+        /** One[TrapPassResult] */
+        One_TrapPassResult_: {
+            data: components["schemas"]["TrapPassResult"];
+            /**
+             * Source Mode
+             * @default SIMULATED
+             * @enum {string}
+             */
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
+        };
         /** One[WorkOrderRecord] */
         One_WorkOrderRecord_: {
             data: components["schemas"]["WorkOrderRecord"];
@@ -1606,7 +1666,7 @@ export interface components {
              * @default HUMAN_LABELLED_FIXTURE
              * @enum {string}
              */
-            source: "HUMAN_LABELLED_FIXTURE" | "MODEL_ASSISTED_REVIEWED";
+            source: "HUMAN_LABELLED_FIXTURE" | "MODEL_ASSISTED_REVIEWED" | "DRONE_SIM_REVIEWED";
             /**
              * Mode
              * @default SIMULATED
@@ -1810,6 +1870,27 @@ export interface components {
              * @default []
              */
             evidence_ids: string[];
+        };
+        /** TrapPassInput */
+        TrapPassInput: {
+            /** Trap Ids */
+            trap_ids: string[];
+        };
+        /** TrapPassResult */
+        TrapPassResult: {
+            /** Pass Id */
+            pass_id: string;
+            /** Analyses */
+            analyses: components["schemas"]["EggAnalysisRecord"][];
+            /** Skipped */
+            skipped: components["schemas"]["TrapPassSkip"][];
+        };
+        /** TrapPassSkip */
+        TrapPassSkip: {
+            /** Trap Id */
+            trap_id: string;
+            /** Reason */
+            reason: string;
         };
         /** TrapRecord */
         TrapRecord: {
@@ -2017,6 +2098,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["One_SampleRecord_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    egg_analysis_inbox_api_v1_egg_analyses_inbox_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Many_EggAnalysisRecord_"];
+                };
+            };
+        };
+    };
+    simulate_trap_pass_api_v1_drones_trap_passes_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrapPassInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["One_TrapPassResult_"];
                 };
             };
             /** @description Validation Error */

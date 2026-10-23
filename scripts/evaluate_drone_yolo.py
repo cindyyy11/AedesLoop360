@@ -138,6 +138,22 @@ def evaluate(checkpoint: Path, dataset_yaml: Path, output_dir: Path) -> dict[str
         "created_at": datetime.now(timezone.utc).isoformat(),
         "evaluation_scope": "Candidate-container object detection only; does not detect standing water, larvae, Aedes species, intervention eligibility, or dengue risk.",
     }
+    limitations = [
+        "Dataset classes are candidate container objects, not confirmed larval habitats.",
+        "The test set is grouped by source image to avoid tile leakage across train, validation, and test.",
+        "The publisher's original tile-level split contains source-image overlap across splits.",
+        "The source Mendeley page declares CC BY 4.0, while the embedded Roboflow export metadata says Private; local use is recorded, redistribution rights require clarification.",
+        "The source dataset is not a locally representative field validation in Malaysia.",
+    ]
+    for class_name, class_result in result_metrics["per_class"].items():
+        if class_result["recall"] < 0.5:
+            limitations.append(
+                f"{class_name} test recall is {class_result['recall']:.1%}; missed candidate objects still require review of the full image."
+            )
+        if class_result["test_instances"] < 30:
+            limitations.append(
+                f"{class_name} has only {class_result['test_instances']} labelled test objects; its class estimate is uncertain."
+            )
     report = {
         "run_id": run_id,
         "run_type": "drone_detection_evaluation",
@@ -146,13 +162,7 @@ def evaluate(checkpoint: Path, dataset_yaml: Path, output_dir: Path) -> dict[str
         "metadata": metadata,
         "metrics": result_metrics,
         "artifacts": artifacts,
-        "limitations": [
-            "Dataset classes are candidate container objects, not confirmed larval habitats.",
-            "The test set is grouped by source image to avoid tile leakage across train, validation, and test.",
-            "The publisher's original tile-level split contains source-image overlap across splits.",
-            "The source Mendeley page declares CC BY 4.0, while the embedded Roboflow export metadata says Private; local use is recorded, redistribution rights require clarification.",
-            "The source dataset is not a locally representative field validation in Malaysia.",
-        ],
+        "limitations": limitations,
     }
     output_dir.mkdir(parents=True, exist_ok=True)
     summary_path = output_dir / f"{run_id}.json"

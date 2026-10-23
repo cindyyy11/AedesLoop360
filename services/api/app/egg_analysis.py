@@ -31,6 +31,24 @@ def propose(
     key: str,
 ) -> EggAnalysis:
     require(user, "reviewer", "coordinator")
+    return propose_from(db, user, trap_id, content, rights, captured_at, roi, key)
+
+
+def propose_from(
+    db: Session,
+    user: User,
+    trap_id: str,
+    content: bytes,
+    rights: str,
+    captured_at: datetime,
+    roi: list[float],
+    key: str,
+    *,
+    source: str = "UPLOAD",
+    capture_pass_id: str | None = None,
+) -> EggAnalysis:
+    """Validate, count and persist one photo. The caller enforces who may deliver it."""
+    mode = "SIMULATED" if source == "DRONE_SIM" else "IMPORTED"
     get(db, Trap, trap_id, user)
     if not rights.strip() or len(rights) > 1000:
         raise HTTPException(422, "Declare image usage rights (1–1000 characters)")
@@ -58,6 +76,8 @@ def propose(
         raise HTTPException(422, "Use a valid PNG/JPEG of at most 16 megapixels")
     sha = hashlib.sha256(content).hexdigest()
     payload = {"sha256": sha, "rights": rights, "captured_at": captured_at.isoformat(), "roi": roi}
+    if source != "UPLOAD":
+        payload |= {"source": source, "capture_pass_id": capture_pass_id}
     scope = f"egg-analysis:{trap_id}"
     cached = replay(db, user, scope, key, payload)
     if cached:
@@ -67,7 +87,7 @@ def propose(
     result = infer_egg_count(content, roi)
     media = Media(
         tenant_id=user.tenant_id,
-        mode="IMPORTED",
+        mode=mode,
         sha256=sha,
         content=content,
         content_type="image/png" if image.format == "PNG" else "image/jpeg",
@@ -80,7 +100,9 @@ def propose(
     db.flush()
     analysis = EggAnalysis(
         tenant_id=user.tenant_id,
-        mode="IMPORTED",
+        mode=mode,
+        source=source,
+        capture_pass_id=capture_pass_id,
         trap_id=trap_id,
         media_id=media.id,
         roi=roi,
@@ -104,7 +126,9 @@ def propose(
             "roi": roi,
             "status": result.status,
             "proposed_count": analysis.proposed_count,
-            "mode": "IMPORTED",
+            "mode": mode,
+            "source": source,
+            "capture_pass_id": capture_pass_id,
         },
     )
     return analysis
@@ -135,8 +159,8 @@ def confirm(
             **body.model_dump(exclude={"accepted_egg_count", "reason"}),
             egg_count=body.accepted_egg_count,
             media_id=analysis.media_id,
-            mode="IMPORTED",
-            source="MODEL_ASSISTED_REVIEWED",
+            mode=analysis.mode,
+            source="DRONE_SIM_REVIEWED" if analysis.source == "DRONE_SIM" else "MODEL_ASSISTED_REVIEWED",
         )
     except ValidationError as error:
         raise HTTPException(422, str(error))
@@ -161,7 +185,7 @@ def confirm(
             "accepted_count": body.accepted_egg_count,
             "overridden": analysis.proposed_count != body.accepted_egg_count,
             "reason": body.reason,
-            "mode": "IMPORTED",
+            "mode": analysis.mode,
         },
     )
     return sample

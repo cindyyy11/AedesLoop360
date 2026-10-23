@@ -134,8 +134,10 @@ def main() -> int:
             "checkpoint": artifact.name,
         },
         "limitations": [
-            "A pallet may have multiple photographs; pallet MAE averages predictions within pallet.",
-            "The source labels are total egg counts for photographed pallets, not individual egg or egg-box annotations.",
+            "A source group may have multiple photographs; group MAE averages predictions within each group.",
+            "The source labels are total counts for photographed substrates, not individual egg or egg-box annotations.",
+            "The site/direction group key is inferred from sample codes and has not been confirmed by source documentation.",
+            "The dataset has no zero-count examples, so negative-image specificity has not been measured.",
             "This evaluation estimates counts on this dataset and does not infer species, adult abundance, or disease risk.",
             "Test set contains only records with a reviewed geometric substrate crop; excluded/uncertain images are outside this metric.",
         ],
