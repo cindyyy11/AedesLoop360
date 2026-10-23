@@ -6,6 +6,7 @@ import { Badge, Empty, type RunAction } from "./workspace";
 type Frame = Schema["LiveFrameResult"];
 const FRAME_WIDTH = 640;
 const TARGET_FPS = 2;
+const MAX_FAILURES = 5;
 
 /* Frames are sent one at a time: the next is captured only after the last answer returns, so a slow model lowers the rate instead of queueing work. */
 export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"][]; act: RunAction; busy: boolean }) {
@@ -19,6 +20,7 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
   const [frame, setFrame] = useState<Frame | null>(null);
   const [fps, setFps] = useState(0);
   const [error, setError] = useState("");
+  const [retrying, setRetrying] = useState(0);
   const [assetId, setAssetId] = useState("");
   const [rights, setRights] = useState("Own live capture, authorised test zone");
   const [saved, setSaved] = useState("");
@@ -66,6 +68,7 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
   const loop = async () => {
     runningRef.current = true;
     let last = performance.now();
+    let failures = 0;
     while (runningRef.current) {
       const started = performance.now();
       try {
@@ -75,17 +78,23 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
           const response = await api.POST("/api/v1/drones/live-detect", { body: { file: "" }, bodySerializer: () => form });
           const data = result(response).data;
           if (!runningRef.current) break;
+          failures = 0; setRetrying(0);
           setFrame(data); setError(""); draw(data);
           const at = performance.now(); setFps(Math.round(10000 / (at - last)) / 10); last = at;
         }
-      } catch (e) { if (runningRef.current) { setError(String(e)); stop(); return; } }
+      } catch (e) {
+        if (!runningRef.current) break;
+        // The first frame can wait on a cold model load and be dropped by the proxy; keep trying a few times before giving up.
+        failures += 1; setRetrying(failures);
+        if (failures >= MAX_FAILURES) { setError(`Detection stopped after ${failures} failed frames: ${String(e)}`); setRetrying(0); stop(); return; }
+      }
       const wait = 1000 / TARGET_FPS - (performance.now() - started);
       if (wait > 0) await new Promise(r => setTimeout(r, wait));
     }
   };
 
   const begin = async (kind: "camera" | "file", file?: File) => {
-    stop(); setError(""); setFrame(null); setSaved("");
+    stop(); setError(""); setFrame(null); setSaved(""); setRetrying(0);
     const video = videoRef.current; if (!video) return;
     try {
       if (kind === "camera") {
@@ -125,7 +134,7 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
       <canvas ref={overlayRef} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
     </div>
     {!source && <Empty>No feed running. Start the camera or choose a video file.</Empty>}
-    {source && <p role="status" aria-live="polite">{frame ? `${frame.detections.length} candidate(s) · ${frame.latency_ms} ms model time · ${fps} frames/s · ${frame.model_version ?? "no model"}` : "Waiting for the first result…"}</p>}
+    {source && <p role="status" aria-live="polite">{retrying > 0 ? `Detector loading or unreachable, retrying (${retrying}/${MAX_FAILURES})…` : frame ? `${frame.detections.length} candidate(s) · ${frame.latency_ms} ms model time · ${fps} frames/s · ${frame.model_version ?? "no model"}` : "Waiting for the first result…"}</p>}
     {status && status !== "DETECTED" && status !== "NO_DETECTIONS" && <p role="alert" className="error">Detector unavailable ({status}): {frame?.note}</p>}
     {status === "NO_DETECTIONS" && <p className="muted">No candidates in this frame. That does not show the area is clear.</p>}
     {source && <div className="form-row">
