@@ -111,7 +111,7 @@ export function EggCounter({ trapId, trapName, user, act, version, busy }: Share
         {loading && <p role="status">Loading persisted egg analyses…</p>}
         {error && <div role="alert" className="error">{error} <button type="button" className="secondary" onClick={() => { setLoading(true); setRetry(v => v + 1); }}>Retry analyses</button></div>}
         {!loading && !error && !latest && <div className="result-empty"><b aria-hidden="true">?</b><p><strong>No photo counted for {trapName} yet.</strong> The count appears here as soon as you analyse one. Missing estimates are not zero eggs.</p></div>}
-        {latest && <ResultCard proposal={latest} canReview={canReview} act={act} busy={busy} />}
+        {latest && <ResultCard key={latest.id} proposal={latest} canReview={canReview} act={act} busy={busy} />}
         {older.length > 0 && <details className="fold"><summary>Earlier photos for this trap ({older.length})</summary>
           <ul className="history">{older.map(p => <li key={p.id}><img src={`/api/v1/media/${p.media_id}`} alt={`Earlier egg photo ${p.id}`} /><span><strong>{p.proposed_count == null ? "Count unavailable" : `${p.proposed_count} eggs proposed`}</strong><small>{p.status} · {p.confirmed_sample_id ? "confirmed" : "not surveillance"} · {p.created_at.slice(0, 10)}</small></span></li>)}</ul>
         </details>}
