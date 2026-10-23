@@ -24,11 +24,12 @@ async function login(page: Page, role: string) {
 test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await page.goto("/dashboard");
   await login(page,"coordinator");
-  await expect(page.getByRole("heading",{name:"Surveillance by block",exact:true})).toBeVisible();
-  await expect(page.getByText("DATA UNAVAILABLE",{exact:true}).first()).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Needs your attention",exact:true})).toBeVisible();
+  // The block card, not the map drawing, states that a silent block has no data.
+  await expect(page.getByText("NO DATA",{exact:true}).first()).toBeVisible();
   await page.screenshot({path:testInfo.outputPath("dashboard-desktop.png"),fullPage:true});
   await page.getByRole("link",{name:"Drone missions",exact:true}).click();
-  await expect(page.getByRole("heading",{name:"Candidate evidence"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Simulation mission"})).toBeVisible();
   await page.getByRole("button",{name:"Create new draft"}).click();
   await page.getByRole("button",{name:"Submit for review"}).click();
   for(const check of ["SIMULATED MODE","AUTHORIZED TEST ZONE","NO CHEMICAL PAYLOAD"]) await page.getByLabel(check,{exact:true}).check();
@@ -46,16 +47,19 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   const groundReview=page.locator(".timeline-event").getByText("GROUND_REVIEW",{exact:true});
   await expect(groundReview.first()).toBeVisible();
   await login(page,"coordinator");
+  await page.getByRole("tab",{name:/Detector tools/}).click();
   await page.getByLabel("PNG / JPEG · maximum 5 MB").setInputFiles("../../fixtures/images/aerial-001.png");
   await page.getByLabel("Linked asset").selectOption("asset-p02");
   await page.getByRole("button",{name:"Import private image"}).click();
   await expect(page.getByRole("status").filter({hasText:"DEMO_PREANNOTATED_V1"})).toBeVisible();
+  await page.getByRole("tab",{name:/Review findings/}).click();
   await expect(page.getByText("Exact synthetic fixture match; copied human-authored annotation, not model inference")).toBeVisible({timeout:5000});
   await page.getByRole("link",{name:"Next-round planning",exact:true}).click();
   await page.getByLabel("Window start · UTC").fill("2026-10-09");
   await page.getByLabel("Window end · UTC").fill("2026-10-16");
   await page.getByRole("button",{name:"Recompute allocation"}).click();
   await expect(page.getByRole("heading",{name:"Inspection priorities",exact:true})).toBeVisible();
+  await page.getByRole("tab",{name:/Recommended work/}).click();
   const before=await page.locator(".hash").textContent();
   await page.getByRole("link",{name:"Smart ovitraps",exact:true}).click();
   await page.getByRole("tab",{name:/Type a count by hand/}).click();
@@ -63,7 +67,9 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await expect(page.getByRole("status")).toContainText("Interval saved");
   await page.getByRole("button",{name:"Import interval",exact:true}).click();
   await expect(page.getByRole("status")).toContainText("Interval saved");
+  await page.getByRole("tab",{name:/Trap monitoring/}).click();
   await expect(page.getByRole("button",{name:/2026-10-09 to 2026-10-16: 100 eggs/})).toHaveCount(1);
+  await page.getByRole("tab",{name:/Corrections & devices/}).click();
   const revisionOption=page.getByLabel("Sample to correct").locator("option").filter({hasText:"B1-T1-2026W42-NEW"});
   await page.getByLabel("Sample to correct").selectOption(await revisionOption.getAttribute("value")??"");
   await page.getByLabel("Corrected human count").fill("73");
@@ -73,7 +79,9 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await page.getByLabel("Window start · UTC").fill("2026-10-09");
   await page.getByLabel("Window end · UTC").fill("2026-10-16");
   await page.getByRole("button",{name:"Recompute allocation"}).click();
+  await page.getByRole("tab",{name:/Recommended work/}).click();
   await expect(page.locator(".hash")).not.toHaveText(before??"");
+  await page.getByRole("tab",{name:/Plan the round/}).click();
   await page.getByRole("button",{name:"Approve task plan"}).click();
   await page.goto("/assets/asset-p03");
   await login(page,"operator");
@@ -82,6 +90,7 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await login(page,"coordinator");
   await page.getByRole("button",{name:"Confirm evidence"}).click();
   // The work queue defaults to the board; the list view carries the headings and status badges asserted below.
+  await page.getByRole("tab",{name:/Work queue/}).click();
   const listView=page.getByRole("button",{name:"List",exact:true});
   await listView.click();
   await expect(page.getByRole("heading",{name:"ENGINEERING REVIEW",exact:true})).toBeVisible();
@@ -99,7 +108,7 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await expect(page.getByText("VERIFIED RESOLVED",{exact:true})).toBeVisible();
   await page.goto("/dashboard");
   await page.setViewportSize({width:390,height:844});
-  await expect(page.getByRole("heading",{name:"Surveillance by block",exact:true})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Needs your attention",exact:true})).toBeVisible();
   await page.screenshot({path:testInfo.outputPath("dashboard-mobile.png"),fullPage:true});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
   expect(overflow).toBe(false);
