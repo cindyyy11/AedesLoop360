@@ -110,7 +110,7 @@ def propose_from(
         proposed_count=result.estimate if result.status == "ESTIMATED" else None,
         model_version=result.model_version,
         reason=result.reason,
-        details=result.details,
+        details=result.details or {},
     )
     db.add(analysis)
     db.flush()
