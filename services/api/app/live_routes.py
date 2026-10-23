@@ -6,7 +6,10 @@ UNCERTAIN candidate that needs ground review.
 """
 
 import io
+import os
+import threading
 import time
+from collections import deque
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -24,6 +27,26 @@ router = APIRouter(prefix="/api/v1")
 DB = Annotated[Session, Depends(session)]
 Actor = Annotated[User, Depends(current_user)]
 MAX_FRAME_BYTES = 1024 * 1024
+# A sliding window per user. The panel sends about 2 frames a second, so the default allows
+# twice that. The window lives in this process only; with several API workers each enforces its own.
+WINDOW_SECONDS = 5.0
+MAX_FRAMES_PER_WINDOW = int(os.getenv("AEDES_LIVE_MAX_FRAMES_PER_5S", "20"))
+_recent: dict[str, deque[float]] = {}
+_lock = threading.Lock()
+
+
+def _check_rate(user_id: str, clock=time.monotonic) -> None:
+    now = clock()
+    with _lock:
+        hits = _recent.setdefault(user_id, deque())
+        while hits and now - hits[0] >= WINDOW_SECONDS:
+            hits.popleft()
+        if len(hits) >= MAX_FRAMES_PER_WINDOW:
+            wait = max(1, int(WINDOW_SECONDS - (now - hits[0])) + 1)
+            raise HTTPException(
+                429, "Too many live frames; slow the feed down", headers={"Retry-After": str(wait)}
+            )
+        hits.append(now)
 
 
 class LiveDetection(BaseModel):
@@ -47,6 +70,7 @@ class LiveFrameResult(BaseModel):
 @router.post("/drones/live-detect", response_model=One[LiveFrameResult])
 def live_detect(db: DB, user: Actor, file: UploadFile = File()):
     require(user, "operator", "reviewer", "inspector", "coordinator")
+    _check_rate(user.id)
     content = file.file.read(MAX_FRAME_BYTES + 1)
     if len(content) > MAX_FRAME_BYTES:
         raise HTTPException(413, "Frame exceeds 1 MB; send a downscaled JPEG")
