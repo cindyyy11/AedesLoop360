@@ -33,7 +33,7 @@ References: https://www.cdc.gov/mosquitoes/pdfs/mosquito-control-508.pdf ; https
 
 - Record registered asset locations only in sites where operator has the right/consent to manage; use fictional coordinates for demo.
 - Aerial images may capture bystanders, private balconies or interior windows. Redact faces/identifiers where practical; restrict uploader access and avoid unnecessary retained footage.
-- RBAC: inspector may access assigned sites, coordinator may view tenant operational summaries, admin may manage accounts, drone operator sees only authorised mission assets. Apply checks server-side.
+- RBAC (two demo roles): operator may access assigned sites, coordinator may view tenant operational summaries and the audit log; operator sees only authorised mission assets. Apply checks server-side.
 - Default-deny object storage and APIs; access logs; short-lived signed URLs; environment-specific retention; user export/delete review where appropriate.
 - Do not put resident addresses, device credentials or photos in public repo or shared bug reports.
 

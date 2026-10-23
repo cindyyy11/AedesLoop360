@@ -74,7 +74,7 @@ def test_completed_held_out_evaluation_record_is_exposed_with_provenance():
 
 
 def test_surveillance_no_samples_is_unavailable_and_tenant_scoped():
-    user, tenant_id = make_actor("inspector")
+    user, tenant_id = make_actor("operator")
     db = SessionLocal()
     db.add(
         Block(
@@ -107,7 +107,7 @@ def test_surveillance_no_samples_is_unavailable_and_tenant_scoped():
 
 
 def test_different_collection_duration_is_excluded_from_comparable_rate():
-    user, tenant_id = make_actor("inspector")
+    user, tenant_id = make_actor("operator")
     db = SessionLocal()
     start, end = now() - timedelta(days=14), now()
     block = Block(tenant_id=tenant_id, mode="SIMULATED", name="A", x=1, y=1)

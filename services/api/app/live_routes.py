@@ -87,7 +87,7 @@ def _read_frame(file: UploadFile) -> tuple[bytes, int, int]:
 
 @router.post("/drones/live-detect", response_model=One[LiveFrameResult])
 def live_detect(db: DB, user: Actor, file: UploadFile = File()):
-    require(user, "operator", "reviewer", "inspector", "coordinator")
+    require(user, "operator", "coordinator")
     _check_rate(user.id)
     content, width, height = _read_frame(file)
     started = time.perf_counter()
@@ -136,7 +136,7 @@ def egg_live_preview(
     roi: str = Form(),
 ):
     """Preview a count while aiming a camera at a paddle. Nothing is stored or confirmed."""
-    require(user, "operator", "reviewer", "inspector", "coordinator")
+    require(user, "operator", "coordinator")
     get(db, Trap, trap_id, user)
     try:
         box = json.loads(roi)
@@ -163,7 +163,7 @@ def egg_live_preview(
             "roi": box,
             "persisted": False,
             "note": result.reason
-            or "Preview only. Not stored, not surveillance data; a reviewer must confirm a saved photo.",
+            or "Preview only. Not stored, not surveillance data; a coordinator must confirm a saved photo.",
         },
         "source_mode": "IMPORTED",
     }

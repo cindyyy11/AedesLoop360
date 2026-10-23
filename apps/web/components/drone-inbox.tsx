@@ -16,7 +16,7 @@ export function DroneInbox({ traps, user, act, version, busy }: Shared & { traps
   const [retry, setRetry] = useState(0);
   const [lastPass, setLastPass] = useState("");
   const canFly = ["operator", "coordinator"].includes(user.role);
-  const canReview = ["reviewer", "coordinator"].includes(user.role);
+  const canReview = ["coordinator"].includes(user.role);
   const names = new Map(traps.map(t => [t.id, t.name]));
 
   useEffect(() => {

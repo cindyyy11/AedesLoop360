@@ -31,7 +31,7 @@ async def upload_egg_analysis(
     captured_at: str = Form(),
     roi: str = Form(),
 ):
-    require(user, "reviewer", "coordinator")
+    require(user, "coordinator")
     get(db, Trap, trap_id, user)
     try:
         crop = json.loads(roi)
