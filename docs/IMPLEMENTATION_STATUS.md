@@ -1,5 +1,14 @@
 # Implementation Status
 
+## Full-suite run (23 October 2026)
+
+Backend, from the repo root with `PYTHONPATH=services/api` and a writable temp directory (`--basetemp=<dir>`; the default `pytest-of-User` temp folder is access-denied on this Windows host, which turns 27 tests into errors):
+- `python -m pytest services/api/tests --ignore=services/api/tests/test_loop.py` passed **79**.
+- `python -m pytest services/api/tests/test_loop.py` passed **9**.
+- Run as one process the suite gives 86 passed and 2 failed (`test_sample_count_correction_is_audited_and_append_only`, `test_recurrence_work_followup_audit_persistence`). Cause: `test_analytics.py` and `test_drone_upload.py` set `AEDES_DATABASE_URL` at import, so whichever module imports `app.db` first fixes the engine for the process; `test_loop.py` then migrates a different file and its audit-trigger assertions run against a database created without triggers. Not fixed; use the two commands above. Running from `services/api` also fails to import `scripts.*`.
+
+Playwright, all 23 specs against a fresh isolated stack (SQLite, API, worker, Next dev on `localhost`, Edge, real drone and egg checkpoints, fake cameras): **22 passed, 1 skipped** (`township-3d-live.spec.ts`, skipped by its own condition). This includes `closed-loop.spec.ts` and the other workstream's `drone-sim.spec.ts`, which run against the working tree as it stands, not a clean checkout. Dev server, not a production build.
+
 ## Live egg preview on Smart ovitraps (23 October 2026)
 
 Added `POST /api/v1/ovitraps/{trap_id}/egg-live-preview` and an **Aim a camera (live preview)** control in the Egg counter. Frames (1024 px) from a camera or video file go about once a second to the same egg model as photo uploads, with a fixed guide box as the counted area. The panel shows a rolling median, range and a "steady" flag over the last 5 frames. Responses are `IMPORTED`; nothing is stored, no analysis or sample row is created, and a frame only becomes data through **Use this frame for the full count**, which fills the existing upload form (1600 px frame, guide box as the starting area, region checkbox unticked). A reviewer still confirms the area, rights, time and count. If the model is unavailable the panel shows no number (never zero) and clears earlier readings. Tenant-scoped through the trap; same four roles and separate 20-per-5-seconds rate bucket as drone live detection. No migration.
