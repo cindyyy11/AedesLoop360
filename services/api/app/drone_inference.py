@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import io
 import os
+import threading
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -35,9 +36,18 @@ def _load_model(path: str) -> Any:
     return YOLO(path)
 
 
+_load_lock = threading.Lock()
+
+
 @lru_cache(maxsize=2)
-def _cached_model(path: str) -> Any:
+def _cached_model_unlocked(path: str) -> Any:
     return _load_model(path)
+
+
+def _cached_model(path: str) -> Any:
+    # Serialise first loads so a request arriving during warm-up waits instead of loading twice.
+    with _load_lock:
+        return _cached_model_unlocked(path)
 
 
 @lru_cache(maxsize=4)
