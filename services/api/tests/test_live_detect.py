@@ -70,3 +70,33 @@ def test_checkpoint_digest_is_cached():
         first = drone_inference._checkpoint_digest(str(ckpt))
         ckpt.write_bytes(b"changed")
         assert drone_inference._checkpoint_digest(str(ckpt)) == first
+
+
+def test_rate_limit_is_per_user_and_recovers(monkeypatch):
+    monkeypatch.setattr(live_routes, "_recent", {})
+    monkeypatch.setattr(live_routes, "MAX_FRAMES_PER_WINDOW", 3)
+    t = [100.0]
+    for _ in range(3):
+        live_routes._check_rate("a", lambda: t[0])
+    with pytest.raises(HTTPException) as err:
+        live_routes._check_rate("a", lambda: t[0])
+    assert err.value.status_code == 429
+    assert int(err.value.headers["Retry-After"]) >= 1
+    live_routes._check_rate("b", lambda: t[0])  # another user is unaffected
+    t[0] += live_routes.WINDOW_SECONDS
+    live_routes._check_rate("a", lambda: t[0])  # window has passed
+
+
+def test_rejected_frames_do_not_run_the_model(monkeypatch):
+    monkeypatch.setattr(live_routes, "_recent", {})
+    monkeypatch.setattr(live_routes, "MAX_FRAMES_PER_WINDOW", 1)
+    calls = []
+    monkeypatch.setattr(
+        drone_inference,
+        "infer_candidates",
+        lambda _: calls.append(1) or drone_inference.InferenceResult("NO_DETECTIONS", "m", []),
+    )
+    live_routes.live_detect(None, user("operator"), frame())
+    with pytest.raises(HTTPException) as err:
+        live_routes.live_detect(None, user("operator"), frame())
+    assert err.value.status_code == 429 and len(calls) == 1
