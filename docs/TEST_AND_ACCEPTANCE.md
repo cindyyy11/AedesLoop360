@@ -11,6 +11,47 @@
 
 ## Egg-count model-assisted review — 23 October 2026
 
+### Completion browser acceptance
+
+`apps/web/tests/egg-completion.spec.ts` exercises the real configured Ridge model with the user-domain `2-NE-1.JPEG`, rights/time/ROI, proposed count 8, explicit correction to technician count 7, no sample before confirmation, idempotent confirmation, one saved chart interval after reload and mobile width at 390px. The isolated run passed (1 test, 59.8s before adding the equivalent dashboard assertion). A separate authenticated analytics request confirmed block-1 egg_sum=7, valid_trap_intervals=1, source MODEL_ASSISTED_REVIEWED. This validates software integration, not independent model accuracy: this photo belongs to the already observed exploratory dataset.
+
+The final expanded test also passed (1 test, 1.4m), using `AEDES_BROWSER_EXECUTABLE=C:/Users/User/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe`, after fixing the cold inference proxy timeout by warming the serving process. Intermediate runs failed on cold proxy loading, a short sign-in assertion and default Chromium launch timeout; these are not reported as passes. `npx tsc --noEmit`, `npx eslint tests/egg-completion.spec.ts`, JSON template parsing and `git diff --check` passed. The first sandboxed Node check failed because the runtime shim was unavailable there; the configured local Node runtime checks succeeded. Mobile screenshot: ignored `data/tests/egg-completion-mobile.png` (390px wide), visually inspected.
+
+A final direct HTTP check against the warmed API also passed: a second paddle produced 21 proposed eggs, accepted technician count 16, one valid interval in analytics and no duplicate after replay; upload-through-analytics took 3.33 seconds. This is software acceptance using published photos, not a new field-accuracy measurement. Isolated test servers were stopped afterward; databases and logs remain under ignored `data/tests/`. No normal demo records were changed.
+
+Use a **fresh database per run**, because the test deliberately preserves its interval and audit evidence. From repo root, terminal A:
+
+```powershell
+$repo = (Resolve-Path .).Path.Replace('\', '/')
+$env:AEDES_DATABASE_URL = "sqlite:///$repo/data/tests/egg-e2e-$([guid]::NewGuid().ToString('N')).sqlite"
+$env:AEDES_WEB_ORIGIN = 'http://127.0.0.1:3107'
+New-Item -ItemType Directory -Force data/tests | Out-Null
+python -m alembic -c services/api/alembic.ini upgrade head
+Push-Location services/api
+python -m app.seed
+Pop-Location
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-api.ps1 -Port 8107
+```
+
+Terminal B, repo root:
+
+```powershell
+$env:AEDES_API_ORIGIN = 'http://127.0.0.1:8107'
+$env:AEDES_NEXT_DIST_DIR = '.next-egg-completion'
+Set-Location apps/web
+npm run dev -- --port 3107
+```
+
+Terminal C, repo root:
+
+```powershell
+$env:AEDES_WEB_ORIGIN = 'http://127.0.0.1:3107'
+Set-Location apps/web
+npx playwright test tests/egg-completion.spec.ts --reporter=list
+```
+
+Stop the isolated servers after testing. The database remains under ignored `data/tests/` for inspection; no schema migration files are added by this acceptance test. Fresh-image/zero-egg field validation is still unexecuted; follow `docs/EGG_FIELD_VALIDATION.md` before making an operational accuracy claim.
+
 Local configuration verification: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-api.ps1 -CheckOnly` passed, loading `texture_ridge` with SHA-256 `3ccd3f459141197c13710a51e3cadb4e94b62657dcbb6f24df376f7e647c7714`. A paddle-image inference smoke returned `ESTIMATED` (8 eggs). The API was restarted using this launcher; `GET http://127.0.0.1:8000/api/v1/health` returned `{"ready":true,"database":"sqlite"}`. No migration was executed: repo-root `aedes.db` was already at 008 with `egg_analyses`. Browser upload/reviewer confirmation remains unverified in this configuration step. Local server logs are in ignored `data/egg-api.stdout.log` and `data/egg-api.stderr.log`.
 
 Acceptance scenario: the reviewer selects a trap, uploads a matched image with declared rights and UTC capture time, manually selects the complete substrate ROI, and receives a persisted `ESTIMATED` or explicit unavailable status. A proposal alone creates no interval. The reviewer confirms/corrects its count with a unique collection interval, sample effort, quality and rationale; only then is the imported interval visible in trends. Replaying the same idempotency key returns the existing record, while an already-used sample/image/substrate interval is rejected. Offline traps remain invalid. The API service suite checks role/tenant boundaries, no pre-confirmation sample, null failure, overrides, audit, retries, duplicate interval handling and generic endpoint bypass.

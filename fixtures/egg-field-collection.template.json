@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "purpose": "Independent field evaluation; empty template, not observations",
+  "status": "AWAITING_NEW_LABELLED_PHOTOS",
+  "checkpoint_sha256": "3ccd3f459141197c13710a51e3cadb4e94b62657dcbb6f24df376f7e647c7714",
+  "record_fields": {
+    "code": "Unique image identifier",
+    "image_path": "Relative image path inside the private collection folder",
+    "sha256": "SHA-256 of original image bytes",
+    "physical_paddle_id": "Stable ID shared by all photos of the same physical paddle",
+    "trap_id": "Pseudonymous trap ID",
+    "site_id": "Pseudonymous site ID",
+    "collection_round_id": "Documented round identifier",
+    "interval_start": "UTC ISO-8601",
+    "interval_end": "UTC ISO-8601",
+    "captured_at": "UTC ISO-8601",
+    "device": "Phone/camera model",
+    "rights": "Ownership or licence and attribution",
+    "roi": "Reviewed normalized [left, top, right, bottom]",
+    "quality": "GOOD, BLURRED or OCCLUDED",
+    "technician_1_count": "Nonnegative integer or null if unknown",
+    "technician_2_count": "Independent blinded nonnegative integer or null",
+    "adjudicated_count": "Nonnegative integer; real zero is 0, unknown is null",
+    "adjudication_notes": "How disagreements were resolved before revealing predictions"
+  },
+  "records": []
+}
