@@ -1,13 +1,7 @@
-import os
-import tempfile
-from pathlib import Path
-
 import pytest
 from sqlalchemy import select
 
-TEST_DIR = tempfile.TemporaryDirectory(dir=Path.cwd() / ".pytest_cache", ignore_cleanup_errors=True)
-os.environ["AEDES_DATABASE_URL"] = "sqlite:///" + str(Path(TEST_DIR.name) / "upload.db")
-
+# The shared test database is configured in conftest.py.
 from app import drone_inference  # noqa: E402
 from app.db import Base, SessionLocal, now  # noqa: E402
 from app.main import upload  # noqa: E402

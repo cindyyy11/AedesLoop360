@@ -1,5 +1,11 @@
 # Implementation Status
 
+## Backend test isolation fixed (23 October 2026)
+
+`services/api/tests/conftest.py` now creates one migrated SQLite database (real Alembic migrations, so audit triggers exist) in git-ignored `data/tests/` and sets `AEDES_DATABASE_URL` before any test module is imported. `test_analytics.py`, `test_drone_upload.py` and `test_loop.py` no longer set their own database, which is what made the first-imported module decide the engine for the whole process and broke the two `test_loop.py` audit tests. The conftest also points pytest's temp directory at `data/tests/pytest-tmp` when `--basetemp` is not given (the default system temp folder was access-denied on this Windows host), and `pyproject.toml` adds `pythonpath = [".", "services/api"]` so `app.*` and `scripts.*` import from any directory.
+
+Result: `python -m pytest -q` passes **88 in one process**, with no `PYTHONPATH` or `--basetemp`, from both the repo root and `services/api`; `ruff check services/api scripts` is clean. The demo databases (`aedes.db`, `data/aedes-demo.sqlite`) kept their modification times. The two-command workaround and the "86 passed, 2 failed" note in the next section are historical. Modules share one database now, so tests must keep using their own tenant or record ids; `test_loop.py` still seeds the shared database. Not run: the browser suite after this change (it does not use these files).
+
 ## Full-suite run (23 October 2026)
 
 Backend, from the repo root with `PYTHONPATH=services/api` and a writable temp directory (`--basetemp=<dir>`; the default `pytest-of-User` temp folder is access-denied on this Windows host, which turns 27 tests into errors):

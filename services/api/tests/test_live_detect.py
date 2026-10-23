@@ -1,8 +1,6 @@
 """Live frame detection is stateless, authorised and never creates findings."""
 
 import io
-import tempfile
-from pathlib import Path
 
 import pytest
 from fastapi import HTTPException
@@ -61,15 +59,12 @@ def test_unknown_role_denied():
     assert err.value.status_code in (401, 403)
 
 
-def test_checkpoint_digest_is_cached():
-    with tempfile.TemporaryDirectory(
-        dir=Path.cwd() / ".pytest_cache", ignore_cleanup_errors=True
-    ) as d:
-        ckpt = Path(d) / "w.pt"
-        ckpt.write_bytes(b"abc")
-        first = drone_inference._checkpoint_digest(str(ckpt))
-        ckpt.write_bytes(b"changed")
-        assert drone_inference._checkpoint_digest(str(ckpt)) == first
+def test_checkpoint_digest_is_cached(tmp_path):
+    ckpt = tmp_path / "w.pt"
+    ckpt.write_bytes(b"abc")
+    first = drone_inference._checkpoint_digest(str(ckpt))
+    ckpt.write_bytes(b"changed")
+    assert drone_inference._checkpoint_digest(str(ckpt)) == first
 
 
 def test_rate_limit_is_per_user_and_recovers(monkeypatch):

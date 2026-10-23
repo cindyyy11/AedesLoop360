@@ -1,14 +1,9 @@
-import os
-import tempfile
 from datetime import timedelta
-from pathlib import Path
 from uuid import uuid4
 
 from sqlalchemy import select
 
-# The API module captures its engine at import, so use an isolated test database.
-TEST_DIR = tempfile.TemporaryDirectory(dir=Path.cwd() / ".pytest_cache", ignore_cleanup_errors=True)
-os.environ["AEDES_DATABASE_URL"] = "sqlite:///" + str(Path(TEST_DIR.name) / "analytics.db")
+# The shared test database is configured in conftest.py.
 from app.db import Base, SessionLocal, now  # noqa: E402
 from app.contracts import ModelEvaluations  # noqa: E402
 from app.main import analytics_evaluations, analytics_surveillance, run_allocation_benchmark  # noqa: E402

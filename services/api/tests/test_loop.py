@@ -8,12 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
-# A separate database for each test run; never touches the user's demo data.
-import tempfile
-
-Path("data/tests").mkdir(parents=True, exist_ok=True)
-TEST_DIR = tempfile.TemporaryDirectory(dir=Path("data/tests").resolve(), ignore_cleanup_errors=True)
-os.environ["AEDES_DATABASE_URL"] = "sqlite:///" + str(Path(TEST_DIR.name) / "test.db")
+# The isolated, migrated test database is configured in conftest.py; it never touches the user's demo data.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.db import SessionLocal, now  # noqa: E402
@@ -28,10 +23,6 @@ CHECKS = ["SIMULATED_MODE", "AUTHORIZED_TEST_ZONE", "NO_CHEMICAL_PAYLOAD"]
 
 @pytest.fixture(scope="session", autouse=True)
 def database():
-    subprocess.run(
-        [sys.executable, "-m", "alembic", "-c", "services/api/alembic.ini", "upgrade", "head"],
-        check=True,
-    )
     seed()
     seed()
 
@@ -375,7 +366,7 @@ def test_recurrence_work_followup_audit_persistence():
     )
     result = subprocess.run(
         [sys.executable, "-c", code],
-        env={**os.environ, "PYTHONPATH": "services/api"},
+        env={**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1])},
         capture_output=True,
     )
     assert result.returncode == 0, result.stderr
