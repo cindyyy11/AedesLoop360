@@ -4,11 +4,13 @@ import { api, result, type Schema } from "../lib/api";
 import { Badge, Empty, type RunAction } from "./workspace";
 import { Tracker, type Track } from "./live-tracker";
 import { useFrameFeed } from "./use-frame-feed";
+import { ModelStatus, useModelReady } from "./use-model-ready";
 
 type Frame = Schema["LiveFrameResult"];
 const TARGET_FPS = 2;
 
 export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"][]; act: RunAction; busy: boolean }) {
+  const modelState = useModelReady("drone");
   const overlayRef = useRef<HTMLCanvasElement>(null);
   const trackerRef = useRef(new Tracker());
   const [inView, setInView] = useState(0);
@@ -75,6 +77,7 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
       <label className="secondary file-button">Play video file<input type="file" accept="video/*" hidden disabled={!!source} onChange={e => { const f = e.target.files?.[0]; if (f) void begin("file", f); e.target.value = ""; }} /></label>
       <button type="button" className="secondary" disabled={!source} onClick={stop}>Stop</button>
     </div>
+    <ModelStatus state={modelState} name="The drone detector" />
     {error && <p role="alert" className="error">{error}</p>}
     <div className="live-stage" style={{ position: "relative", maxWidth: 720 }}>
       <video ref={videoRef} muted playsInline aria-label="Live feed under analysis" style={{ width: "100%", background: "#0b2239", display: source ? "block" : "none" }} />

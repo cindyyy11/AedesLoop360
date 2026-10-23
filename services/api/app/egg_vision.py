@@ -6,6 +6,7 @@ import hashlib
 import io
 import os
 from dataclasses import dataclass
+import threading
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -128,9 +129,23 @@ def _load_model(path: str) -> tuple[Any, dict[str, Any], str]:
     )
 
 
+# Largest technician count in the paddle training set; texture features extrapolate wildly when
+# the counted area includes background, so anything beyond twice this is withheld, not shown.
+TRAINING_MAX_COUNT = 305
+MAX_PLAUSIBLE_COUNT = 2 * TRAINING_MAX_COUNT
+
+_load_lock = threading.Lock()
+
+
 @lru_cache(maxsize=2)
-def _cached_model(path: str):
+def _cached_model_unlocked(path: str):
     return _load_model(path)
+
+
+def _cached_model(path: str):
+    # Serialise first loads so a request arriving during warm-up waits instead of loading twice.
+    with _load_lock:
+        return _cached_model_unlocked(path)
 
 
 def infer_egg_count(image_bytes: bytes, roi: list[float]) -> EggEstimate:
@@ -188,6 +203,16 @@ def infer_egg_count(image_bytes: bytes, roi: list[float]) -> EggEstimate:
                 estimate = max(
                     0, min(10000, round(float(torch.expm1(prediction.squeeze()).item())))
                 )
+        if estimate > MAX_PLAUSIBLE_COUNT:
+            return EggEstimate(
+                "OUT_OF_RANGE",
+                None,
+                metadata["model_version"],
+                "The model reads far more than any paddle it was trained on "
+                f"(trained on 1 to {TRAINING_MAX_COUNT} eggs). The counted area probably "
+                "includes background; re-aim so the paddle fills the box.",
+                details={"checkpoint_sha256": digest, "method": metadata["method"], "roi": roi},
+            )
         return EggEstimate(
             "ESTIMATED",
             estimate,

@@ -67,6 +67,7 @@ test("real paddle model: review, interval persistence, retry and chart", async (
   expect(block.valid_trap_intervals).toBe(1);
   expect(block.sources).toContain("MODEL_ASSISTED_REVIEWED");
   await page.reload();
+  await page.getByRole("tab", { name: /Trap monitoring/ }).click();
   await expect(page.getByRole("button", { name: /2026-09-01 to 2026-09-08: 7 eggs/ })).toHaveCount(1);
   await page.getByRole("button", { name: /2026-09-01 to 2026-09-08: 7 eggs/ }).click();
   await expect(page.getByRole("heading", { name: "isolated-paddle-2-NE-1 · 7 reviewed eggs" })).toBeVisible();

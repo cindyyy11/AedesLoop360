@@ -15,6 +15,7 @@ test("a refused camera explains itself and leaves nothing running", async ({ pag
   await page.goto("/missions");
   await enter(page);
   await page.getByRole("link", { name: /Drone missions/i }).click();
+  await page.getByRole("tab", { name: /Detector tools/ }).click();
   const panel = page.locator("section[aria-labelledby='live-title']");
   await panel.getByRole("button", { name: "Start camera" }).click();
   await expect(panel.getByRole("alert")).toContainText(/Camera permission was denied|Could not start the camera/, { timeout: 20000 });

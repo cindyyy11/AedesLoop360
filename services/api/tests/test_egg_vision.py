@@ -76,3 +76,34 @@ def test_group_median_checkpoint_runs_through_inference(tmp_path, monkeypatch):
     assert result.status == "ESTIMATED"
     assert result.estimate == 42
     assert result.model_version == "test-median"
+
+
+def test_implausibly_large_estimate_is_withheld(monkeypatch, tmp_path):
+    import io
+
+    import numpy as np
+    from PIL import Image
+
+    from app import egg_vision
+
+    checkpoint = tmp_path / "model.joblib"
+    checkpoint.write_bytes(b"x")
+    monkeypatch.setenv("AEDES_EGG_MODEL_PATH", str(checkpoint))
+
+    class Huge:
+        def predict(self, _features):
+            return [float(np.log1p(2000))]
+
+    monkeypatch.setattr(
+        egg_vision,
+        "_cached_model",
+        lambda _path: ({"model": Huge()}, {"method": "texture_ridge", "model_version": "t"}, "d"),
+    )
+    monkeypatch.setattr(
+        "app.egg_features.image_features", lambda _image: np.zeros(4, dtype=float)
+    )
+    buffer = io.BytesIO()
+    Image.new("RGB", (64, 64)).save(buffer, "PNG")
+    result = egg_vision.infer_egg_count(buffer.getvalue(), [0.0, 0.0, 1.0, 1.0])
+    assert result.status == "OUT_OF_RANGE"
+    assert result.estimate is None

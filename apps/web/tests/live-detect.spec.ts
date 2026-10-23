@@ -26,6 +26,7 @@ test("live camera frames show UNCERTAIN candidates and store nothing until saved
   await page.goto("/missions");
   await enter(page);
   await page.getByRole("link", { name: /Drone missions/i }).click();
+  await page.getByRole("tab", { name: /Detector tools/ }).click();
   const panel = page.locator("section[aria-labelledby='live-title']");
   await expect(panel.getByText("IMPORTED · analysed, not stored")).toBeVisible();
   const before = await findingCount(page);
@@ -60,6 +61,7 @@ test("a video file is analysed like a camera and tracked across frames", async (
   await page.goto("/missions");
   await enter(page);
   await page.getByRole("link", { name: /Drone missions/i }).click();
+  await page.getByRole("tab", { name: /Detector tools/ }).click();
   const panel = page.locator("section[aria-labelledby='live-title']");
   const before = await findingCount(page);
 

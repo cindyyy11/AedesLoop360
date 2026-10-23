@@ -25,7 +25,7 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from . import drone, drone_inference, planning
+from . import drone, drone_inference, model_warmup, planning
 from . import allocation_benchmark, data_analytics
 from .contracts import (
     One,
@@ -129,6 +129,7 @@ def _migrate_and_seed() -> None:
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     _migrate_and_seed()
+    model_warmup.start_background_warmup()
     yield
 
 
@@ -188,7 +189,11 @@ def collection(values):
 @app.get(P + "/health", response_model=HealthResponse)
 def health(db: DB):
     db.execute(text("SELECT 1"))
-    return {"ready": True, "database": db.bind.dialect.name}
+    return {
+        "ready": True,
+        "database": db.bind.dialect.name,
+        "models": model_warmup.model_state(),
+    }
 
 
 @app.post(P + "/auth/login", response_model=LoginResponse)

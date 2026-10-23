@@ -4,8 +4,10 @@ import dynamic from "next/dynamic";
 import { useMemo, useRef, useState } from "react";
 import type { Schema } from "../lib/api";
 import { buildTimeline } from "./drone-sim-model";
+import { PAD } from "./township-geo";
 import type { SimTarget, SimTick, SimView } from "./drone-sim-scene";
 
+const TownshipMap = dynamic(() => import("./township-map"), { ssr: false });
 const Scene = dynamic(() => import("./drone-sim-scene"), {
   ssr: false, loading: () => <p className="township-render-status" role="status">Preparing 3D flight simulation…</p>,
 });
@@ -33,6 +35,9 @@ export function DroneSim({ mission, findings, assets, events }: {
     return out;
   }, [events]);
   const timeline = useMemo(() => buildTimeline(targets.length), [targets.length]);
+  // Map view: registered assets only; the 3D street layout is illustrative, so the map drone is interpolated between real asset coordinates on the same timeline.
+  const mapData = useMemo(() => ({ blocks: [], traps: [], assets: targets.flatMap(tg => assets.find(a => a.id === tg.assetId) ?? []) }), [targets, assets]);
+  const mapRoute = useMemo(() => targets.map(tg => tg.assetId), [targets]);
   const frame = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<SimView>("orbit");
   const [playing, setPlaying] = useState(false);
@@ -40,12 +45,25 @@ export function DroneSim({ mission, findings, assets, events }: {
   const [seek, setSeek] = useState({ value: 0, seq: 0 });
   const [recenter, setRecenter] = useState(0);
   const [ready, setReady] = useState(false);
+  const [mode, setMode] = useState<"3d" | "map">("3d");
+  const [mapCommand, setMapCommand] = useState({ command: "reset", sequence: 0 });
   const [tick, setTick] = useState<SimTick | null>(null);
   const duration = timeline.duration;
   const t = tick?.t ?? 0;
   const jump = (value: number) => { setSeek(v => ({ value, seq: v.seq + 1 })); };
   const recorded = Object.keys(outcomes).length;
   const idx = tick?.targetIndex ?? -1;
+  const dronePoint = useMemo(() => {
+    const pts = mapData.assets.map(a => ({ x: a.x, y: a.y }));
+    if (!pts.length || pts.length !== targets.length) return PAD;
+    const seg = timeline.segs.find(s => t <= s.t1) ?? timeline.segs[timeline.segs.length - 1];
+    const k = seg.t1 > seg.t0 ? Math.min(Math.max((t - seg.t0) / (seg.t1 - seg.t0), 0), 1) : 1;
+    const lerp = (a: { x: number; y: number }, b: { x: number; y: number }) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
+    if (seg.phase === "Transit") return lerp(seg.idx === 0 ? PAD : pts[seg.idx - 1], pts[seg.idx]);
+    if (["Descend to inspect", "Inspect", "Climb"].includes(seg.phase)) return pts[seg.idx];
+    if (seg.phase === "Return to pad") return lerp(pts[pts.length - 1], PAD);
+    return PAD;
+  }, [mapData, targets.length, timeline, t]);
   const current = idx >= 0 ? targets[idx] : undefined;
   const shown = (i: number) => !!outcomes[targets[i].assetId] && tick !== null && t >= timeline.arrive[i] + 1.5;
   const det = tick?.detection;
@@ -55,9 +73,10 @@ export function DroneSim({ mission, findings, assets, events }: {
   if (!targets.length) return <p className="empty">This mission has no resolvable targets, so there is nothing to simulate.</p>;
   return <div className="dronesim">
     <div className="dronesim-stage">
-      <div className="dronesim-viewport">
+      <div className="dronesim-viewport" data-mode={mode}>
         <Scene targets={targets} outcomes={outcomes} playing={playing} speed={speed} seek={seek} view={view} recenter={recenter} frame={frame}
           onTick={setTick} onEnd={() => setPlaying(false)} onReady={setReady} />
+        {mode === "map" && <TownshipMap data={mapData} dronePoint={dronePoint} route={mapRoute} visited={Math.max(0, (tick?.arrivedIndex ?? -1) + 1)} routeOnly={false} selected="" onSelect={() => {}} mapCommand={mapCommand} />}
         <div ref={frame} className="dronesim-pov" data-view={view} aria-label="Simulated drone camera">
           <span className="dronesim-pov-tag">DRONE CAM · simulated render</span>
           {det && detTarget && <div className="dronesim-bbox" data-state={detTarget.waterState} style={{ left: `${det.x * 100}%`, top: `${det.y * 100}%`, width: `${det.w * 100}%`, height: `${det.h * 100}%` }}>
@@ -71,7 +90,7 @@ export function DroneSim({ mission, findings, assets, events }: {
           <div><small>Battery · simulated</small><b>{Math.round(tick?.battery ?? 100)}%</b></div>
         </div>}
         {ready && !playing && t === 0 && <button className="dronesim-play-big" onClick={() => setPlaying(true)}>▶ Play flight replay</button>}
-        <div className="dronesim-badges"><span>SIMULATED</span><span>ACTUATOR DISARMED</span></div>
+        <div className="dronesim-badges">{mode === "map" && <span>FICTIONAL TOWNSHIP ON REAL BASEMAP · NOT A SURVEY</span>}<span>SIMULATED</span><span>ACTUATOR DISARMED</span></div>
       </div>
       <div className="dronesim-controls">
         <div className="dronesim-transport">
@@ -84,9 +103,13 @@ export function DroneSim({ mission, findings, assets, events }: {
           <input type="range" min={0} max={duration} step={0.1} value={t} disabled={!ready} aria-label="Flight timeline position" aria-valuetext={`${clock(t)} of ${clock(duration)}`} onChange={e => { setPlaying(false); jump(Number(e.target.value)); }} />
           <time>{clock(duration)}</time>
         </div>
-        <div className="dronesim-views" role="group" aria-label="Camera view">
-          {VIEWS.map(([v, label]) => <button key={v} className="secondary" aria-pressed={view === v} disabled={!ready} onClick={() => setView(v)}>{label}</button>)}
-          <button className="secondary" disabled={!ready || view !== "orbit"} onClick={() => setRecenter(v => v + 1)}>Reset view</button>
+        <div className="dronesim-views" role="toolbar" aria-label="Scene navigator">
+          <div role="group" aria-label="Scene view">{([["3d", "3D view"], ["map", "Map view"]] as const).map(([m, label]) => <button key={m} className="secondary" aria-pressed={mode === m} disabled={!ready} onClick={() => setMode(m)}>{label}</button>)}</div>
+          <div role="group" aria-label="Camera view">
+            {VIEWS.map(([v, label]) => <button key={v} className="secondary" aria-pressed={view === v} disabled={!ready || mode !== "3d"} onClick={() => setView(v)}>{label}</button>)}
+            {mode === "map" && ["in", "out"].map(c => <button key={c} className="secondary" onClick={() => setMapCommand(v => ({ command: c, sequence: v.sequence + 1 }))}>{c === "in" ? "Zoom in" : "Zoom out"}</button>)}
+            <button className="secondary" disabled={!ready || (mode === "3d" && view !== "orbit")} onClick={() => mode === "map" ? setMapCommand(v => ({ command: "reset", sequence: v.sequence + 1 })) : setRecenter(v => v + 1)}>Reset view</button>
+          </div>
         </div>
       </div>
       <p className="sr-only" role="status" aria-live="polite">{announced ? `Inspecting target ${tick!.arrivedIndex + 1}, ${announced.name}.` : ""}</p>

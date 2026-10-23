@@ -1068,6 +1068,13 @@ export interface components {
             ready: boolean;
             /** Database */
             database: string;
+            /**
+             * Models
+             * @default {}
+             */
+            models: {
+                [key: string]: string;
+            };
         };
         /** HistoryRecord */
         HistoryRecord: {

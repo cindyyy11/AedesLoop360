@@ -11,7 +11,7 @@ type Props = {
   onSelect: (id: string) => void; eventAsset?: string; eventKind?: string; playing: boolean;
   onReady: (ready: boolean) => void;
   cameraAction: { command: string; sequence: number };
-  night: boolean; heat: boolean; route: string[];
+  night: boolean; heat: boolean; route: string[]; routeOnly?: boolean;
   loopStage: number; loop: LoopHighlight;
 };
 type SceneHandle = { update: (props: Props) => void };
@@ -392,7 +392,7 @@ export default function TownshipScene(props: Props) {
         route.geometry = new THREE.BufferGeometry().setFromPoints(points.length ? [new THREE.Vector3(-48, 19, 48), ...points] : []);
         route.computeLineDistances();
       }
-      route.visible = !!eventPosition && p.route.length > 0;
+      route.visible = (!!eventPosition || !!p.routeOnly) && p.route.length > 0;
       drone.visible = !!eventPosition;
       eventKind = p.eventKind;
       if (eventPosition && p.eventAsset !== currentTarget) {
