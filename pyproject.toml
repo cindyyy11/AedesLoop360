@@ -1,5 +1,7 @@
 [tool.pytest.ini_options]
 testpaths = ["services/api/tests"]
+# Repo root for `scripts.*` imports, services/api for `app.*`, so tests run from any directory.
+pythonpath = [".", "services/api"]
 
 [tool.ruff]
 line-length = 100
