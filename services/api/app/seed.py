@@ -2,7 +2,9 @@ import argparse
 import hashlib
 import io
 import json
+import os
 from datetime import timedelta
+from pathlib import Path
 
 from PIL import Image, ImageDraw
 
@@ -138,7 +140,13 @@ def seed() -> None:
         db.flush()
         aerial = media(db, "AERIAL-001", entity_id="media-aerial-001")
         new_egg = media(db, "B1-T1-W42-NEW", 100, entity_id="media-egg-new-001")
-        fixture_dir = ROOT / "fixtures/images"
+        # Media bytes live in the DB; optional disk copies are for local inspection only.
+        # Vercel function bundles are read-only outside /tmp.
+        fixture_dir = (
+            Path("/tmp/aedes-fixtures/images")
+            if os.environ.get("VERCEL") == "1"
+            else ROOT / "fixtures/images"
+        )
         fixture_dir.mkdir(parents=True, exist_ok=True)
         (fixture_dir / "aerial-001.png").write_bytes(aerial.content)
         (fixture_dir / "egg-new-001.png").write_bytes(new_egg.content)
