@@ -895,9 +895,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[AssetRecord] */
         Many_AssetRecord_: {
@@ -906,9 +906,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[AuditRecord] */
         Many_AuditRecord_: {
@@ -917,9 +917,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[FindingRecord] */
         Many_FindingRecord_: {
@@ -928,9 +928,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[JobRecord] */
         Many_JobRecord_: {
@@ -939,9 +939,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[MissionEventRecord] */
         Many_MissionEventRecord_: {
@@ -950,9 +950,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[MissionRecord] */
         Many_MissionRecord_: {
@@ -961,9 +961,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[ObservationRecord] */
         Many_ObservationRecord_: {
@@ -972,9 +972,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[SampleRecord] */
         Many_SampleRecord_: {
@@ -983,9 +983,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[SampleRevisionRecord] */
         Many_SampleRevisionRecord_: {
@@ -994,9 +994,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[Summary] */
         Many_Summary_: {
@@ -1005,9 +1005,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[TrapRecord] */
         Many_TrapRecord_: {
@@ -1016,9 +1016,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** Many[WorkOrderRecord] */
         Many_WorkOrderRecord_: {
@@ -1027,9 +1027,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** MediaRecord */
         MediaRecord: {
@@ -1194,9 +1194,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** One[AnalyticsRunRecord] */
         One_AnalyticsRunRecord_: {
@@ -1204,9 +1204,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** One[HistoryRecord] */
         One_HistoryRecord_: {
@@ -1214,9 +1214,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** One[MediaRecord] */
         One_MediaRecord_: {
@@ -1224,9 +1224,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** One[MissionRecord] */
         One_MissionRecord_: {
@@ -1234,9 +1234,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** One[ObservationRecord] */
         One_ObservationRecord_: {
@@ -1244,9 +1244,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** One[SampleRecord] */
         One_SampleRecord_: {
@@ -1254,9 +1254,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** One[SampleRevisionRecord] */
         One_SampleRevisionRecord_: {
@@ -1264,9 +1264,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** One[WorkOrderRecord] */
         One_WorkOrderRecord_: {
@@ -1274,9 +1274,9 @@ export interface components {
             /**
              * Source Mode
              * @default SIMULATED
-             * @constant
+             * @enum {string}
              */
-            source_mode: "SIMULATED";
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
         };
         /** PlanInput */
         PlanInput: {

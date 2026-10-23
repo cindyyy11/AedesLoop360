@@ -58,6 +58,8 @@ For the interactive 3D presentation, follow [3D_TOWNSHIP.md](3D_TOWNSHIP.md): op
 
 ## Data analytics evidence
 
+To try the optional local drone model path, set `$env:AEDES_DRONE_MODEL_PATH='C:\models\aedes-candidates.pt'` before starting the API, using a checkpoint trained for the candidate-container dataset classes. The current Python environment has Ultralytics 8.4.63 installed, but no compatible checkpoint is included. Upload a new permitted image; the API records candidate boxes as `IMPORTED` and `UNCERTAIN` for ground review. An empty model result still queues review. The built-in exact synthetic image remains a fixture. Without the checkpoint, uploads report `NOT_CONFIGURED` and no ML metrics appear.
+
 On the dashboard, open **Drone Model Performance & Ovitrap Count Accuracy** to show `NOT_EVALUATED` for both models while no independent labels/checkpoints are installed. Open **Block Surveillance Quality & Trend** to show valid/expected interval denominators, provenance, collection/upload times and Block 4 `DATA_UNAVAILABLE`. As coordinator, choose **Run simulated allocation benchmark**; the persisted result compares uniform, static and adaptive under one eight-hour budget and is labelled `SIMULATED EXPERIMENT`. It may show uniform tying or exceeding adaptive on some scenario metrics. It demonstrates reproducible planning behavior, not field benefit.
 
 From the repository root, the data inventory/evaluator outputs can be reproduced with:

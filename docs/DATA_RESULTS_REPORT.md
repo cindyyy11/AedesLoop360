@@ -23,6 +23,8 @@ The checked-in specification is version 1.0; the update prompt calls it version 
 
 No accuracy percentages, dengue effects, egg reductions, or model performance claims are made. The CLI evaluates real supplied labels and predictions when available; its metric unit tests use hand-calculated toy inputs solely to verify formulas.
 
+The drone upload route now has a lazy optional local YOLO adapter. It records model-produced candidate boxes as `IMPORTED` and `UNCERTAIN` when `AEDES_DRONE_MODEL_PATH` is configured; otherwise it queues ground review. This changes the integration capability, not the evidence status: no external dataset, compatible checkpoint or genuine evaluation metrics are present. The model version includes a checkpoint hash prefix on inference records.
+
 ## Surveillance and operations
 
 The dashboard reads persisted tenant-scoped block summaries and trap sample intervals. Its new interval view exposes valid/expected denominators, quality exclusions, interval length, source modes, and collection/upload timestamps. Blocks with no valid samples show `DATA_UNAVAILABLE`; they do not receive an egg value of zero.
