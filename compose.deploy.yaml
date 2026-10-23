@@ -1,0 +1,69 @@
+# Full stack: Postgres, migrations, API, durable worker, web. See docs/DEPLOYMENT.md.
+# docker compose --env-file deploy/.env.deploy -f compose.deploy.yaml up --build
+x-api-env: &api-env
+  AEDES_DATABASE_URL: postgresql+psycopg://aedes:${AEDES_DB_PASSWORD:?set AEDES_DB_PASSWORD}@db:5432/aedes
+  AEDES_WEB_ORIGIN: ${AEDES_WEB_ORIGIN:-http://localhost:3000}
+  AEDES_SECURE_COOKIES: ${AEDES_SECURE_COOKIES:-0}
+  AEDES_DRONE_MODEL_PATH: ${AEDES_DRONE_MODEL_PATH-/models/drone/best.pt}
+  AEDES_EGG_MODEL_PATH: ${AEDES_EGG_MODEL_PATH-/models/eggs/texture_ridge.joblib}
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: aedes
+      POSTGRES_USER: aedes
+      POSTGRES_PASSWORD: ${AEDES_DB_PASSWORD:?set AEDES_DB_PASSWORD}
+    volumes:
+      - aedes_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aedes -d aedes"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    build: { context: ., dockerfile: deploy/Dockerfile.api }
+    command: ["migrate"]
+    environment:
+      <<: *api-env
+      AEDES_SEED_DEMO: ${AEDES_SEED_DEMO:-1}
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    build: { context: ., dockerfile: deploy/Dockerfile.api }
+    command: ["api"]
+    environment: *api-env
+    volumes:
+      - ./deploy/models:/models:ro
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/openapi.json')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  worker:
+    build: { context: ., dockerfile: deploy/Dockerfile.api }
+    command: ["worker"]
+    environment: *api-env
+    volumes:
+      - ./deploy/models:/models:ro
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+
+  web:
+    build: { context: ., dockerfile: deploy/Dockerfile.web }
+    depends_on:
+      api: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  aedes_pg:
