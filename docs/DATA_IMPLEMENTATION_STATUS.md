@@ -33,6 +33,18 @@ Follow the three PowerShell terminals in `README.md` (migrate/seed/API, durable 
 
 Files changed by this audit: this document and the audit addendum in `docs/IMPLEMENTATION_STATUS.md`. Generated local artifacts are under `data/audit-20261023/`; existing application edits were preserved.
 
+## Drone inference slice in progress
+
+Added `services/api/app/drone_inference.py`, an optional local YOLO checkpoint adapter. The upload route now invokes it for non-fixture images when `AEDES_DRONE_MODEL_PATH` points to a checkpoint and the optional runtime is installed. Each returned box becomes an `IMPORTED` candidate finding with normalized coordinates, score and checkpoint hash prefix in its model version. All detections remain `UNCERTAIN` and require ground review. Empty detections, missing checkpoints, missing runtime and inference exceptions remain ground-review records. The exact synthetic fixture behavior is retained. This wires the model execution boundary; **no compatible trained checkpoint or external dataset is present yet**, so the current live configuration still returns `NOT_CONFIGURED`.
+
+Files added/changed in this slice: `services/api/app/drone_inference.py`, `services/api/requirements-ml.txt`, `services/api/tests/test_drone_inference.py`, `services/api/app/main.py`, `services/api/tests/test_loop.py`, and `docs/superpowers/plans/2026-10-23-drone-dataset-inference.md`. No migration is needed because the existing Media/Finding entities already preserve adapter, mode, class, box, confidence, model version and audit events.
+
+Publisher page says DOI `10.17632/vr3kkt9mvn.1`, 2,821 PNG images, five candidate-object classes, a 70/15/15 split and CC BY 4.0. These remain publisher-declared metadata; local files, labels, split and near-duplicate/site leakage have not been verified. [Publisher record](https://data.mendeley.com/datasets/vr3kkt9mvn/1). Ultralytics documents local installation and Python prediction; the optional dependency is isolated from the core service. [Ultralytics installation and prediction guide](https://docs.ultralytics.com/quickstart).
+
+After a compatible checkpoint is trained and validated, start the API with `AEDES_DRONE_MODEL_PATH=C:\models\aedes-candidates.pt` set in the same PowerShell environment. Install the optional runtime into the API Python environment with `python -m pip install -r services/api/requirements-ml.txt`. Do not point at generic COCO weights and interpret their labels as the five aerial-dataset classes. Dataset acquisition, format conversion, training, independent test predictions and real dashboard evaluation registration remain incomplete. No empirical performance claim is supported by this code change.
+
+Verification for this in-progress slice is pending; see the final audit report for commands and results.
+
 **Audit date:** 2026-10-23  
 **Scope:** Incremental data-only analytics and evaluation update. Existing app behavior and fixture claims were inspected before changes.
 

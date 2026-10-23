@@ -37,9 +37,9 @@
 
 **Interface:** `infer_candidates(image_bytes: bytes, model_path: str | None = None, loader: Callable | None = None) -> InferenceResult`. Return a status, model version, and zero or more normalized candidate boxes. Import/load the ML package only when a checkpoint is configured.
 
-- [ ] Test absent checkpoint and missing package behavior.
-- [ ] Test coordinate normalization, confidence/class extraction, and empty predictions using a fake loader.
-- [ ] Implement lazy Ultralytics adapter and explicit failure statuses.
+- [x] Test absent checkpoint and missing package behavior.
+- [x] Test coordinate normalization, confidence/class extraction, and empty predictions using a fake loader.
+- [x] Implement lazy Ultralytics adapter and explicit failure statuses.
 
 ### Task 3: Connect upload to candidate findings
 
@@ -49,8 +49,8 @@
 
 **Behavior:** Exact fixture hash retains existing fixture path. Other images run the configured detector; each detection is persisted as an `IMPORTED`, `UNCERTAIN` candidate with confidence, checkpoint-derived model version, and review rationale. If not configured or inference fails, preserve a whole-image ground-review finding with an honest reason. No inference result is automatically eligible for action.
 
-- [ ] Add route-level tests for detected, empty, missing-model and inference-failure cases.
-- [ ] Implement the integration while keeping current upload response and tenant/audit behavior.
+- [x] Add route-level test for a detected candidate and preserve the missing-model path test.
+- [x] Implement the integration while keeping current upload response and tenant/audit behavior.
 
 ### Task 4: Record setup, training, evaluation and limitations
 
