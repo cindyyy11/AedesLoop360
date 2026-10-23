@@ -32,8 +32,11 @@ test("live camera frames show UNCERTAIN candidates and store nothing until saved
 
   await panel.getByRole("button", { name: "Start camera" }).click();
   // The first result can take a while because the model loads on first use.
-  await expect(panel.getByRole("status").filter({ hasText: /\d+ candidate\(s\) · \d+ ms model time/ })).toBeVisible({ timeout: 55000 });
+  await expect(panel.getByRole("status").filter({ hasText: /\d+ candidate\(s\) in view · \d+ distinct track\(s\) this session · \d+ ms model time/ })).toBeVisible({ timeout: 55000 });
   await expect(panel.getByRole("status").filter({ hasText: /^[1-9]\d* candidate/ })).toBeVisible({ timeout: 15000 });
+
+  // A steady scene settles on one distinct track, not a new box every frame.
+  await expect(panel.getByRole("status").filter({ hasText: /1 distinct track\(s\) this session/ })).toBeVisible();
 
   // The overlay canvas has drawn at least one box.
   const drawn = await panel.locator("canvas").evaluate((c: HTMLCanvasElement) => c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data.some((v, i) => i % 4 === 3 && v > 0));
