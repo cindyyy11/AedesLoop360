@@ -12,6 +12,7 @@ dependencies = [
   "Pillow==12.2.0",
   "psycopg[binary]==3.2.13",
   "httpx==0.28.1",
+  "numpy==2.2.6",
 ]
 
 [tool.vercel]
