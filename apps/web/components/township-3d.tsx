@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api, result, type Schema } from "../lib/api";
 
+const TownshipMap = dynamic(() => import("./township-map"), { ssr: false });
 const Scene = dynamic(() => import("./township-scene"), {
   ssr: false, loading: () => <p className="township-render-status" role="status">Preparing 3D township…</p>,
 });
@@ -14,6 +15,7 @@ export type TownshipData = {
   traps: Schema["TrapRecord"][];
   missions: Schema["MissionRecord"][];
   plans: Schema["AllocationRecord"][];
+  findings: Schema["FindingRecord"][];
 };
 const chapters = [
   { title: "Inspect with evidence", text: "Explore registered assets and replay recorded mission outcomes. Dry and uncertain findings stay visible, including skipped actions.", href: "/drone/missions", link: "Open mission approval & evidence" },
@@ -33,6 +35,9 @@ export default function Township3D({ version }: { version: number }) {
   const [eventState, setEventState] = useState<{ missionId: string; events: Schema["MissionEventRecord"][]; error: string } | null>(null);
   const [cursor, setCursor] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
+  const [view, setView] = useState<"3d" | "map">("3d");
+  const [mapCommand, setMapCommand] = useState({ command: "reset", sequence: 0 });
   const [sceneReady, setSceneReady] = useState(false);
   const [night, setNight] = useState(true);
   const [heat, setHeat] = useState(false);
@@ -46,11 +51,11 @@ export default function Township3D({ version }: { version: number }) {
     Promise.all([
       api.GET("/api/v1/blocks", options), api.GET("/api/v1/assets", options),
       api.GET("/api/v1/ovitraps", options), api.GET("/api/v1/drones/missions", options),
-      api.GET("/api/v1/planning/runs", options),
-    ]).then(([b, a, t, m, p]) => {
+      api.GET("/api/v1/planning/runs", options), api.GET("/api/v1/findings", options),
+    ]).then(([b, a, t, m, p, f]) => {
       if (controller.signal.aborted) return;
       setData({ blocks: result(b).data, assets: result(a).data, traps: result(t).data,
-        missions: result(m).data, plans: result(p).data });
+        missions: result(m).data, plans: result(p).data, findings: result(f).data });
       setError("");
     }).catch(e => { if (!controller.signal.aborted) setError(String(e)); });
     return () => controller.abort();
@@ -78,9 +83,9 @@ export default function Township3D({ version }: { version: number }) {
       if (document.hidden) return;
       if (eventIndex >= events.length - 1) setPlaying(false);
       else setCursor(eventIndex + 1);
-    }, 3500);
+    }, 3500 / speed);
     return () => window.clearInterval(timer);
-  }, [playing, events.length, eventIndex]);
+  }, [playing, events.length, eventIndex, speed]);
 
   useEffect(() => {
     if (!loopPlaying) return;
@@ -104,17 +109,25 @@ export default function Township3D({ version }: { version: number }) {
   const eventAsset = typeof event?.payload.asset_id === "string" ? event.payload.asset_id : undefined;
   const assetOf = (e: Schema["MissionEventRecord"]) => (typeof e.payload.asset_id === "string" && data.assets.some(a => a.id === e.payload.asset_id) ? e.payload.asset_id : undefined);
   const route = events.map(assetOf).filter((id): id is string => !!id);
+  // Planned stops come from the mission's stored target findings; shown only while no events were recorded.
+  const planned = (activeMission?.target_ids ?? []).map(id => data.findings.find(f => f.id === id)?.asset_id).filter((id): id is string => !!id && data.assets.some(a => a.id === id));
+  const showPlanned = chapter === 0 && !!activeId && eventState?.missionId === activeId && !eventState.error && !events.length && planned.length > 0;
   const idsOf = (kind?: string) => [...new Set(events.filter(e => !kind || e.kind === kind).map(assetOf).filter((id): id is string => !!id))];
+  const visited = events.slice(0, eventIndex + 1).map(assetOf).filter(Boolean).length;
   const loop = { found: idsOf(), review: idsOf("GROUND_REVIEW"), action: idsOf("MOCK_ACTION_RECORDED") };
 
   return <section className="township-experience" aria-label="3D township walkthrough">
     <div className="township-intro"><div><span className="page-eyebrow">The feedback loop / in three dimensions</span><h2>One township. Every decision connected.</h2></div><span className="badge">SIMULATED · fictional geometry</span></div>
     <div className="township-chapters" aria-label="Presentation chapters">{chapters.map((c, i) => <button key={c.title} aria-pressed={chapter === i} onClick={() => chooseChapter(i)}><span>0{i + 1}</span>{c.title}</button>)}</div>
     <div className="township-stage">
-      <div className="township-viewport">
-        <Scene data={data} chapter={chapter} selected={selected} onSelect={setSelected} onReady={setSceneReady} eventAsset={chapter === 0 ? eventAsset : undefined} eventKind={chapter === 0 ? event?.kind : undefined} route={chapter === 0 ? route : []} playing={playing && chapter === 0 && !!event} cameraAction={camera} night={night} heat={heat} loopStage={chapter === 3 ? loopStage : -1} loop={loop} />
-        <div className="township-scene-caption"><strong>AE / 360</strong><span>Illustrative buildings & trap placement<br/>Drone path is a visual replay, not telemetry</span></div>
-        <div className="township-camera" aria-label="3D camera controls">{[["left", "Rotate left"], ["right", "Rotate right"], ["in", "Zoom in"], ["out", "Zoom out"], ["reset", "Reset view"]].map(([command, label]) => <button key={command} disabled={!sceneReady} onClick={() => setCamera(v => ({ command, sequence: v.sequence + 1 }))}>{label}</button>)}<button disabled={!sceneReady} aria-pressed={!night} onClick={() => setNight(v => !v)}>{night ? "Switch to day" : "Switch to night"}</button><button disabled={!sceneReady} aria-pressed={heat} onClick={() => setHeat(v => !v)}>Egg-count overlay</button></div>
+      <div className="township-viewport" data-view={view}>
+        {view === "map" ? <TownshipMap data={data} route={chapter === 0 ? (showPlanned ? planned : route) : []} visited={visited} routeOnly={showPlanned} eventAsset={chapter === 0 ? eventAsset : undefined} eventKind={chapter === 0 ? event?.kind : undefined} selected={selected} onSelect={setSelected} mapCommand={mapCommand} /> : <Scene data={data} chapter={chapter} selected={selected} onSelect={setSelected} onReady={setSceneReady} eventAsset={chapter === 0 ? eventAsset : undefined} eventKind={chapter === 0 ? event?.kind : undefined} route={chapter === 0 ? (showPlanned ? planned : route) : []} routeOnly={showPlanned} playing={playing && chapter === 0 && !!event} cameraAction={camera} night={night} heat={heat} loopStage={chapter === 3 ? loopStage : -1} loop={loop} />}
+        <div className="township-scene-caption"><strong>AE / 360</strong><span>{view === "map" ? "Fictional township placed on a real basemap for presentation · not a survey or GPS" : "Illustrative buildings & trap placement"}<br/>Drone path is a visual replay, not telemetry</span></div>
+        <div className="township-nav" role="toolbar" aria-label="Scene navigator">
+          <div role="group" aria-label="Scene view">{([["3d", "3D view"], ["map", "Map view"]] as const).map(([v, label]) => <button key={v} aria-pressed={view === v} onClick={() => { setView(v); setSceneReady(false); }}>{label}</button>)}</div>
+          <div role="group" aria-label="Camera">{[["left", "Rotate left", false], ["right", "Rotate right", false], ["in", "Zoom in", true], ["out", "Zoom out", true], ["reset", "Reset view", true]].map(([command, label, onMap]) => <button key={String(command)} disabled={view === "3d" ? !sceneReady : !onMap} onClick={() => view === "3d" ? setCamera(v => ({ command: String(command), sequence: v.sequence + 1 })) : setMapCommand(v => ({ command: String(command), sequence: v.sequence + 1 }))}>{String(label)}</button>)}</div>
+          <div role="group" aria-label="Display"><button disabled={view !== "3d" || !sceneReady} aria-pressed={!night} onClick={() => setNight(v => !v)}>{night ? "Switch to day" : "Switch to night"}</button><button disabled={view !== "3d" || !sceneReady} aria-pressed={heat} onClick={() => setHeat(v => !v)}>Egg-count overlay</button></div>
+        </div>
       </div>
       <aside className="township-inspector">
         <span className="page-eyebrow">Chapter 0{chapter + 1} / 0{chapters.length}</span><h3>{chapters[chapter].title}</h3><p>{chapters[chapter].text}</p>
@@ -130,9 +143,11 @@ export default function Township3D({ version }: { version: number }) {
       {eventState?.missionId === activeId && eventState.error ? <><p role="alert">{eventState.error}</p><button onClick={() => setRetry(v => v + 1)}>Retry recorded events</button></> : activeId && eventState?.missionId !== activeId ? <p role="status">Loading recorded events…</p> : event ? <>
         <p aria-live="polite"><b>{event.kind.replaceAll("_", " ")}</b> · {event.mode}<br/><time>{event.created_at}</time><br/>{typeof event.payload.reason === "string" ? event.payload.reason : typeof event.payload.note === "string" ? event.payload.note : "Recorded event; no outcome inferred."}</p>
         <label>Recorded event<select value={eventIndex} onChange={e => { setCursor(Number(e.target.value)); setPlaying(false); }}>{events.map((e, i) => <option key={e.id} value={i}>{i + 1}. {e.kind.replaceAll("_", " ")}</option>)}</select></label>
+        <label>Replay position<input type="range" min={0} max={Math.max(0, events.length - 1)} step={1} value={eventIndex} aria-valuetext={`Event ${eventIndex + 1} of ${events.length}`} onChange={e => { setCursor(Number(e.target.value)); setPlaying(false); }} /></label>
+        <label>Playback speed<select value={speed} onChange={e => setSpeed(Number(e.target.value))}>{[0.5, 1, 2, 4].map(s => <option key={s} value={s}>{s}×</option>)}</select></label>
         <button onClick={() => { if (!playing && eventIndex === events.length - 1) setCursor(0); setPlaying(v => !v); }}>{playing ? "Pause replay" : "Play recorded events"}</button>
         {eventAsset && data.assets.some(a => a.id === eventAsset) && <button className="secondary" onClick={() => setSelected(eventAsset)}>Inspect event asset</button>}
-      </> : <p>No recorded events. Use Drone missions to review, approve and run a simulation first.</p>}
+      </> : <>{showPlanned && <p>Planned route only: {planned.length} stored target{planned.length === 1 ? "" : "s"} shown as a dashed line. Nothing has been flown and no outcome is implied.</p>}<p>No recorded events. Use Drone missions to review, approve and run a simulation first.</p></>}
     </div></div>}
     {chapter === 1 && <div className="township-block-cards">{data.blocks.map(b => <button key={b.id} className="secondary" onClick={() => setSelected(b.id)}><strong>{b.name}</strong><span>{b.status.replaceAll("_", " ")}</span><small>{b.valid_intervals}/{b.expected_intervals} intervals · {b.unavailable_traps.length} unavailable traps</small></button>)}</div>}
     {chapter === 2 && <div className="township-plan"><h3>Latest saved allocation</h3>{plan ? <><p>{plan.id} · {plan.status} · {plan.mode} · <time>{plan.created_at}</time></p><div className="township-block-cards">{plan.result.block_priorities.map(p => <button key={p.id} className="secondary" onClick={() => setSelected(p.id)}><strong>{p.name} · priority {p.score}</strong><small>{p.reasons.join(" · ")}</small></button>)}</div><p>Saved snapshot; generate a new allocation after changing observations.</p></> : <p>No allocation has been saved. Generate one in Next-round planning to display its actual priorities.</p>}</div>}

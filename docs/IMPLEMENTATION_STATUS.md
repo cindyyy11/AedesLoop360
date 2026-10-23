@@ -1,5 +1,18 @@
 # Implementation Status
 
+## Layout and navigation pass: one loop, one job per tab — 23 October 2026
+
+Presentation and page structure only; no API, schema or migration change.
+
+- **Navigation** (`workspace.tsx`): sidebar grouped as Dashboard / **The loop** (1 Smart ovitraps = Count, 2 Next-round planning = Plan, 3 Drone missions = Inspect, 4 Field operations = Fix & verify) / More (Township, Evidence & system). Each loop page shows a "Step N of 4" bar linking to the other steps. Link names and URLs are unchanged.
+- **Tabs** (shared `Tabs`, only the open tab is mounted so a camera in a closed tab stops): Drone missions = Mission / Review findings (count of candidates waiting) / Detector tools; Smart ovitraps = Add a count / Trap monitoring (count of traps needing attention) / Corrections & devices; Field operations = Work queue / Evidence & review (site history on `/assets/:id`); Evidence & system = Audit trail / Worker jobs / What is real.
+- **Dashboard**: the four KPI rings and three donuts, which repeated the same coverage numbers, are replaced by one loop strip (four steps, each with a live number and a link). Order is now needs-attention, loop strip, map beside block cards, two charts, then a folded "How far can you trust this?" that also holds the full model evaluation report.
+- **Measured page height** on the same fixture data at 1280 px: Ovitraps 4,261 → 1,554 px, Drone missions 4,168 → 2,267 px, Field operations 3,902 → 1,391 px; no horizontal overflow on any page at 390 px.
+- **Bug fixed on the way**: "Assign field operator" sent the hard-coded assignee `user-inspector`, which the API rejects (`422 Choose a tenant field operator`) now that demo roles are coordinator and operator. It now assigns `user-operator`. This was the failing step in `closed-loop.spec.ts`.
+- **Tests**: `closed-loop.spec.ts`, `dashboard.spec.ts`, `live-detect.spec.ts` and `live-camera-denied.spec.ts` now open the tab they need. Against a fresh isolated SQLite stack (API, worker, Next dev, Edge) `closed-loop`, `dashboard`, `drone-sim` (2) and `drone-inbox` passed (5 tests). `npm run typecheck` and `npm run lint` pass (one existing warning in `township-scene.tsx`).
+- **Not run**: `live-detect.spec.ts`, `live-camera-denied.spec.ts` (need the drone checkpoint and a fake camera; the second failed in this stack only because no checkpoint was configured, so a second "detector unavailable" alert appeared), the egg specs, a production build, a real phone. Planning and the Overview map were not restructured here; a separate session was replacing the Overview map with a Leaflet component at the same time.
+- Limits: switching tabs unmounts the other tab, so an unsaved egg-count analysis or camera session in the first tab is lost on switch (same as leaving the page).
+
 ## Automatic detection after a simulated mission, readiness state — 23 October 2026
 
 - When the worker completes a simulated mission, `drone.inspect_targets` runs the local drone detector once on each distinct target image. The summary (`images_checked`, `detector_status`, `new_candidates`) is stored in the `MISSION_COMPLETED` event payload; no new event kind, so existing timelines and event lists are unchanged. New boxes that do not overlap an existing finding (IoU below 0.5, same class) become `UNCERTAIN`, `IMPORTED` findings with a `MODEL_CANDIDATE_RECORDED` audit event (`origin: MISSION_AUTO_INSPECTION`). They never change a mission decision: `MOCK_ACTION_ELIGIBLE` still needs a fixture-matched finding. A missing or failed detector is recorded as its status (`NOT_CONFIGURED`, `INFERENCE_FAILED`…), never as zero containers. The worker is a separate process, so it needs `AEDES_DRONE_MODEL_PATH`; `scripts/start-worker.ps1` sets it.

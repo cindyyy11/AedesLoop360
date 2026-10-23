@@ -39,7 +39,7 @@ function Splash() {
   return <main className="splash"><div className="splash-panel"><div className="splash-logo"><Image src="/brand/aedesloop-emblem-transparent.png" alt="AedesLoop 360 logo: drone circling a smart ovitrap" width={687} height={702} priority /></div><h1>AedesLoop <span>360</span></h1><p className="splash-tag">Smart Mosquito Control</p><div className="splash-track" aria-hidden="true"><span /></div><p role="status" className="splash-status">Getting things ready…</p></div></main>;
 }
 const blurbs: Record<string, string> = {
-  Dashboard: "Start here. See what needs doing today and follow the loop from trap to fix.",
+  Dashboard: "What needs attention today.",
   Township: "Walk through the fictional town in 3D and replay what happened.",
   "Drone missions": "Run a simulated drone pass. A person then checks every candidate it finds.",
   "Smart ovitraps": "Pick a trap, add this week's egg count from a photo, and watch each trap's history.",

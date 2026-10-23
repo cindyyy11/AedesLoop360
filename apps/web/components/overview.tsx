@@ -81,7 +81,7 @@ export function Overview({ version, mapOnly, user, busy }: Shared & { mapOnly: b
           <LoopStory version={version} blocks={blocks} surveillance={surveillance}>
             <Panel title="Township at a glance" aside={<Badge>Fictional map</Badge>}>
                 <TownshipGlance blocks={blocks} assets={assets} selected={selected} onSelect={setSelected} />
-                {current ? (
+                {current && (
                   <div className="selected-asset">
                     <strong>{current.name}</strong>
                     <p>
@@ -89,8 +89,6 @@ export function Overview({ version, mapOnly, user, busy }: Shared & { mapOnly: b
                     </p>
                     <Link href={`/assets/${current.id}`}>Open site history →</Link>
                   </div>
-                ) : (
-                  <p className="muted">Tap a pin on the map.</p>
                 )}
               </Panel>
           </LoopStory>

@@ -84,6 +84,7 @@ test("coordinator counts eggs from a photo, confirms it, and sees it in the trap
   await expect(card).toContainText(`Confirmed by a reviewer as ${proposed + 1} eggs`);
 
   // The confirmed interval is now a selectable bar in the trap chart.
+  await page.getByRole("tab", { name: /Trap monitoring/ }).click();
   await expect(page.getByRole("button", { name: new RegExp(`${day(start)} to ${day(end)}: ${proposed + 1} eggs`) })).toHaveCount(1);
   await testInfo.attach("after-confirm", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
 });

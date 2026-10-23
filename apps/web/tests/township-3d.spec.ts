@@ -25,7 +25,8 @@ async function mockApi(page: Page, options: { empty?: boolean; failed?: boolean;
     const responses: Record<string, unknown> = {
       "/auth/me": { id: "coordinator", role: "coordinator", tenant_id: "tenant-demo" },
       "/blocks": { data: options.empty ? [] : blocks }, "/assets": { data: assets }, "/ovitraps": { data: traps },
-      "/drones/missions": { data: [{ id: "mission-test", mode: "SIMULATED", status: "COMPLETED" }, { id: "mission-empty", mode: "SIMULATED", status: "DRAFT" }] },
+      "/drones/missions": { data: [{ id: "mission-test", mode: "SIMULATED", status: "COMPLETED" }, { id: "mission-empty", mode: "SIMULATED", status: "DRAFT", target_ids: ["finding-a", "finding-b"] }] },
+      "/findings": { data: [{ id: "finding-a", asset_id: "asset-1" }, { id: "finding-b", asset_id: "asset-2" }] },
       "/drones/missions/mission-test/events": { data: options.noEvents ? [] : events },
       "/drones/missions/mission-empty/events": { data: [] },
       "/planning/runs": { data: [{ id: "plan-fixture", created_at: "2026-10-23T00:00:00Z", status: "DRAFT", mode: "SIMULATED", result: { block_priorities: blocks.map(b => ({ ...b, score: 8, reasons: ["Offline traps require servicing"] })) } }] },
@@ -44,7 +45,7 @@ test("3D evidence, recorded replay and chapters are read-only on desktop and mob
   await page.goto("/township");
   const experience = page.getByRole("region", { name: "3D township walkthrough" });
   await expect(experience).toBeVisible();
-  await expect(page.getByTestId("township-canvas").locator("canvas")).toBeVisible();
+  await expect(page.getByTestId("township-canvas").locator("canvas")).toBeVisible({ timeout: 15000 });
   await page.getByLabel("Inspect a block, asset or trap").selectOption("asset-1");
   await expect(experience.getByRole("link", { name: "Open asset evidence" })).toHaveAttribute("href", "/assets/asset-1");
   await page.getByRole("button", { name: "Rotate left", exact: true }).click();
@@ -56,9 +57,31 @@ test("3D evidence, recorded replay and chapters are read-only on desktop and mob
   await page.getByRole("button", { name: "Pause replay", exact: true }).click();
   await page.getByRole("combobox", { name: "Recorded event", exact: true }).selectOption("2");
   await expect(experience).toContainText("Approved fixture action");
+  await page.getByRole("slider", { name: "Replay position" }).fill("0");
+  await expect(page.getByRole("combobox", { name: "Recorded event", exact: true })).toHaveValue("0");
+  await page.getByRole("combobox", { name: "Playback speed" }).selectOption("4");
+  await expect(page.getByRole("combobox", { name: "Playback speed" })).toHaveValue("4");
   await page.screenshot({ path: testInfo.outputPath("township-desktop.png"), fullPage: true });
   await page.getByRole("combobox", { name: "Mission", exact: true }).selectOption("mission-empty");
   await expect(experience).toContainText("No recorded events.");
+  await expect(experience).toContainText("Planned route only: 2 stored targets");
+  await page.route("https://tile.openstreetmap.org/**", route => route.abort());
+  await page.getByRole("button", { name: "Map view", exact: true }).click();
+  await expect(page.getByRole("group", { name: /Real-world basemap/ })).toBeVisible();
+  await expect(page.locator(".tm-route")).toHaveCount(1);
+  await expect(page.locator(".tm-flown")).toHaveCount(0);
+  await expect(experience).toContainText("not a survey or GPS");
+  await expect(page.getByRole("status").filter({ hasText: "Basemap tiles could not load" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Rotate left", exact: true })).toBeDisabled();
+  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await page.getByRole("button", { name: "Reset view", exact: true }).click();
+  await page.getByRole("combobox", { name: "Mission", exact: true }).selectOption("mission-test");
+  await page.getByRole("combobox", { name: "Recorded event", exact: true }).selectOption("1");
+  await expect(page.locator(".tm-flown")).toHaveCount(1);
+  await expect(page.locator(".tm-drone-icon")).toHaveCount(1);
+  await page.getByRole("button", { name: "3D view", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Rotate left", exact: true })).toBeVisible();
+  await page.getByRole("combobox", { name: "Mission", exact: true }).selectOption("mission-empty");
   await expect(experience).not.toContainText("Approved fixture action");
   await page.getByRole("button", { name: "Keep monitoring visible" }).click();
   await page.getByLabel("Inspect a block, asset or trap").selectOption("trap-4");
@@ -81,7 +104,7 @@ test("loop chapter, egg overlay and day/night are read-only and honest", async (
   const writes = await mockApi(page);
   await page.goto("/township");
   const experience = page.getByRole("region", { name: "3D township walkthrough" });
-  await expect(page.getByTestId("township-canvas").locator("canvas")).toBeVisible();
+  await expect(page.getByTestId("township-canvas").locator("canvas")).toBeVisible({ timeout: 15000 });
   await page.getByRole("button", { name: "Keep monitoring visible" }).click();
   await expect(page.getByRole("button", { name: "Egg-count overlay" })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Switch to day" }).click();

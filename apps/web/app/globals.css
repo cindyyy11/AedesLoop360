@@ -1490,8 +1490,9 @@ button, .button { min-height: 44px; }
   .nav-group { display: contents; }
   .nav-group + .nav-group { margin-top: 0; }
   .nav-text small, .nav-step { display: none; }
-  .tab-list { flex-wrap: nowrap; overflow-x: auto; }
-  .tab-list button { flex: none; padding: 10px 14px; }
+  .tab-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
+  .tab-list button { padding: 10px 8px 9px; min-width: 0; }
+  .tab-list button strong { font-size: 13px; flex-wrap: wrap; gap: 4px; line-height: 1.25; }
   .tab-list button small { display: none; }
   .loop-crumb a small { display: none; }
   .loop-crumb li + li::before { display: none; }

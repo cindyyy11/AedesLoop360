@@ -36,7 +36,7 @@ test("3D flight rehearsal replays stored outcomes without writing anything", asy
   const writes = await mockApi(page);
   await page.goto("/drone/missions");
   const sim = page.getByRole("heading", { name: "3D flight rehearsal" });
-  await expect(sim).toBeVisible();
+  await expect(sim).toBeVisible({ timeout: 15000 });
   await expect(page.getByTestId("dronesim-canvas").locator("canvas")).toBeVisible();
   await expect(page.getByText("Mock actuator DISARMED")).toBeVisible();
   const list = page.locator(".dronesim-targets");
@@ -75,5 +75,28 @@ test("draft mission shows a route preview and claims no outcome", async ({ page 
   await page.getByLabel("Mission", { exact: true }).selectOption("mission-draft");
   await expect(page.locator(".dronesim-side")).toContainText("planned route only");
   await expect(page.locator(".dronesim-targets")).toContainText("No event recorded yet");
-  await expect(page.locator(".next-step")).toContainText("Waiting to be sent for review");
+  await expect(page.locator(".next-step")).toContainText("Send the draft for review");
+});
+
+test("flight rehearsal map view shows the route on a real basemap and returns to 3D", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", e => errors.push(e.message));
+  const writes = await mockApi(page);
+  await page.route("https://tile.openstreetmap.org/**", route => route.abort());
+  await page.goto("/drone/missions");
+  await expect(page.getByTestId("dronesim-canvas").locator("canvas")).toBeVisible({ timeout: 15000 });
+  await page.getByRole("button", { name: "Map view", exact: true }).click();
+  await expect(page.getByRole("group", { name: /Real-world basemap/ })).toBeVisible();
+  await expect(page.locator(".tm-route")).toHaveCount(1);
+  await expect(page.locator(".tm-drone-icon")).toHaveCount(1);
+  await expect(page.locator(".dronesim-badges")).toContainText("NOT A SURVEY");
+  await expect(page.getByRole("button", { name: "Drone camera", exact: true })).toBeDisabled();
+  await page.getByRole("slider", { name: "Flight timeline position" }).fill("40");
+  await expect(page.locator(".tm-flown")).toHaveCount(1);
+  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await page.getByRole("button", { name: "Reset view", exact: true }).click();
+  await page.getByRole("button", { name: "3D view", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Drone camera", exact: true })).toBeEnabled();
+  expect(errors).toEqual([]);
+  expect(writes).toEqual([]);
 });

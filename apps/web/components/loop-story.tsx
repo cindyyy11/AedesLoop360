@@ -129,19 +129,19 @@ export function LoopStory({ version, blocks, surveillance, children }: Props) {
   const openSites = blocks.reduce((n, b) => n + b.unresolved_sources, 0);
   const silentNames = blocks.filter((b) => b.status === "DATA_UNAVAILABLE").map((b) => b.name).join(", ");
   const todo = [
-    silent > 0 && { text: `${silentNames}: traps are not reporting. No data is not good news.`, action: "Service traps", href: "/ovitraps" },
-    unreviewed > 0 && { text: `${unreviewed} drone candidate${unreviewed === 1 ? "" : "s"} waiting for a person to check.`, action: "Review", href: "/drone/missions" },
-    pendingVerify > 0 && { text: `${pendingVerify} finished job${pendingVerify === 1 ? "" : "s"} still need verification.`, action: "Verify", href: "/operations" },
-    openSites > 0 && openOrders === 0 && { text: `${openSites} open site${openSites === 1 ? "" : "s"} have no job yet.`, action: "Plan next round", href: "/planning" },
+    silent > 0 && { text: `${silentNames}: no trap data`, action: "Service traps", href: "/ovitraps" },
+    unreviewed > 0 && { text: `${unreviewed} drone candidate${unreviewed === 1 ? "" : "s"} to check`, action: "Review", href: "/drone/missions" },
+    pendingVerify > 0 && { text: `${pendingVerify} job${pendingVerify === 1 ? "" : "s"} to verify`, action: "Verify", href: "/operations" },
+    openSites > 0 && openOrders === 0 && { text: `${openSites} open site${openSites === 1 ? "" : "s"}, no job yet`, action: "Plan", href: "/planning" },
   ].filter((x): x is { text: string; action: string; href: string } => Boolean(x));
   const maxOpen = Math.max(1, ...blocks.map((b) => b.unresolved_sources));
   const expected = blocks.reduce((n, b) => n + b.expected_intervals, 0);
   const valid = blocks.reduce((n, b) => n + b.valid_intervals, 0);
   const steps = [
-    { n: 1, name: "Count", href: "/ovitraps", big: `${valid}/${expected}`, unit: "trap readings in", sub: silent ? `${silent} block${silent === 1 ? "" : "s"} silent: no data, not low risk` : "every block is reporting", alert: silent > 0 },
-    { n: 2, name: "Plan", href: "/planning", big: String(openSites), unit: `open site${openSites === 1 ? "" : "s"} to cover`, sub: openSites > 0 && openOrders === 0 ? "no job assigned yet" : `${openOrders} job${openOrders === 1 ? "" : "s"} in progress`, alert: openSites > 0 && openOrders === 0 },
-    { n: 3, name: "Inspect", href: "/drone/missions", big: String(unreviewed), unit: `candidate${unreviewed === 1 ? "" : "s"} to check`, sub: `${confirmed} confirmed · ${rejected} rejected`, alert: unreviewed > 0 },
-    { n: 4, name: "Fix & verify", href: "/operations", big: String(verified), unit: "verified fixed", sub: `${openOrders} open · ${pendingVerify} awaiting a second check${reopened ? ` · ${reopened} reopened` : ""}`, alert: pendingVerify > 0 },
+    { n: 1, name: "Count", href: "/ovitraps", big: `${valid}/${expected}`, unit: "traps reporting", alert: silent > 0 },
+    { n: 2, name: "Plan", href: "/planning", big: String(openSites), unit: `open site${openSites === 1 ? "" : "s"} to cover`, alert: openSites > 0 && openOrders === 0 },
+    { n: 3, name: "Inspect", href: "/drone/missions", big: String(unreviewed), unit: `candidate${unreviewed === 1 ? "" : "s"} to check`, alert: unreviewed > 0 },
+    { n: 4, name: "Fix & verify", href: "/operations", big: String(verified), unit: "verified fixed", alert: pendingVerify > 0 },
   ];
   const hasTrend = surveillance.some((b) => b.series.length > 1);
   const maxEggs = Math.max(1, ...blocks.map((b) => b.eggs_per_interval ?? 0));
@@ -160,7 +160,7 @@ export function LoopStory({ version, blocks, surveillance, children }: Props) {
             ))}
           </ul>
         ) : (
-          <p>Nothing urgent. Every block is reporting and no reviews or jobs are waiting.</p>
+          <p>Nothing urgent.</p>
         )}
       </aside>
       <ol className="loop-strip" aria-label="The AedesLoop loop, step by step">
@@ -170,12 +170,10 @@ export function LoopStory({ version, blocks, surveillance, children }: Props) {
               <span className="loop-strip-head"><b aria-hidden="true">{st.n}</b>{st.name}</span>
               <strong>{st.big}</strong>
               <span className="loop-strip-unit">{st.unit}</span>
-              <small>{st.sub}</small>
             </Link>
           </li>
         ))}
       </ol>
-      <p className="loop-strip-note">The loop closes when next week&apos;s trap counts show whether the fix held. A job marked done is not proof until someone else verifies it.</p>
 
       <div className="dash-split">
         {children}
@@ -190,14 +188,14 @@ export function LoopStory({ version, blocks, surveillance, children }: Props) {
                 <Badge>{none ? "NO DATA" : "MONITORING"}</Badge>
               </header>
               <b className="block-eggs">{b.eggs_per_interval?.toFixed(1) ?? "n/a"}</b>
-              <small>eggs per trap · latest window</small>
+              <small>eggs per trap</small>
               <div className="meter" role="img" aria-label={`${b.valid_intervals} of ${b.expected_intervals} readings received`}>
                 <span style={{ width: `${cover}%` }} />
               </div>
               <dl>
-                <div><dt>Traps reporting</dt><dd>{b.valid_intervals}/{b.expected_intervals}</dd></div>
-                <div><dt>Traps with eggs</dt><dd>{b.positivity == null ? "n/a" : `${Math.round(b.positivity * 100)}%`}</dd></div>
-                <div><dt>Sites to fix</dt><dd>{b.unresolved_sources}</dd></div>
+                <div><dt>Reporting</dt><dd>{b.valid_intervals}/{b.expected_intervals}</dd></div>
+                <div><dt>With eggs</dt><dd>{b.positivity == null ? "n/a" : `${Math.round(b.positivity * 100)}%`}</dd></div>
+                <div><dt>To fix</dt><dd>{b.unresolved_sources}</dd></div>
               </dl>
               {b.comparability_warning && <p className="warning-text">{b.comparability_warning}</p>}
             </Link>
@@ -208,11 +206,11 @@ export function LoopStory({ version, blocks, surveillance, children }: Props) {
 
       <div className="loop-charts">
         {hasTrend ? (
-          <Panel title="Eggs per trap over time" aside={<Badge>Per collection window</Badge>}>
+          <Panel title="Eggs per trap over time">
             <TrendChart surveillance={surveillance} />
           </Panel>
         ) : (
-          <Panel title="Which traps sent data?" aside={<Badge>Coverage</Badge>}>
+          <Panel title="Traps reporting">
             <ul className="hbars">
               {blocks.map((b) => {
                 const pct = b.expected_intervals ? (b.valid_intervals / b.expected_intervals) * 100 : 0;
@@ -225,10 +223,9 @@ export function LoopStory({ version, blocks, surveillance, children }: Props) {
                 );
               })}
             </ul>
-            <p className="chart-help"><b>How to read:</b> a full green bar means every trap in that block reported. A dashed box means nobody has reported, so we know nothing yet. That is not the same as safe. Only one collection window so far, so there is no trend line yet.</p>
           </Panel>
         )}
-        <Panel title="How many eggs did each block find?" aside={<Badge>Latest window</Badge>}>
+        <Panel title="Eggs per trap">
           {blocks.length ? (
             <ul className="hbars">
               {blocks.map((b) => (
@@ -246,16 +243,8 @@ export function LoopStory({ version, blocks, surveillance, children }: Props) {
           ) : (
             <Empty>No blocks yet.</Empty>
           )}
-          <p className="chart-help"><b>How to read:</b> a longer bar means more eggs per trap, so more egg-laying nearby. Eggs are not adult mosquitoes and do not predict dengue. They tell us where to look first.</p>
         </Panel>
       </div>
-
-      <ul className="colour-key" aria-label="What the colours mean">
-        <li><i style={{ background: "var(--green)" }} /> Reporting normally</li>
-        <li><i style={{ background: "var(--signal)" }} /> No data. Not the same as safe</li>
-        <li><i style={{ background: "#f2b53a" }} /> Waiting for a person</li>
-        <li><i style={{ background: "var(--blue)" }} /> Egg count</li>
-      </ul>
     </section>
   );
 }

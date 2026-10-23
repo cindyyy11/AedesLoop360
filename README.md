@@ -1,6 +1,15 @@
-# AedesLoop 360 — Repo-Ready Build Kit
+<p align="center">
+  <img src="apps/web/public/brand/aedesloop-360-logo.jpg" alt="AedesLoop 360 logo: a drone above a smart ovitrap inside a closed observe-plan-act loop" width="260">
+</p>
 
-**Version:** 1.0 — 2026-10-23  
+<h1 align="center">AedesLoop 360</h1>
+
+<p align="center"><strong>AI drone + smart ovitrap + township command dashboard, joined by one auditable data loop.</strong><br>
+Local simulated demonstration &middot; human-approved &middot; no real spraying, no real flight</p>
+
+## Overview
+
+**Specification version:** 1.0 &middot; **README updated:** 2026-10-23  
 **Status:** Final concept locked; hackathon MVP specification, not a certified mosquito-control product.
 
 ## The product
@@ -14,6 +23,30 @@ The application must never claim that a container detection proves Aedes larvae,
 **Current repository status:** this is a local simulated demonstration. A configured local YOLOv8n checkpoint can detect candidate containers in uploaded images and persist `IMPORTED`/`UNCERTAIN` findings for human review. Without that checkpoint, the synthetic fixture and ground-review fallback remain available. The four-block ovitrap and mission loop uses simulated records; no real intervention is automated. See [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) for verified scenarios and remaining limits.
 
 **Data evaluation status:** `docs/DATA_ANALYTICS_AND_EVALUATION.md`, `docs/DATA_IMPLEMENTATION_STATUS.md` and `docs/DATA_RESULTS_REPORT.md` document the analytics and model evidence. The local workspace contains user-supplied datasets and ignored checkpoints; these are not redistributed in Git. The drone evaluation card shows a persisted grouped held-out test run (mAP@0.5 68.30%, recall 62.54%). The ovitrap reviewer-assist card now shows a registered 57-image grouped held-out run (image MAE 9.56); zero-count specificity remains unmeasured. Dashboard surveillance reads persisted sample intervals; the strategy comparison is a labelled deterministic simulation.
+
+## System architecture
+
+![AedesLoop 360 system architecture](docs/aedesloop-aws-style-architecture.svg)
+
+Field inputs (drone imagery, smart ovitraps, field teams, coordinator) enter one tenant-scoped, RBAC-protected application boundary: ingestion and evidence, intelligence and coordination, operations and verification, and a data and governance layer (database, append-only audit, deterministic replay). The architecture is a modular monolith (`apps/web` Next.js, `services/api` FastAPI, a separate durable worker). Other views: [evidence-to-action loop](docs/aedesloop-architecture-slide.svg) and [enterprise layers](docs/aedesloop-enterprise-architecture.svg). Design detail is in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+## System flow
+
+![AedesLoop 360 system flow](docs/aedesloop-system-flow.svg)
+
+Evidence is captured, interpreted as *candidates*, reviewed and approved by a human, acted on only in a safe simulated mode, then verified separately and fed back into the next plan. Recording a treatment is never treated as proof that it worked. State rules are in [`docs/WORKFLOWS_AND_STATES.md`](docs/WORKFLOWS_AND_STATES.md).
+
+## Current results at a glance
+
+| Area | Latest recorded result | Source / caveat |
+|---|---|---|
+| Drone candidate detector (YOLOv8n, 417 grouped held-out images, 724 objects) | precision 69.59%, recall 62.54%, mAP@0.5 68.30%, mAP@0.5:0.95 50.45% | `docs/DATA_RESULTS_REPORT.md`. Other open containers recall only 27.96%; tyre (11) and coconut shell (15) test counts are tiny. Candidates only, not larvae or Aedes. |
+| Ovitrap egg-count reviewer assist (57 images, 10 groups) | image MAE 9.56, group MAE 6.40, bias &minus;4.02 | Paddle photos only; zero-count specificity `NOT_EVALUATED`. Counts need human confirmation. |
+| Allocation benchmark (4 blocks, 8 staff hours, simulated) | issues covered: uniform 4/8, static 3/8, adaptive 4/8 | Scripted simulation, not field data; adaptive does not win every metric. |
+| Backend tests | 97 passed (`python -m pytest -q`, 2026-10-23) | Run on this working tree. |
+| Browser tests | 24 passed, 1 skipped on a production build | From the earlier run recorded in `docs/IMPLEMENTATION_STATUS.md`; the working tree has changed since and Playwright was not rerun for this README update. |
+
+Recently added: live detection and live egg-count preview panels, automatic detector pass after a simulated mission, model readiness in `/api/v1/health`, grouped navigation with one tab per task, a visual dashboard with a Leaflet map, and the 3D township view.
 
 ## Reading order for your coding agent
 
