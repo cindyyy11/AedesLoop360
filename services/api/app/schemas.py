@@ -23,13 +23,17 @@ class SampleInput(Input):
     egg_count: int = Field(ge=0, le=10000)
     media_id: str
     quality: Literal["GOOD", "BLURRED", "OCCLUDED"] = "GOOD"
-    source: Literal["HUMAN_LABELLED_FIXTURE", "MODEL_ASSISTED_REVIEWED"] = "HUMAN_LABELLED_FIXTURE"
+    source: Literal["HUMAN_LABELLED_FIXTURE", "MODEL_ASSISTED_REVIEWED", "DRONE_SIM_REVIEWED"] = (
+        "HUMAN_LABELLED_FIXTURE"
+    )
     mode: Literal["SIMULATED", "IMPORTED"] = "SIMULATED"
 
     @model_validator(mode="after")
     def interval(self):
-        if (self.source == "HUMAN_LABELLED_FIXTURE") != (self.mode == "SIMULATED"):
-            raise ValueError("Fixture evidence must be simulated; reviewed imports must be imported")
+        if (self.source != "MODEL_ASSISTED_REVIEWED") != (self.mode == "SIMULATED"):
+            raise ValueError(
+                "Fixture and simulated-drone evidence must be simulated; reviewed imports must be imported"
+            )
         days = (self.interval_end - self.interval_start).total_seconds() / 86400
         if days <= 0 or abs(days - self.sampling_effort_days) > 0.01:
             raise ValueError("Sampling effort must match a positive collection interval")

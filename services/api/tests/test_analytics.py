@@ -10,6 +10,7 @@ from sqlalchemy import select
 TEST_DIR = tempfile.TemporaryDirectory(dir=Path.cwd() / ".pytest_cache", ignore_cleanup_errors=True)
 os.environ["AEDES_DATABASE_URL"] = "sqlite:///" + str(Path(TEST_DIR.name) / "analytics.db")
 from app.db import Base, SessionLocal, now  # noqa: E402
+from app.contracts import ModelEvaluations  # noqa: E402
 from app.main import analytics_evaluations, analytics_surveillance, run_allocation_benchmark  # noqa: E402
 from app.models import AnalyticsRun, Block, Media, Sample, Tenant, Trap, User  # noqa: E402
 from app.security import create_session  # noqa: E402
@@ -63,7 +64,7 @@ def test_completed_held_out_evaluation_record_is_exposed_with_provenance():
             "checkpoint_sha256": "model-hash",
         },
         metrics={"macro": {"precision": 0.75}},
-        artifacts=[],
+        artifacts=[{"kind": "summary", "name": "metrics.json", "sha256": "a" * 64}],
         limitations=[],
     )
     db.add(run)
@@ -73,6 +74,8 @@ def test_completed_held_out_evaluation_record_is_exposed_with_provenance():
     assert card["status"] == "COMPLETED"
     assert card["latest_completed_run"].metrics["macro"]["precision"] == 0.75
     assert card["latest_completed_run"].run_metadata["test_count"] == 12
+    parsed = ModelEvaluations.model_validate(body, from_attributes=True)
+    assert parsed.drone_detection.latest_completed_run.artifacts[0].sha256 == "a" * 64
 
 
 def test_surveillance_no_samples_is_unavailable_and_tenant_scoped():
@@ -190,6 +193,7 @@ def test_coordinator_benchmark_is_idempotently_persisted_as_simulated():
         "uniform",
         "static",
         "adaptive",
+        "planner_v1",
     }
     db.close()
 

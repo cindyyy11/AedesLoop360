@@ -24,8 +24,8 @@ async function login(page: Page, role: string) {
 test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await page.goto("/dashboard");
   await login(page,"coordinator");
-  await expect(page.getByRole("heading",{name:"Every observation. One loop."})).toBeVisible();
-  await expect(page.getByRole("cell",{name:"DATA UNAVAILABLE",exact:true})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Surveillance by block",exact:true})).toBeVisible();
+  await expect(page.getByText("DATA UNAVAILABLE",{exact:true}).first()).toBeVisible();
   await page.screenshot({path:testInfo.outputPath("dashboard-desktop.png"),fullPage:true});
   await page.getByRole("link",{name:"Drone missions",exact:true}).click();
   await expect(page.getByRole("heading",{name:"Candidate evidence"})).toBeVisible();
@@ -57,11 +57,12 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await expect(page.getByRole("heading",{name:"Inspection priorities",exact:true})).toBeVisible();
   const before=await page.locator(".hash").textContent();
   await page.getByRole("link",{name:"Smart ovitraps",exact:true}).click();
+  await page.getByRole("tab",{name:/Type a count by hand/}).click();
   await page.getByRole("button",{name:"Import interval",exact:true}).click();
   await expect(page.getByRole("status")).toContainText("Interval saved");
   await page.getByRole("button",{name:"Import interval",exact:true}).click();
   await expect(page.getByRole("status")).toContainText("Interval saved");
-  await expect(page.locator("details summary").filter({hasText:"B1-T1-2026W42-NEW"})).toHaveCount(1);
+  await expect(page.getByRole("button",{name:/2026-10-09 to 2026-10-16: 100 eggs/})).toHaveCount(1);
   const revisionOption=page.getByLabel("Sample to correct").locator("option").filter({hasText:"B1-T1-2026W42-NEW"});
   await page.getByLabel("Sample to correct").selectOption(await revisionOption.getAttribute("value")??"");
   await page.getByLabel("Corrected human count").fill("73");

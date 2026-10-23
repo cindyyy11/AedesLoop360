@@ -76,10 +76,30 @@ MissionRecord = entity(models.Mission)
 EventRecord = entity(models.MissionEvent)
 MediaRecord = entity(models.Media)
 EggAnalysisRecord = entity(models.EggAnalysis)
+
+
+class TrapPassSkip(BaseModel):
+    trap_id: str
+    reason: str
+
+
+class TrapPassResult(BaseModel):
+    pass_id: str
+    analyses: list[EggAnalysisRecord]
+    skipped: list[TrapPassSkip]
+
 ObservationRecord = entity(models.Observation)
 WorkRecord = entity(models.WorkOrder)
 JobRecord = entity(models.Job)
 AuditRecord = entity(models.Audit)
+
+
+class EvaluationArtifact(BaseModel):
+    kind: str
+    name: str
+    sha256: str
+
+
 class AnalyticsRunRecord(BaseModel):
     id: str
     tenant_id: str
@@ -91,7 +111,7 @@ class AnalyticsRunRecord(BaseModel):
     source_mode: str
     run_metadata: dict[str, Any]
     metrics: dict[str, Any] | None
-    artifacts: list[str]
+    artifacts: list[EvaluationArtifact]
     limitations: list[str]
     initiated_by: str | None
 

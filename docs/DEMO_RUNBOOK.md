@@ -15,24 +15,28 @@ For the interactive 3D presentation, follow [3D_TOWNSHIP.md](3D_TOWNSHIP.md): op
 
 The user-supplied YOLOv8 archive is extracted under ignored `data/external/drone-aedes-yolov8-v1`. Keep the archive and checkpoint local. The Mendeley record states CC BY 4.0; the export's own YAML says `Private`, so the provenance manifest preserves both declarations. No access control was bypassed. The training code uses a deterministic source-image-group split because related image tiles occur across the publisher's original splits.
 
-From the repository root, build the split, train the CPU baseline, and evaluate on its untouched grouped test set:
+The current demo checkpoint is `data/models/drone/yolov8n-coco-pretrained-grouped-full-512-batch4-cont/weights/best.pt`. It was fine-tuned from the official COCO-pretrained YOLOv8n checkpoint on all 1,947 grouped training images at 512px. The grouped 417-image test score is mAP@0.5 68.30% and recall 62.54%; other-open-container recall is only 27.96%, so all detections remain review-only. The exact local run had one completed epoch at batch 8 before a memory failure, followed by five completed epochs at batch 4 from that saved checkpoint.
+
+For a fresh run from the repository root, get the official pretrained weights, verify their recorded hash, build the split, and train a clean CPU run:
 
 ```powershell
 python scripts/prepare_drone_group_split.py --root data/external/drone-aedes-yolov8-v1 --seed 360
-python scripts/train_drone_yolo.py --data data/external/drone-aedes-yolov8-v1/data.grouped.yaml --out data/models/drone --epochs 10 --imgsz 416 --batch 8 --fraction 0.15 --threads 4 --name yolov8n-grouped-seed-360-fraction-15-sampled
-python scripts/evaluate_drone_yolo.py --checkpoint data/models/drone/yolov8n-grouped-seed-360-fraction-15-sampled/weights/best.pt --data data/external/drone-aedes-yolov8-v1/data.grouped.yaml --out data/evaluations/drone
+$pretrained = 'data/models/pretrained/yolov8n.pt'
+New-Item -ItemType Directory -Path 'data/models/pretrained' -Force | Out-Null
+Invoke-WebRequest 'https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8n.pt' -OutFile $pretrained
+(Get-FileHash $pretrained -Algorithm SHA256).Hash # recorded local value: F59B3D833E2FF32E194B5BB8E08D211DC7C5BDF144B90D2C8412C47CCFC83B36
+python scripts/train_drone_yolo.py --data data/external/drone-aedes-yolov8-v1/data.grouped.yaml --out data/models/drone --epochs 6 --imgsz 512 --batch 4 --fraction 1.0 --threads 4 --model $pretrained --name yolov8n-coco-pretrained-grouped-full-512-clean
+python scripts/evaluate_drone_yolo.py --checkpoint data/models/drone/yolov8n-coco-pretrained-grouped-full-512-clean/weights/best.pt --data data/external/drone-aedes-yolov8-v1/data.grouped.yaml --out data/evaluations/drone
 $summary = Get-ChildItem data/evaluations/drone -Filter 'drone-yolo-group-test-*.json' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-$repo = (Resolve-Path .).Path.Replace('\', '/')
-$env:AEDES_DATABASE_URL = "sqlite:///$repo/data/aedes-demo.sqlite"
+# In a fresh PowerShell session, leave AEDES_DATABASE_URL unset to use repo-root aedes.db.
 python scripts/register_evaluation.py --summary $summary.FullName --tenant tenant-demo
 ```
 
-The 10-epoch CPU run uses a deterministically hash-ordered 15% subset of the grouped training images; the held-out evaluation uses all 417 test images and is recorded separately. Once registered, restart the API with the trained detector configured in the same PowerShell session:
+The clean six-epoch run may not match the current two-stage checkpoint bit for bit. Select its best checkpoint using validation, then use the grouped test split once to report its performance. To demonstrate the already evaluated checkpoint and the egg reviewer-assist model together, start the API from the repository root:
 
 ```powershell
-$env:AEDES_DRONE_MODEL_PATH = (Resolve-Path 'data/models/drone/yolov8n-grouped-seed-360-fraction-15-sampled/weights/best.pt').Path
-Set-Location services/api
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+pwsh -NoProfile -File scripts/start-api.ps1 -CheckOnly
+pwsh -NoProfile -File scripts/start-api.ps1
 ```
 
 Run the dashboard from `apps/web` as usual. Evaluation metrics appear in the existing evidence panel. Uploaded non-fixture images use the local checkpoint; detections remain uncertain candidate containers awaiting ground review. The drone dataset does not provide ovitrap images or egg counts, so egg-model training uses a separate dataset.
@@ -50,6 +54,16 @@ python scripts/evaluate_egg_counter.py --manifest data/external/user-ovitrap-mon
 ```
 
 The pretrained file is the official torchvision ResNet18 checkpoint; its verified SHA-256 is `f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec`. It is cached locally and excluded from Git. Set the selected checkpoint before starting the API:
+
+For subsequent local starts, use this launcher from the repository root. It sets the model path and checks that the checkpoint loads before starting the API:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-api.ps1
+```
+
+Add `-CheckOnly` to validate configuration without starting a server. Existing environment settings (including `AEDES_DATABASE_URL` and the drone model path) are preserved. Without a database override, the API uses repo-root `aedes.db`. If choosing another database, migrate it first with `python -m alembic -c services/api/alembic.ini upgrade head`. The API does not automatically load `.env`.
+
+Equivalent manual startup:
 
 ```powershell
 $env:AEDES_EGG_MODEL_PATH = (Resolve-Path 'data/models/eggs/user-paddle-v1/texture_ridge.joblib').Path
@@ -108,9 +122,9 @@ Measured on the current split: 300 images / 50 assumed site-direction groups; 18
 
 ## Data analytics evidence
 
-To try the optional local drone model path, set `$env:AEDES_DRONE_MODEL_PATH='C:\Users\User\AedesLoop360\data\models\drone\yolov8n-grouped-seed-360-fraction-15-sampled\weights\best.pt'` before starting the API. This locally trained checkpoint is a weak CPU baseline (mAP@0.5 5.85%, recall 6.26%) and is not operationally ready. Upload a permitted image; the API records candidate boxes as `IMPORTED` and `UNCERTAIN` for ground review. An empty model result still queues review. The built-in exact synthetic image remains a fixture. Without the checkpoint, uploads report `NOT_CONFIGURED` and no ML metrics appear.
+`scripts/start-api.ps1` sets both `AEDES_DRONE_MODEL_PATH` and `AEDES_EGG_MODEL_PATH` to the local validation-selected checkpoints. It validates the five drone classes before serving. Upload a permitted image; the API records candidate boxes as `IMPORTED` and `UNCERTAIN` for ground review. An empty model result still queues review. The built-in exact synthetic image remains a fixture. Without the drone checkpoint, uploads report `NOT_CONFIGURED` and no ML metrics appear.
 
-On the dashboard, open **Drone Model Performance & Ovitrap Count Accuracy** to see the registered grouped held-out drone run and its explicit limitations; ovitrap count remains `NOT_EVALUATED`. Open **Block Surveillance Quality & Trend** to show valid/expected interval denominators, provenance, collection/upload times and Block 4 `DATA_UNAVAILABLE`. As coordinator, choose **Run simulated allocation benchmark**; the persisted result compares uniform, static and adaptive under one eight-hour budget and is labelled `SIMULATED EXPERIMENT`. It may show uniform tying or exceeding adaptive on some scenario metrics. It demonstrates reproducible planning behavior, not field benefit.
+On the dashboard, open **Drone Model Performance & Ovitrap Count Accuracy** to see both registered grouped held-out runs and their limitations. The egg reviewer-assist run is `COMPLETED` with image MAE 9.56 on 57 images; zero-count specificity remains unmeasured and each proposed count still needs human confirmation. To register this report in a fresh local demo database after migration and seeding, run `python scripts/register_evaluation.py --summary data/models/eggs/user-paddle-v1/held-out-evaluation.json --tenant tenant-demo`. Open **Block Surveillance Quality & Trend** to show valid/expected interval denominators, provenance, collection/upload times and Block 4 `DATA_UNAVAILABLE`. As coordinator, choose **Run simulated allocation benchmark**; the persisted result compares uniform, static and adaptive under one eight-hour budget and is labelled `SIMULATED EXPERIMENT`. It may show uniform tying or exceeding adaptive on some scenario metrics. It demonstrates reproducible planning behavior, not field benefit.
 
 From the repository root, the data inventory/evaluator outputs can be reproduced with:
 

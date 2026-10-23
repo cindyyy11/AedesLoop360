@@ -153,6 +153,9 @@ class EggAnalysis(Scoped, Base):
     reviewer_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
     accepted_count: Mapped[int | None] = mapped_column(nullable=True)
     confirmation_reason: Mapped[str | None] = mapped_column(nullable=True)
+    # UPLOAD = a person attached the photo; DRONE_SIM = the simulated drone pass delivered it.
+    source: Mapped[str] = mapped_column(default="UPLOAD", server_default="UPLOAD")
+    capture_pass_id: Mapped[str | None] = mapped_column(nullable=True, index=True)
 
 
 class Mission(Scoped, Base):
