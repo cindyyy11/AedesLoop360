@@ -3,9 +3,10 @@ import { test, expect } from "@playwright/test";
 
 // Run against a freshly seeded isolated database; never the shared demo.
 test("real paddle model: review, interval persistence, retry and chart", async ({ page }, info) => {
+  test.setTimeout(120000);
   await page.goto("/ovitraps");
   await page.getByRole("button", { name: "Enter demo", exact: true }).click();
-  await expect(page.locator(".topbar .badge")).toHaveText("coordinator");
+  await expect(page.locator(".topbar .badge")).toHaveText("coordinator", { timeout: 30000 });
   const samplesUrl = "/api/v1/ovitraps/trap-b1-1/samples";
   const before = (await (await page.request.get(samplesUrl)).json()).data;
   const counter = page.locator("section.counter");
@@ -59,11 +60,17 @@ test("real paddle model: review, interval persistence, retry and chart", async (
   const after = (await (await page.request.get(samplesUrl)).json()).data;
   expect(after).toHaveLength(before.length + 1);
   expect(after.filter((row: { id: string }) => row.id === saved.id)).toHaveLength(1);
+  const analytics = await page.request.get("/api/v1/analytics/surveillance?start=2026-09-01T00:00:00Z&end=2026-09-09T00:00:00Z");
+  expect(analytics.ok()).toBeTruthy();
+  const block = (await analytics.json()).data.find((row: { block_id: string }) => row.block_id === "block-1");
+  expect(block.egg_sum).toBe(7);
+  expect(block.valid_trap_intervals).toBe(1);
+  expect(block.sources).toContain("MODEL_ASSISTED_REVIEWED");
   await page.reload();
   await expect(page.getByRole("button", { name: /2026-09-01 to 2026-09-08: 7 eggs/ })).toHaveCount(1);
   await page.getByRole("button", { name: /2026-09-01 to 2026-09-08: 7 eggs/ }).click();
   await expect(page.getByRole("heading", { name: "isolated-paddle-2-NE-1 · 7 reviewed eggs" })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
-  await info.attach("reviewed-interval-mobile", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
+  await info.attach("reviewed-interval-mobile", { body: await page.screenshot({ path: "../../data/tests/egg-completion-mobile.png", fullPage: true }), contentType: "image/png" });
 });

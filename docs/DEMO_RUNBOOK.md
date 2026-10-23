@@ -57,6 +57,8 @@ The pretrained file is the official torchvision ResNet18 checkpoint; its verifie
 
 For subsequent local starts, use this launcher from the repository root. It sets the model path and checks that the checkpoint loads before starting the API:
 
+The launcher warms the egg inference cache and pixel-feature imports in the same Python process that serves Uvicorn. Wait for the Uvicorn ready message before uploading; slow first-time model imports must finish before the web proxy accepts inference traffic. This avoids losing the startup cache in a separate validation subprocess.
+
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-api.ps1
 ```

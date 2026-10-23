@@ -25,11 +25,17 @@ try {
     # Loading the checkpoint here catches missing ML dependencies before serving requests.
     @'
 import os
-from app.egg_vision import _load_model
+import sys
+from pathlib import Path
+from app.egg_vision import _cached_model
+from app.egg_features import image_features
+from PIL import Image
 from app.drone_inference import _load_model as load_drone_model
 import hashlib
 
-_, metadata, digest = _load_model(os.environ["AEDES_EGG_MODEL_PATH"])
+_, metadata, digest = _cached_model(str(Path(os.environ["AEDES_EGG_MODEL_PATH"]).resolve()))
+# Warm feature imports too; this is a software probe, not a field observation.
+image_features(Image.new("RGB", (64, 128), "white"))
 print("Egg model:", metadata["model_version"])
 print("Checkpoint SHA256:", digest)
 drone_path = os.environ["AEDES_DRONE_MODEL_PATH"]
@@ -43,12 +49,12 @@ with open(drone_path, "rb") as weights:
     for chunk in iter(lambda: weights.read(1024 * 1024), b""):
         digest_builder.update(chunk)
 print("Drone checkpoint SHA256:", digest_builder.hexdigest())
-'@ | python -
-    if ($LASTEXITCODE -ne 0) { throw 'Egg model configuration check failed.' }
-    if (-not $CheckOnly) {
-        python -m uvicorn app.main:app --host 127.0.0.1 --port $Port
-        if ($LASTEXITCODE -ne 0) { throw 'API exited with an error.' }
-    }
+
+if sys.argv[2] != "True":
+    import uvicorn
+    uvicorn.run("app.main:app", host="127.0.0.1", port=int(sys.argv[1]))
+'@ | python -u - $Port $CheckOnly.IsPresent
+    if ($LASTEXITCODE -ne 0) { throw 'API startup or model configuration check failed.' }
 }
 finally {
     Pop-Location
