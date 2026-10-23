@@ -1,5 +1,19 @@
 # Independent egg-model validation
 
+## Additional public-data search — 23 October 2026
+
+Checked the [AeEggCounter independent test deposit](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TL5NP2) using its public [repository API](https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=doi:10.7910/DVN/TL5NP2). The downloaded depositor README describes 76 independent paper samples assessed by two trained specialists. The repository metadata declares CC0 1.0. It has 76 alleged original JPEGs and paired marked images; 71 pairs have straightforward count-bearing marked filenames, with **zero explicit zero-count pairs**. Five genetics-lab pairs have a different filename pattern and were not coerced into labels.
+
+The candidate was **rejected for a clean-image benchmark** after visual inspection: repository file ID `12511079`, named `20250610_144239.jpg` (without `marked`), already contains red detector boxes and `egg` confidence labels. File naming alone therefore cannot identify clean originals. The numerical filenames also do not substitute for a depositor-confirmed human-reference-count table. The download/diagnostic process was stopped before inference; no external accuracy was calculated, no model was changed, and no result was registered in the dashboard. Partially downloaded photos remain local under ignored `data/external/aeeggcounter-test/images/` for provenance inspection and must not be used as training or test inputs.
+
+The metadata snapshot and README are ignored `data/tests/aeeggcounter-metadata.json` and `data/tests/aeeggcounter-readme.docx`. Reproduce the metadata rejection report with:
+
+```powershell
+python scripts/audit_egg_external_candidate.py --metadata data/tests/aeeggcounter-metadata.json
+```
+
+Output: `data/external/aeeggcounter-test/candidate-audit.json`; expected `REJECTED_FOR_CLEAN_IMAGE_BENCHMARK`, `evaluation_performed=false`. The [public catalog](https://datasetcatalog.nlm.nih.gov/dataset?q=0003250458) helped locate this deposit, but file metadata and the README were verified directly against Harvard Dataverse. A clean original-image release, a confirmed per-image reference table and actual zero-egg samples would be needed to reconsider it. The existing local model remains suitable only for the already-tested human-reviewed demo.
+
 ## Verified source provenance
 
 The supplied `observed_egg_counts.csv` exactly matches the [Zenodo dataset](https://zenodo.org/records/6962536): local and published MD5 are `1b7fa6cbfc152b9e2131aba4ef33622f`. This verifies the label file, not the bytes of the extracted photo archive. The publisher describes 300 iPhone 7 paddle photos from weekly surveillance in Córdoba, collected December 2021–March 2022, with technician counts under magnification. Every photo contains at least one egg. The [CONICET record](https://datosdeinvestigacion.conicet.gov.ar/handle/11336/201038?show=full) gives CC BY 2.5 Argentina attribution terms. Attribute Andreo and Rodríguez Gonzalez; retain the Zenodo creators and DOI 10.5281/zenodo.6962536 with redistributed source material. Photographs remain local and ignored.

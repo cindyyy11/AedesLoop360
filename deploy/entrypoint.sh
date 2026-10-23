@@ -17,7 +17,7 @@ case "$role" in
     if [ "${AEDES_SEED_DEMO:-0}" = "1" ]; then python -m app.seed; fi
     ;;
   api)
-    exec python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+    exec python -m uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
     ;;
   worker)
     exec python -m app.worker

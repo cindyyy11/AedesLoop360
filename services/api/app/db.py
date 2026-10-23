@@ -24,8 +24,21 @@ def _default_database_url(root: Path) -> str:
     return f"sqlite:///{root / 'aedes.db'}"
 
 
+def _normalize_database_url(url: str) -> str:
+    # Railway/Postgres often provide postgresql://; SQLAlchemy + psycopg3 wants +psycopg.
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://") :]
+    if url.startswith("postgresql://") and "+psycopg" not in url.split("://", 1)[0]:
+        url = "postgresql+psycopg://" + url[len("postgresql://") :]
+    return url
+
+
 ROOT = _resolve_root()
-URL = os.environ.get("AEDES_DATABASE_URL", _default_database_url(ROOT))
+URL = _normalize_database_url(
+    os.environ.get("AEDES_DATABASE_URL")
+    or os.environ.get("DATABASE_URL")
+    or _default_database_url(ROOT)
+)
 engine = create_engine(
     URL,
     **({"connect_args": {"check_same_thread": False}} if URL.startswith("sqlite") else {}),
