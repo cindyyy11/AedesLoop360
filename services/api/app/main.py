@@ -332,7 +332,7 @@ def findings(db: DB, user: Actor):
 
 @app.post(P + "/findings/{entity_id}/review", response_model=One[FindingRecord])
 def review_finding(entity_id: str, body: FindingReviewInput, db: DB, user: Actor):
-    require(user, "reviewer")
+    require(user, "coordinator")
     row = get(db, Finding, entity_id, user)
     before = {"water_state": row.water_state, "review_status": row.review_status}
     if body.decision == "RELABEL":
@@ -369,7 +369,7 @@ async def upload(
     captured_at: str = Form(),
     asset_id: str = Form(),
 ):
-    require(user, "operator", "reviewer", "inspector", "coordinator")
+    require(user, "operator", "coordinator")
     asset = get(db, Asset, asset_id, user)
     content = await file.read(5 * 1024 * 1024 + 1)
     if len(content) > 5 * 1024 * 1024:
@@ -516,7 +516,7 @@ def samples(entity_id: str, db: DB, user: Actor):
 
 @app.post(P + "/ovitraps/{entity_id}/samples", response_model=One[SampleRecord])
 def import_sample(entity_id: str, body: SampleInput, db: DB, user: Actor, key: Key):
-    require(user, "reviewer", "coordinator")
+    require(user, "coordinator")
     row = ingest(db, user, entity_id, body, key)
     db.commit()
     return item(row)
@@ -535,7 +535,7 @@ def sample_revisions(entity_id: str, db: DB, user: Actor):
 
 @app.post(P + "/samples/{entity_id}/revisions", response_model=One[SampleRevisionRecord])
 def revise_sample(entity_id: str, body: SampleRevisionInput, db: DB, user: Actor, key: Key):
-    require(user, "reviewer", "coordinator")
+    require(user, "coordinator")
     sample = db.scalar(
         select(Sample)
         .where(Sample.id == entity_id)
@@ -704,7 +704,7 @@ def approve_plan(entity_id: str, db: DB, user: Actor):
 
 @app.post(P + "/inspections", response_model=One[ObservationRecord])
 def observation(body: ObservationInput, db: DB, user: Actor, key: Key):
-    require(user, "inspector")
+    require(user, "operator")
     get(db, Asset, body.asset_id, user)
     get(db, Media, body.media_id, user)
     payload = body.model_dump(mode="json")
@@ -729,7 +729,7 @@ def observations(db: DB, user: Actor):
 
 @app.post(P + "/inspections/{entity_id}/review", response_model=One[ObservationRecord])
 def review_observation(entity_id: str, body: ReviewInput, db: DB, user: Actor):
-    require(user, "reviewer")
+    require(user, "coordinator")
     row = get(db, Observation, entity_id, user)
     if row.review_status != "NEEDS_REVIEW":
         raise HTTPException(409, "Observation already reviewed")
@@ -745,7 +745,7 @@ def review_observation(entity_id: str, body: ReviewInput, db: DB, user: Actor):
 
 @app.post(P + "/assets/{entity_id}/recurrence", response_model=ItemResponse)
 def recurrence(entity_id: str, db: DB, user: Actor):
-    require(user, "reviewer", "coordinator")
+    require(user, "coordinator")
     result = engineering_referral(db, user, entity_id)
     db.commit()
     return (
@@ -771,13 +771,13 @@ def update_work(entity_id: str, body: WorkUpdate, db: DB, user: Actor):
         if row.status not in {"OPEN", "REOPENED"}:
             raise HTTPException(409, "Only open work can be assigned")
         assignee = db.get(User, body.assignee_id)
-        if not assignee or assignee.tenant_id != user.tenant_id or assignee.role != "inspector":
-            raise HTTPException(422, "Choose a tenant inspector")
+        if not assignee or assignee.tenant_id != user.tenant_id or assignee.role != "operator":
+            raise HTTPException(422, "Choose a tenant field operator")
         row.assigned_to, row.status = assignee.id, "ASSIGNED"
     else:
-        require(user, "inspector")
+        require(user, "operator")
         if row.assigned_to != user.id:
-            raise HTTPException(403, "Only the assigned inspector can perform work")
+            raise HTTPException(403, "Only the assigned field operator can perform work")
         expected = "ASSIGNED" if body.action == "START" else "IN_PROGRESS"
         if row.status != expected:
             raise HTTPException(409, "Invalid work transition")
@@ -794,7 +794,7 @@ def update_work(entity_id: str, body: WorkUpdate, db: DB, user: Actor):
 
 @app.post(P + "/work-orders/{entity_id}/verify", response_model=One[WorkRecord])
 def verify_work(entity_id: str, body: VerifyInput, db: DB, user: Actor):
-    require(user, "reviewer")
+    require(user, "coordinator")
     row = get(db, WorkOrder, entity_id, user)
     get(db, Media, body.evidence_id, user)
     if row.status != "ACTION_COMPLETED_PENDING_VERIFICATION" or row.completed_by == user.id:
@@ -820,5 +820,5 @@ def verify_work(entity_id: str, body: VerifyInput, db: DB, user: Actor):
 
 @app.get(P + "/audit", response_model=Many[AuditRecord])
 def audits(db: DB, user: Actor):
-    require(user, "coordinator", "admin")
+    require(user, "coordinator")
     return collection(sorted(rows(db, Audit, user), key=lambda r: r.created_at, reverse=True)[:200])

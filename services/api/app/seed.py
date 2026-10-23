@@ -79,7 +79,7 @@ def seed() -> None:
             ]
         )
         db.flush()
-        for role in ["coordinator", "operator", "inspector", "reviewer", "admin"]:
+        for role in ["coordinator", "operator"]:
             db.add(
                 User(
                     id=f"user-{role}",
@@ -95,7 +95,7 @@ def seed() -> None:
                 tenant_id="tenant-other",
                 username="outsider",
                 password_hash=password_hash("demo-outsider-360"),
-                role="inspector",
+                role="operator",
             )
         )
         db.flush()
@@ -198,7 +198,7 @@ def seed() -> None:
                     observed_at=now() - timedelta(days=5),
                     water_state="VISIBLE_WATER",
                     review_status="CONFIRMED",
-                    reviewer_id="user-reviewer",
+                    reviewer_id="user-coordinator",
                     media_id=aerial.id,
                 )
             )

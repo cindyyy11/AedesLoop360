@@ -117,7 +117,7 @@ If repo already split into separate frontend/backend, retain that architecture: 
 5. Coordinator approves an eligible simulated mission; adapter emits ordered mission events.
 6. Trap samples imported by interval; asynchronous egg count analysis, valid/invalid marks, rollups.
 7. Planner reads *materialised valid observations and unresolved asset records*, writes versioned next-action recommendations.
-8. User approves/delegates tasks; inspector records correction and follow-up. Recurrence emits engineering-review task.
+8. User approves/delegates tasks; field operator records correction and follow-up. Recurrence emits engineering-review task.
 
 ## 6. Transaction boundaries, idempotency, outbox
 

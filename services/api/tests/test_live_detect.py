@@ -37,7 +37,7 @@ def test_returns_candidates_uncertain_and_not_persisted(monkeypatch):
 
 def test_unconfigured_model_is_explicit_not_empty_success(monkeypatch):
     monkeypatch.delenv("AEDES_DRONE_MODEL_PATH", raising=False)
-    out = live_routes.live_detect(None, user("inspector"), frame("PNG"))
+    out = live_routes.live_detect(None, user("operator"), frame("PNG"))
     assert out["data"]["status"] == "NOT_CONFIGURED"
     assert out["data"]["detections"] == []
 

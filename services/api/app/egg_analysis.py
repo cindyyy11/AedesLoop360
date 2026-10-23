@@ -30,7 +30,7 @@ def propose(
     roi: list[float],
     key: str,
 ) -> EggAnalysis:
-    require(user, "reviewer", "coordinator")
+    require(user, "coordinator")
     return propose_from(db, user, trap_id, content, rights, captured_at, roi, key)
 
 
@@ -137,7 +137,7 @@ def propose_from(
 def confirm(
     db: Session, user: User, analysis_id: str, body: EggConfirmationInput, key: str
 ) -> Sample:
-    require(user, "reviewer", "coordinator")
+    require(user, "coordinator")
     analysis = get(db, EggAnalysis, analysis_id, user)
     analysis = db.scalar(
         select(EggAnalysis)

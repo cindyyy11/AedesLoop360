@@ -76,10 +76,10 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await expect(page.locator(".hash")).not.toHaveText(before??"");
   await page.getByRole("button",{name:"Approve task plan"}).click();
   await page.goto("/assets/asset-p03");
-  await login(page,"inspector");
+  await login(page,"operator");
   await page.getByRole("button",{name:"Record P-03 water observation"}).click();
   await expect(page.getByText("NEEDS_REVIEW",{exact:true})).toBeVisible();
-  await login(page,"reviewer");
+  await login(page,"coordinator");
   await page.getByRole("button",{name:"Confirm evidence"}).click();
   // The work queue defaults to the board; the list view carries the headings and status badges asserted below.
   const listView=page.getByRole("button",{name:"List",exact:true});
@@ -87,13 +87,13 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await expect(page.getByRole("heading",{name:"ENGINEERING REVIEW",exact:true})).toBeVisible();
   await login(page,"coordinator");
   await listView.click();
-  await page.locator("article").filter({hasText:"ENGINEERING REVIEW"}).getByRole("button",{name:"Assign inspector"}).click();
-  await login(page,"inspector");
+  await page.locator("article").filter({hasText:"ENGINEERING REVIEW"}).getByRole("button",{name:"Assign field operator"}).click();
+  await login(page,"operator");
   await listView.click();
   await page.getByRole("button",{name:"Start work"}).click();
   await page.getByRole("button",{name:"Record action complete"}).click();
   await expect(page.getByText("ACTION COMPLETED PENDING VERIFICATION",{exact:true})).toBeVisible();
-  await login(page,"reviewer");
+  await login(page,"coordinator");
   await listView.click();
   await page.getByRole("button",{name:"Verify resolved"}).click();
   await expect(page.getByText("VERIFIED RESOLVED",{exact:true})).toBeVisible();
