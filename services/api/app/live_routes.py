@@ -6,21 +6,24 @@ UNCERTAIN candidate that needs ground review.
 """
 
 import io
+import json
+import math
 import os
 import threading
 import time
 from collections import deque
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from . import drone_inference
+from . import drone_inference, egg_vision
 from .contracts import One
 from .db import session
-from .models import User
+from .models import Trap, User
+from .repository import get
 from .security import current_user, require
 
 router = APIRouter(prefix="/api/v1")
@@ -67,10 +70,7 @@ class LiveFrameResult(BaseModel):
     note: str
 
 
-@router.post("/drones/live-detect", response_model=One[LiveFrameResult])
-def live_detect(db: DB, user: Actor, file: UploadFile = File()):
-    require(user, "operator", "reviewer", "inspector", "coordinator")
-    _check_rate(user.id)
+def _read_frame(file: UploadFile) -> tuple[bytes, int, int]:
     content = file.file.read(MAX_FRAME_BYTES + 1)
     if len(content) > MAX_FRAME_BYTES:
         raise HTTPException(413, "Frame exceeds 1 MB; send a downscaled JPEG")
@@ -82,6 +82,14 @@ def live_detect(db: DB, user: Actor, file: UploadFile = File()):
             width, height = image.size
     except (ValueError, UnidentifiedImageError, OSError, Image.DecompressionBombError):
         raise HTTPException(422, "Send a PNG/JPEG frame of at most 4 megapixels")
+    return content, width, height
+
+
+@router.post("/drones/live-detect", response_model=One[LiveFrameResult])
+def live_detect(db: DB, user: Actor, file: UploadFile = File()):
+    require(user, "operator", "reviewer", "inspector", "coordinator")
+    _check_rate(user.id)
+    content, width, height = _read_frame(file)
     started = time.perf_counter()
     result = drone_inference.infer_candidates(content)
     latency = round((time.perf_counter() - started) * 1000)
@@ -104,6 +112,58 @@ def live_detect(db: DB, user: Actor, file: UploadFile = File()):
             ],
             "note": result.reason
             or "Candidate containers only; water and breeding status are unconfirmed. Not stored.",
+        },
+        "source_mode": "IMPORTED",
+    }
+
+
+class EggPreview(BaseModel):
+    status: str
+    estimate: int | None
+    model_version: str | None
+    latency_ms: int
+    roi: list[float]
+    persisted: Literal[False] = False
+    note: str
+
+
+@router.post("/ovitraps/{trap_id}/egg-live-preview", response_model=One[EggPreview])
+def egg_live_preview(
+    trap_id: str,
+    db: DB,
+    user: Actor,
+    file: UploadFile = File(),
+    roi: str = Form(),
+):
+    """Preview a count while aiming a camera at a paddle. Nothing is stored or confirmed."""
+    require(user, "operator", "reviewer", "inspector", "coordinator")
+    get(db, Trap, trap_id, user)
+    try:
+        box = json.loads(roi)
+        if (
+            not isinstance(box, list)
+            or len(box) != 4
+            or any(type(v) not in (int, float) or not math.isfinite(v) for v in box)
+        ):
+            raise ValueError()
+        box = [float(v) for v in box]
+    except ValueError:
+        raise HTTPException(422, "ROI must be a JSON array [left, top, right, bottom]")
+    _check_rate(f"egg:{user.id}")
+    content, _, _ = _read_frame(file)
+    started = time.perf_counter()
+    result = egg_vision.infer_egg_count(content, box)
+    latency = round((time.perf_counter() - started) * 1000)
+    return {
+        "data": {
+            "status": result.status,
+            "estimate": result.estimate if result.status == "ESTIMATED" else None,
+            "model_version": result.model_version,
+            "latency_ms": latency,
+            "roi": box,
+            "persisted": False,
+            "note": result.reason
+            or "Preview only. Not stored, not surveillance data; a reviewer must confirm a saved photo.",
         },
         "source_mode": "IMPORTED",
     }

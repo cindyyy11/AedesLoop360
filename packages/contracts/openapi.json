@@ -270,6 +270,56 @@
         }
       }
     },
+    "/api/v1/ovitraps/{trap_id}/egg-live-preview": {
+      "post": {
+        "summary": "Egg Live Preview",
+        "description": "Preview a count while aiming a camera at a paddle. Nothing is stored or confirmed.",
+        "operationId": "egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post",
+        "parameters": [
+          {
+            "name": "trap_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trap Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_EggPreview_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "summary": "Health",
@@ -2041,6 +2091,25 @@
         ],
         "title": "BlockSurveillanceAnalytics"
       },
+      "Body_egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "roi": {
+            "type": "string",
+            "title": "Roi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "roi"
+        ],
+        "title": "Body_egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post"
+      },
       "Body_live_detect_api_v1_drones_live_detect_post": {
         "properties": {
           "file": {
@@ -2419,6 +2488,67 @@
           "reason"
         ],
         "title": "EggConfirmationInput"
+      },
+      "EggPreview": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "estimate": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimate"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "title": "Latency Ms"
+          },
+          "roi": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Roi"
+          },
+          "persisted": {
+            "type": "boolean",
+            "const": false,
+            "title": "Persisted",
+            "default": false
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "estimate",
+          "model_version",
+          "latency_ms",
+          "roi",
+          "note"
+        ],
+        "title": "EggPreview"
       },
       "EvaluationArtifact": {
         "properties": {
@@ -3813,6 +3943,29 @@
           "data"
         ],
         "title": "One[EggAnalysisRecord]"
+      },
+      "One_EggPreview_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EggPreview"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[EggPreview]"
       },
       "One_FindingRecord_": {
         "properties": {

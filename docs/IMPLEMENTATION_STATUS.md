@@ -1,5 +1,14 @@
 # Implementation Status
 
+## Live egg preview on Smart ovitraps (23 October 2026)
+
+Added `POST /api/v1/ovitraps/{trap_id}/egg-live-preview` and an **Aim a camera (live preview)** control in the Egg counter. Frames (1024 px) from a camera or video file go about once a second to the same egg model as photo uploads, with a fixed guide box as the counted area. The panel shows a rolling median, range and a "steady" flag over the last 5 frames. Responses are `IMPORTED`; nothing is stored, no analysis or sample row is created, and a frame only becomes data through **Use this frame for the full count**, which fills the existing upload form (1600 px frame, guide box as the starting area, region checkbox unticked). A reviewer still confirms the area, rights, time and count. If the model is unavailable the panel shows no number (never zero) and clears earlier readings. Tenant-scoped through the trap; same four roles and separate 20-per-5-seconds rate bucket as drone live detection. No migration.
+
+Shared camera, frame loop, cold-start retry and sequential sending moved into `components/use-frame-feed.ts`; the drone panel now uses it too.
+
+- Tests: `test_egg_live_preview.py` (10 passed; 17 with `test_live_detect.py`); `egg-preview-stats.spec.ts` (4 passed); `egg-live.spec.ts` and `live-detect.spec.ts` passed in Edge with a fake camera against an isolated stack (real drone and egg checkpoints). `npm run typecheck` passes and `npm run lint` has no errors.
+- Limits: the egg model was trained and tested on still paddle photos (see the egg evaluation above), not live video, so the preview is a framing aid. A steady number means a steady camera, not a correct count. On one repo paddle photo the model returned 5 at full resolution and 6 to 7 at 1024 to 480 px, which is one example, not a resolution study. The guide box assumes the paddle fills a centred box; the capture step lets the reviewer adjust it. Not run: a real phone or webcam, the video-file source, the full backend suite and the full Playwright suite.
+
 ## Live detection on Missions (23 October 2026)
 
 Added `POST /api/v1/drones/live-detect` and a **Live detection** panel on the Missions screen. The browser samples a camera or a local video file at about 2 frames a second (640 px JPEG), sends one frame at a time to the same local YOLO adapter used for uploads, and draws the returned boxes. Responses are labelled `IMPORTED`; every box is `UNCERTAIN` and a candidate container only. Frames are analysed and discarded: no media row, finding or audit event is written. "Save frame for ground review" sends the current frame through the existing `POST /media` path, which creates the usual `UNCERTAIN` findings. No migration. The checkpoint hash is now cached per process (`_checkpoint_digest`), because it was previously recomputed on every inference call.

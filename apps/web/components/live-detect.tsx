@@ -1,59 +1,26 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { api, result, type Schema } from "../lib/api";
 import { Badge, Empty, type RunAction } from "./workspace";
 import { Tracker, type Track } from "./live-tracker";
+import { useFrameFeed } from "./use-frame-feed";
 
 type Frame = Schema["LiveFrameResult"];
-const FRAME_WIDTH = 640;
 const TARGET_FPS = 2;
-const MAX_FAILURES = 5;
 
-/* Frames are sent one at a time: the next is captured only after the last answer returns, so a slow model lowers the rate instead of queueing work. */
 export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"][]; act: RunAction; busy: boolean }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const overlayRef = useRef<HTMLCanvasElement>(null);
-  const grabRef = useRef<HTMLCanvasElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const fileUrlRef = useRef("");
-  const runningRef = useRef(false);
   const trackerRef = useRef(new Tracker());
   const [inView, setInView] = useState(0);
   const [distinct, setDistinct] = useState(0);
-  const [source, setSource] = useState<"" | "camera" | "file">("");
   const [frame, setFrame] = useState<Frame | null>(null);
-  const [fps, setFps] = useState(0);
-  const [error, setError] = useState("");
-  const [retrying, setRetrying] = useState(0);
   const [assetId, setAssetId] = useState("");
   const [rights, setRights] = useState("Own live capture, authorised test zone");
   const [saved, setSaved] = useState("");
   const asset = assetId || assets[0]?.id || "";
 
-  const stop = useCallback(() => {
-    runningRef.current = false;
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    streamRef.current = null;
-    if (fileUrlRef.current) { URL.revokeObjectURL(fileUrlRef.current); fileUrlRef.current = ""; }
-    if (videoRef.current) { videoRef.current.srcObject = null; videoRef.current.removeAttribute("src"); }
-    const canvas = overlayRef.current;
-    canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
-    setSource(""); setFps(0); setInView(0);
-  }, []);
-  useEffect(() => stop, [stop]);
-
-  const grab = (): Promise<Blob | null> => {
-    const video = videoRef.current;
-    if (!video || !video.videoWidth) return Promise.resolve(null);
-    const canvas = grabRef.current ??= document.createElement("canvas");
-    canvas.width = Math.min(FRAME_WIDTH, video.videoWidth);
-    canvas.height = Math.round(canvas.width * video.videoHeight / video.videoWidth);
-    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
-    return new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.8));
-  };
-
   const draw = (tracks: Track[]) => {
-    const canvas = overlayRef.current, video = videoRef.current;
+    const canvas = overlayRef.current, video = feed.videoRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx || !video) return;
     canvas.width = video.clientWidth; canvas.height = video.clientHeight;
@@ -69,50 +36,25 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
     }
   };
 
-  const loop = async () => {
-    runningRef.current = true;
-    let last = performance.now();
-    let failures = 0;
-    while (runningRef.current) {
-      const started = performance.now();
-      try {
-        const blob = await grab();
-        if (blob && !videoRef.current?.paused) {
-          const form = new FormData(); form.set("file", blob, "frame.jpg");
-          const response = await api.POST("/api/v1/drones/live-detect", { body: { file: "" }, bodySerializer: () => form });
-          const data = result(response).data;
-          if (!runningRef.current) break;
-          failures = 0; setRetrying(0);
-          const tracks = trackerRef.current.update(data.detections);
-          setFrame(data); setError(""); draw(tracks); setInView(tracks.length); setDistinct(trackerRef.current.distinct);
-          const at = performance.now(); setFps(Math.round(10000 / (at - last)) / 10); last = at;
-        }
-      } catch (e) {
-        if (!runningRef.current) break;
-        // The first frame can wait on a cold model load and be dropped by the proxy; keep trying a few times before giving up.
-        failures += 1; setRetrying(failures);
-        if (failures >= MAX_FAILURES) { setError(`Detection stopped after ${failures} failed frames: ${String(e)}`); setRetrying(0); stop(); return; }
-      }
-      const wait = 1000 / TARGET_FPS - (performance.now() - started);
-      if (wait > 0) await new Promise(r => setTimeout(r, wait));
-    }
-  };
-
-  const begin = async (kind: "camera" | "file", file?: File) => {
-    stop(); trackerRef.current.reset(); setDistinct(0); setError(""); setFrame(null); setSaved(""); setRetrying(0);
-    const video = videoRef.current; if (!video) return;
-    try {
-      if (kind === "camera") {
-        streamRef.current = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-        video.srcObject = streamRef.current;
-      } else if (file) {
-        fileUrlRef.current = URL.createObjectURL(file); video.src = fileUrlRef.current; video.loop = true;
-      }
-      await video.play(); setSource(kind); void loop();
-    } catch (e) {
-      stop();
-      setError(e instanceof Error && e.name === "NotAllowedError" ? "Camera permission was denied. Choose a video file instead." : `Could not start the ${kind}: ${String(e)}`);
-    }
+  const feed = useFrameFeed({
+    fps: TARGET_FPS,
+    send: async blob => {
+      const form = new FormData(); form.set("file", blob, "frame.jpg");
+      const response = await api.POST("/api/v1/drones/live-detect", { body: { file: "" }, bodySerializer: () => form });
+      const data = result(response).data;
+      const tracks = trackerRef.current.update(data.detections);
+      setFrame(data); draw(tracks); setInView(tracks.length); setDistinct(trackerRef.current.distinct);
+    },
+    onStop: () => {
+      const canvas = overlayRef.current;
+      canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
+      setInView(0);
+    },
+  });
+  const { source, rate: fps, error, retrying, maxFailures, videoRef, stop, grab } = feed;
+  const begin = (kind: "camera" | "file", file?: File) => {
+    trackerRef.current.reset(); setDistinct(0); setFrame(null); setSaved("");
+    return feed.begin(kind, file);
   };
 
   const save = () => act(async () => {
@@ -139,7 +81,7 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
       <canvas ref={overlayRef} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
     </div>
     {!source && <Empty>No feed running. Start the camera or choose a video file.</Empty>}
-    {source && <p role="status" aria-live="polite">{retrying > 0 ? `Detector loading or unreachable, retrying (${retrying}/${MAX_FAILURES})…` : frame ? `${inView} candidate(s) in view · ${distinct} distinct track(s) this session · ${frame.latency_ms} ms model time · ${fps} frames/s · ${frame.model_version ?? "no model"}` : "Waiting for the first result…"}</p>}
+    {source && <p role="status" aria-live="polite">{retrying > 0 ? `Detector loading or unreachable, retrying (${retrying}/${maxFailures})…` : frame ? `${inView} candidate(s) in view · ${distinct} distinct track(s) this session · ${frame.latency_ms} ms model time · ${fps} frames/s · ${frame.model_version ?? "no model"}` : "Waiting for the first result…"}</p>}
     {status && status !== "DETECTED" && status !== "NO_DETECTIONS" && <p role="alert" className="error">Detector unavailable ({status}): {frame?.note}</p>}
     {status === "NO_DETECTIONS" && <p className="muted">No candidates in this frame. That does not show the area is clear.</p>}
     {source && <div className="form-row">
