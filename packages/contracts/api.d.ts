@@ -93,6 +93,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ovitraps/{trap_id}/egg-live-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Egg Live Preview
+         * @description Preview a count while aiming a camera at a paddle. Nothing is stored or confirmed.
+         */
+        post: operations["egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -817,6 +837,13 @@ export interface components {
             /** Series */
             series: components["schemas"]["SurveillancePoint"][];
         };
+        /** Body_egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post */
+        Body_egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post: {
+            /** File */
+            file: string;
+            /** Roi */
+            roi: string;
+        };
         /** Body_live_detect_api_v1_drones_live_detect_post */
         Body_live_detect_api_v1_drones_live_detect_post: {
             /** File */
@@ -947,6 +974,27 @@ export interface components {
             accepted_egg_count: number;
             /** Reason */
             reason: string;
+        };
+        /** EggPreview */
+        EggPreview: {
+            /** Status */
+            status: string;
+            /** Estimate */
+            estimate: number | null;
+            /** Model Version */
+            model_version: string | null;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Roi */
+            roi: number[];
+            /**
+             * Persisted
+             * @default false
+             * @constant
+             */
+            persisted: false;
+            /** Note */
+            note: string;
         };
         /** EvaluationArtifact */
         EvaluationArtifact: {
@@ -1489,6 +1537,16 @@ export interface components {
         /** One[EggAnalysisRecord] */
         One_EggAnalysisRecord_: {
             data: components["schemas"]["EggAnalysisRecord"];
+            /**
+             * Source Mode
+             * @default SIMULATED
+             * @enum {string}
+             */
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
+        };
+        /** One[EggPreview] */
+        One_EggPreview_: {
+            data: components["schemas"]["EggPreview"];
             /**
              * Source Mode
              * @default SIMULATED
@@ -2256,6 +2314,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["One_LiveFrameResult_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trap_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["One_EggPreview_"];
                 };
             };
             /** @description Validation Error */

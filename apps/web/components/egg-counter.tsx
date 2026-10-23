@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, result, type Schema } from "../lib/api";
 import { Badge, Empty, Panel, type Shared } from "./workspace";
+import { EggLive } from "./egg-live";
 
 type Proposal = Schema["EggAnalysisRecord"];
 type Confirmation = Schema["EggConfirmationInput"];
@@ -23,6 +24,7 @@ export function EggCounter({ trapId, trapName, user, act, version, busy }: Share
   const [regionChecked, setRegionChecked] = useState(false);
   const [uploadKey, setUploadKey] = useState("");
   const [retry, setRetry] = useState(0);
+  const [liveOpen, setLiveOpen] = useState(false);
   const [mountedAt] = useState(() => new Date().toISOString());
   const drag = useRef<{ x: number; y: number } | null>(null);
   const canReview = ["reviewer", "coordinator"].includes(user.role);
@@ -51,6 +53,10 @@ export function EggCounter({ trapId, trapName, user, act, version, busy }: Share
   ];
   const current = steps.findIndex(s => !s.done);
 
+  function takeLiveFrame(frame: File, region: number[]) {
+    setFile(frame); setPreview(URL.createObjectURL(frame)); setRoi(region); setRegionChecked(false);
+    setUploadKey(crypto.randomUUID()); setLiveOpen(false);
+  }
   function changeRegion(next: number[]) { setRoi(next); setRegionChecked(false); setUploadKey(crypto.randomUUID()); }
   function pointer(e: React.PointerEvent<HTMLDivElement>) {
     const box = e.currentTarget.getBoundingClientRect();
@@ -62,6 +68,8 @@ export function EggCounter({ trapId, trapName, user, act, version, busy }: Share
     <ol className="stepper" aria-label="Egg counting progress">{steps.map((s, i) => <li key={s.label} className={s.done ? "done" : i === current ? "current" : ""} aria-current={i === current ? "step" : undefined}><b>{s.done ? "✓" : i + 1}</b><span><strong>{s.label}</strong><small>{s.hint}</small></span></li>)}</ol>
     <div className="counter-grid">
       <div className="counter-input">
+        <div className="roi-actions"><button type="button" className="secondary" aria-expanded={liveOpen} onClick={() => setLiveOpen(v => !v)}>{liveOpen ? "Close live preview" : "Aim a camera (live preview)"}</button></div>
+        {liveOpen && <EggLive trapId={trapId} trapName={trapName} canCapture={canReview} onCapture={takeLiveFrame} />}
         <h3>1 · Photo and paddle area</h3>
         {canReview ? <form onSubmit={e => { e.preventDefault(); void act(async () => {
           if (!file || !validRegion || !regionChecked) throw new Error("Select an image and verify its substrate region.");
