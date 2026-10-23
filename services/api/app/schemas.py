@@ -138,3 +138,4 @@ class LoginResponse(BaseModel):
 class HealthResponse(BaseModel):
     ready: bool
     database: str
+    models: dict[str, str] = {}

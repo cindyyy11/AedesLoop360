@@ -2763,6 +2763,14 @@
           "database": {
             "type": "string",
             "title": "Database"
+          },
+          "models": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Models",
+            "default": {}
           }
         },
         "type": "object",

@@ -4,15 +4,18 @@ import { api, result, type Schema } from "../lib/api";
 import { Badge, Empty } from "./workspace";
 import { summarise } from "./egg-preview-stats";
 import { useFrameFeed } from "./use-frame-feed";
+import { ModelStatus, useModelReady } from "./use-model-ready";
 
 type Preview = Schema["EggPreview"];
 // Fixed guide the paddle is lined up inside; the same box is used as the counted area, then the reviewer can adjust it.
-export const GUIDE = [0.3, 0.08, 0.7, 0.92];
+// It matches the area the paddle model was labelled and scored on (see data manifest ROI): a looser box under-reads.
+export const GUIDE = [0.36, 0.04, 0.66, 0.97];
 const PREVIEW_FPS = 1;
 const PREVIEW_WIDTH = 1024; // the count model reads fine texture, so send more pixels than the detector does
 const CAPTURE_WIDTH = 1600;
 
 export function EggLive({ trapId, trapName, canCapture, onCapture }: { trapId: string; trapName: string; canCapture: boolean; onCapture: (file: File, roiPercent: number[]) => void }) {
+  const modelState = useModelReady("egg");
   const overlayRef = useRef<HTMLCanvasElement>(null);
   const history = useRef<number[]>([]);
   const [last, setLast] = useState<Preview | null>(null);
@@ -28,8 +31,8 @@ export function EggLive({ trapId, trapName, canCapture, onCapture }: { trapId: s
     ctx.lineWidth = 2; ctx.setLineDash([8, 5]); ctx.strokeStyle = "#2fd27a";
     ctx.strokeRect(l * canvas.width, t * canvas.height, (r - l) * canvas.width, (b - t) * canvas.height);
     ctx.setLineDash([]); ctx.font = "12px sans-serif"; ctx.fillStyle = "#0b2239";
-    ctx.fillRect(l * canvas.width, t * canvas.height - 16, 150, 16); ctx.fillStyle = "#fff";
-    ctx.fillText("Fit the paddle in here", l * canvas.width + 4, t * canvas.height - 4);
+    ctx.fillRect(l * canvas.width, t * canvas.height, 150, 16); ctx.fillStyle = "#fff";
+    ctx.fillText("Paddle fills this box", l * canvas.width + 4, t * canvas.height + 12);
   };
 
   const feed = useFrameFeed({
@@ -64,6 +67,7 @@ export function EggLive({ trapId, trapName, canCapture, onCapture }: { trapId: s
       <label className="secondary file-button">Play video file<input type="file" accept="video/*" hidden disabled={!!source} onChange={e => { const f = e.target.files?.[0]; if (f) void begin("file", f); e.target.value = ""; }} /></label>
       <button type="button" className="secondary" disabled={!source} onClick={stop}>Stop</button>
     </div>
+    <ModelStatus state={modelState} name="The egg-count model" />
     {error && <p role="alert" className="error">{error}</p>}
     <div className="live-stage" style={{ position: "relative", maxWidth: 560 }}>
       <video ref={videoRef} muted playsInline aria-label="Live feed of the egg paddle" style={{ width: "100%", background: "#0b2239", display: source ? "block" : "none" }} />

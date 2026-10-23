@@ -63,9 +63,10 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```powershell
 $repo = (Resolve-Path .).Path.Replace('\', '/')
 $env:AEDES_DATABASE_URL = "sqlite:///$repo/data/aedes-demo.sqlite"
-Set-Location services/api
-python -m app.worker
+./scripts/start-worker.ps1
 ```
+
+The worker script sets `AEDES_DRONE_MODEL_PATH`: when a simulated mission completes, the worker runs the drone detector once on each target image and records new `UNCERTAIN` candidates for ground review. Without the checkpoint the mission still completes and records `NOT_CONFIGURED`.
 
 **Terminal 3 — install and start the web UI:**
 

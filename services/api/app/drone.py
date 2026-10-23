@@ -4,8 +4,9 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from . import drone_inference
 from .db import now
-from .models import Asset, Finding, Job, Mission, MissionEvent, User, WorkOrder
+from .models import Asset, Finding, Job, Media, Mission, MissionEvent, User, WorkOrder
 from .repository import audit, get, receipt, replay
 from .schemas import Decision, MissionInput
 
@@ -81,6 +82,94 @@ def simulate(db: Session, user: User, mission: Mission, key: str):
     audit(db, user, mission.id, "SIMULATION_QUEUED")
 
 
+def corners(finding: Finding) -> list[float]:
+    """Return [x1, y1, x2, y2]. Seeded fixtures store [x, y, width, height]; model rows store corners."""
+    x, y, c, d = finding.bbox
+    if finding.model_version == "DEMO_PREANNOTATED_V1":
+        return [x, y, x + c, y + d]
+    return [x, y, c, d]
+
+
+def _iou(a: list[float], b: list[float]) -> float:
+    width = max(0.0, min(a[2], b[2]) - max(a[0], b[0]))
+    height = max(0.0, min(a[3], b[3]) - max(a[1], b[1]))
+    overlap = width * height
+    union = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - overlap
+    return overlap / union if union > 0 else 0.0
+
+
+def inspect_targets(db: Session, actor: User, mission: Mission) -> dict:
+    """Run the local detector once on each distinct target image when the pass completes.
+
+    New boxes become UNCERTAIN, IMPORTED candidates for ground review only. They never change a
+    mission decision: eligibility still needs a fixture-matched, permitted, visible-water finding.
+    A detector that is missing or fails is recorded as a status, never as zero containers.
+    """
+    statuses: dict[str, int] = {}
+    new_candidates = 0
+    seen_media: set[str] = set()
+    for target in mission.target_ids:
+        finding = get(db, Finding, target, actor)
+        if finding.media_id in seen_media:
+            continue
+        seen_media.add(finding.media_id)
+        media = db.get(Media, finding.media_id)
+        if not media:
+            statuses["MEDIA_MISSING"] = statuses.get("MEDIA_MISSING", 0) + 1
+            continue
+        inference = drone_inference.infer_candidates(media.content)
+        statuses[inference.status] = statuses.get(inference.status, 0) + 1
+        known = list(
+            db.scalars(
+                select(Finding).where(
+                    Finding.tenant_id == mission.tenant_id, Finding.media_id == media.id
+                )
+            )
+        )
+        for detection in inference.detections:
+            if any(
+                k.object_class == detection.object_class and _iou(corners(k), detection.bbox) >= 0.5
+                for k in known
+            ):
+                continue
+            created = Finding(
+                tenant_id=mission.tenant_id,
+                asset_id=finding.asset_id,
+                media_id=media.id,
+                water_state="UNCERTAIN",
+                object_class=detection.object_class,
+                bbox=detection.bbox,
+                confidence=detection.confidence,
+                model_version=inference.model_version or "LOCAL_MODEL_UNKNOWN",
+                mode="IMPORTED",
+                reason=(
+                    "Found automatically after a simulated pass; a candidate container only, "
+                    "water and breeding status are unconfirmed and require ground review"
+                ),
+            )
+            db.add(created)
+            db.flush()
+            known.append(created)
+            new_candidates += 1
+            audit(
+                db,
+                actor,
+                created.id,
+                "MODEL_CANDIDATE_RECORDED",
+                {
+                    "media_id": media.id,
+                    "mission_id": mission.id,
+                    "origin": "MISSION_AUTO_INSPECTION",
+                    "model_version": created.model_version,
+                },
+            )
+    return {
+        "images_checked": len(seen_media),
+        "detector_status": statuses,
+        "new_candidates": new_candidates,
+    }
+
+
 def step(db: Session, job: Job):
     # Mission row serializes worker and abort on PostgreSQL; SQLite serializes writers.
     mission = db.scalar(select(Mission).where(Mission.id == job.mission_id).with_for_update())
@@ -93,7 +182,10 @@ def step(db: Session, job: Job):
     if job.cursor >= len(mission.target_ids):
         kind, payload = (
             "MISSION_COMPLETED",
-            {"note": "Simulation only; biological effectiveness unverified"},
+            {
+                "note": "Simulation only; biological effectiveness unverified",
+                "auto_detection": inspect_targets(db, actor, mission),
+            },
         )
         mission.status = "COMPLETED"
         job.status = "DONE"

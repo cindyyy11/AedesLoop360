@@ -189,7 +189,11 @@ def collection(values):
 @app.get(P + "/health", response_model=HealthResponse)
 def health(db: DB):
     db.execute(text("SELECT 1"))
-    return {"ready": True, "database": db.bind.dialect.name}
+    return {
+        "ready": True,
+        "database": db.bind.dialect.name,
+        "models": model_warmup.model_state(),
+    }
 
 
 @app.post(P + "/auth/login", response_model=LoginResponse)

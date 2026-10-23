@@ -14,6 +14,14 @@ from . import drone_inference, egg_vision
 
 log = logging.getLogger("aedesloop.warmup")
 
+# LOADING until warm-up finishes, then READY or UNAVAILABLE; UNKNOWN when warm-up is disabled.
+READY_STATUSES = {"DETECTED", "NO_DETECTIONS", "ESTIMATED", "OUT_OF_RANGE"}
+_state: dict[str, str] = {"drone": "UNKNOWN", "egg": "UNKNOWN"}
+
+
+def model_state() -> dict[str, str]:
+    return dict(_state)
+
 
 def _blank_jpeg() -> bytes:
     buffer = io.BytesIO()
@@ -37,8 +45,13 @@ def warm_models() -> dict[str, str]:
 
 def _run() -> None:
     try:
-        log.info("Model warm-up finished: %s", warm_models())
+        statuses = warm_models()
+        for name, status in statuses.items():
+            _state[name] = "READY" if status in READY_STATUSES else "UNAVAILABLE"
+        log.info("Model warm-up finished: %s", statuses)
     except Exception:  # warm-up is an optimisation; requests still load lazily
+        for name in _state:
+            _state[name] = "UNAVAILABLE"
         log.exception("Model warm-up failed; models will load on first request")
 
 
@@ -46,6 +59,8 @@ def start_background_warmup() -> threading.Thread | None:
     """Start warm-up in a daemon thread so API start-up is not blocked by model loading."""
     if os.getenv("AEDES_WARMUP_MODELS", "1") != "1":
         return None
+    for name in _state:
+        _state[name] = "LOADING"
     thread = threading.Thread(target=_run, name="model-warmup", daemon=True)
     thread.start()
     return thread
