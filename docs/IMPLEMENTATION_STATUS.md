@@ -1,5 +1,9 @@
 # Implementation Status
 
+## Production-build browser run (23 October 2026)
+
+All Playwright specs against a **production build** (`AEDES_API_ORIGIN=http://127.0.0.1:18002 AEDES_NEXT_DIST_DIR=.next-audit npm run build`, then `next start`): the build and its TypeScript step passed, and the run gave **24 passed, 1 skipped** (`township-3d-live.spec.ts`, which skips itself) in 2.6 minutes. Stack: fresh SQLite, API, worker, Edge, real drone and egg checkpoints, a fake camera for the drone and egg specs, and a VP8 clip for the video-file spec. This is the first run of the live-detection, live egg preview, tracker, video-file and refused-camera specs against a production build; the camera test took 30 s because the first frame waits on the model load. Caveat: `closed-loop.spec.ts` and `egg-upload.spec.ts` had uncommitted edits from the other workstream in the working tree during the run, so those two ran as edited, not as committed. Not covered: a real phone or webcam, and drone footage with real camera motion.
+
 ## Backend test isolation fixed (23 October 2026)
 
 `services/api/tests/conftest.py` now creates one migrated SQLite database (real Alembic migrations, so audit triggers exist) in git-ignored `data/tests/` and sets `AEDES_DATABASE_URL` before any test module is imported. `test_analytics.py`, `test_drone_upload.py` and `test_loop.py` no longer set their own database, which is what made the first-imported module decide the engine for the whole process and broke the two `test_loop.py` audit tests. The conftest also points pytest's temp directory at `data/tests/pytest-tmp` when `--basetemp` is not given (the default system temp folder was access-denied on this Windows host), and `pyproject.toml` adds `pythonpath = [".", "services/api"]` so `app.*` and `scripts.*` import from any directory.
