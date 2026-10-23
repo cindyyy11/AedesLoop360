@@ -53,13 +53,16 @@ test("coordinator counts eggs from a photo, confirms it, and sees it in the trap
   await testInfo.attach("before-analyze", { body: await page.screenshot(), contentType: "image/png" });
 
   // Step 3: the model proposes a count.
+  // Take the expected count from the API response: after the status message the card can still show the previous
+  // analysis until the list refetch lands, so reading the number straight off the page is a race.
+  const created = page.waitForResponse(r => r.request().method() === "POST" && /\/egg-analyses$/.test(r.url()));
   await analyze.click();
+  const proposed = (await (await created).json()).data.proposed_count as number;
+  expect(Number.isInteger(proposed)).toBeTruthy();
   await expect(page.getByRole("status").filter({ hasText: "Image analysis persisted" })).toBeVisible({ timeout: 30000 });
   const card = counter.locator(".result-card").first();
-  await expect(card).toBeVisible();
-  await expect(card.locator(".result-number b")).toHaveText(/^\d+$/);
+  await expect(card.locator(".result-number b")).toHaveText(String(proposed));
   await expect(card.getByText("NOT SURVEILLANCE YET")).toBeVisible();
-  const proposed = Number(await card.locator(".result-number b").textContent());
   await expect(card.locator(".roi-box")).toBeVisible();
 
   // Step 4: reviewer confirms with a unique paddle and interval.
