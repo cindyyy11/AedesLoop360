@@ -57,10 +57,13 @@ test("coordinator counts eggs from a photo, confirms it, and sees it in the trap
   // analysis until the list refetch lands, so reading the number straight off the page is a race.
   const created = page.waitForResponse(r => r.request().method() === "POST" && /\/egg-analyses$/.test(r.url()));
   await analyze.click();
-  const proposed = (await (await created).json()).data.proposed_count as number;
+  const analysis = (await (await created).json()).data as { id: string; proposed_count: number };
+  const proposed = analysis.proposed_count;
   expect(Number.isInteger(proposed)).toBeTruthy();
   await expect(page.getByRole("status").filter({ hasText: "Image analysis persisted" })).toBeVisible({ timeout: 30000 });
-  const card = counter.locator(".result-card").first();
+  // Select the card for this exact analysis; an earlier result can stay on screen until the list refetch lands.
+  const card = counter.locator(".result-card").filter({ has: page.getByAltText(`Imported egg substrate for analysis ${analysis.id}`) });
+  await expect(card).toBeVisible();
   await expect(card.locator(".result-number b")).toHaveText(String(proposed));
   await expect(card.getByText("NOT SURVEILLANCE YET")).toBeVisible();
   await expect(card.locator(".roi-box")).toBeVisible();
@@ -77,7 +80,8 @@ test("coordinator counts eggs from a photo, confirms it, and sees it in the trap
   await confirm.getByLabel(/Why you accept/).fill("Checked against the photo, added one missed egg");
   await confirm.getByRole("button", { name: "Confirm and add to trap history" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Reviewed imported interval saved" })).toBeVisible({ timeout: 15000 });
-  await expect(counter.locator(".result-card.confirmed")).toContainText(`Confirmed by a reviewer as ${proposed + 1} eggs`);
+  await expect(card).toHaveClass(/confirmed/);
+  await expect(card).toContainText(`Confirmed by a reviewer as ${proposed + 1} eggs`);
 
   // The confirmed interval is now a selectable bar in the trap chart.
   await expect(page.getByRole("button", { name: new RegExp(`${day(start)} to ${day(end)}: ${proposed + 1} eggs`) })).toHaveCount(1);

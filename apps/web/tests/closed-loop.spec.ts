@@ -38,9 +38,10 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await login(page,"operator");
   await page.getByLabel("Mission",{exact:true}).selectOption(missionId);
   await page.getByRole("button",{name:"Start simulation"}).click();
-  await expect(page.getByText("MISSION_COMPLETED",{exact:true})).toBeVisible({timeout:20000});
-  await expect(page.getByText("SKIPPED",{exact:true})).toBeVisible();
-  await expect(page.getByText("MOCK_ACTION_RECORDED",{exact:true})).toBeVisible();
+  // Findings accumulate across suite runs in a shared database, so a badge can appear more than once.
+  await expect(page.getByText("MISSION_COMPLETED",{exact:true}).first()).toBeVisible({timeout:20000});
+  await expect(page.getByText("SKIPPED",{exact:true}).first()).toBeVisible();
+  await expect(page.getByText("MOCK_ACTION_RECORDED",{exact:true}).first()).toBeVisible();
   // Scope to the timeline: live-detection runs can add extra GROUND_REVIEW candidates to the findings list.
   const groundReview=page.locator(".timeline-event").getByText("GROUND_REVIEW",{exact:true});
   await expect(groundReview.first()).toBeVisible();
