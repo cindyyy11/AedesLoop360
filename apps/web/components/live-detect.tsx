@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, result, type Schema } from "../lib/api";
 import { Badge, Empty, type RunAction } from "./workspace";
+import { Tracker, type Track } from "./live-tracker";
 
 type Frame = Schema["LiveFrameResult"];
 const FRAME_WIDTH = 640;
@@ -16,6 +17,9 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
   const streamRef = useRef<MediaStream | null>(null);
   const fileUrlRef = useRef("");
   const runningRef = useRef(false);
+  const trackerRef = useRef(new Tracker());
+  const [inView, setInView] = useState(0);
+  const [distinct, setDistinct] = useState(0);
   const [source, setSource] = useState<"" | "camera" | "file">("");
   const [frame, setFrame] = useState<Frame | null>(null);
   const [fps, setFps] = useState(0);
@@ -34,7 +38,7 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
     if (videoRef.current) { videoRef.current.srcObject = null; videoRef.current.removeAttribute("src"); }
     const canvas = overlayRef.current;
     canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
-    setSource(""); setFps(0);
+    setSource(""); setFps(0); setInView(0);
   }, []);
   useEffect(() => stop, [stop]);
 
@@ -48,18 +52,18 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
     return new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.8));
   };
 
-  const draw = (data: Frame) => {
+  const draw = (tracks: Track[]) => {
     const canvas = overlayRef.current, video = videoRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx || !video) return;
     canvas.width = video.clientWidth; canvas.height = video.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = 2; ctx.font = "12px sans-serif";
-    for (const d of data.detections) {
-      const [x1, y1, x2, y2] = d.bbox;
+    for (const d of tracks) {
+      const [x1, y1, x2, y2] = d.box;
       const x = x1 * canvas.width, y = y1 * canvas.height, w = (x2 - x1) * canvas.width, h = (y2 - y1) * canvas.height;
       ctx.strokeStyle = "#ff9d2e"; ctx.setLineDash([6, 4]); ctx.strokeRect(x, y, w, h);
-      const label = `${d.object_class} ${Math.round(d.confidence * 100)}% · UNCERTAIN`;
+      const label = `#${d.id} ${d.object_class} ${Math.round(d.confidence * 100)}% · UNCERTAIN`;
       ctx.setLineDash([]); ctx.fillStyle = "#0b2239"; ctx.fillRect(x, Math.max(0, y - 16), ctx.measureText(label).width + 8, 16);
       ctx.fillStyle = "#fff"; ctx.fillText(label, x + 4, Math.max(12, y - 4));
     }
@@ -79,7 +83,8 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
           const data = result(response).data;
           if (!runningRef.current) break;
           failures = 0; setRetrying(0);
-          setFrame(data); setError(""); draw(data);
+          const tracks = trackerRef.current.update(data.detections);
+          setFrame(data); setError(""); draw(tracks); setInView(tracks.length); setDistinct(trackerRef.current.distinct);
           const at = performance.now(); setFps(Math.round(10000 / (at - last)) / 10); last = at;
         }
       } catch (e) {
@@ -94,7 +99,7 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
   };
 
   const begin = async (kind: "camera" | "file", file?: File) => {
-    stop(); setError(""); setFrame(null); setSaved(""); setRetrying(0);
+    stop(); trackerRef.current.reset(); setDistinct(0); setError(""); setFrame(null); setSaved(""); setRetrying(0);
     const video = videoRef.current; if (!video) return;
     try {
       if (kind === "camera") {
@@ -122,7 +127,7 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
   const status = frame?.status;
   return <section className="panel" aria-labelledby="live-title">
     <div className="section-head"><h2 id="live-title">Live detection</h2><Badge>IMPORTED · analysed, not stored</Badge></div>
-    <p className="muted">Point a camera or play a drone video clip. About {TARGET_FPS} frames a second go to the local model; boxes are candidate containers, never confirmed water or larval sites. Nothing is saved unless you press Save frame.</p>
+    <p className="muted">Use a camera or a drone video. Boxes are possible containers, not confirmed breeding sites. Nothing is saved unless you press Save frame.</p>
     <div className="actions">
       <button type="button" disabled={!!source || busy} onClick={() => void begin("camera")}>Start camera</button>
       <label className="secondary file-button">Play video file<input type="file" accept="video/*" hidden disabled={!!source} onChange={e => { const f = e.target.files?.[0]; if (f) void begin("file", f); e.target.value = ""; }} /></label>
@@ -134,7 +139,7 @@ export function LiveDetect({ assets, act, busy }: { assets: Schema["AssetRecord"
       <canvas ref={overlayRef} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
     </div>
     {!source && <Empty>No feed running. Start the camera or choose a video file.</Empty>}
-    {source && <p role="status" aria-live="polite">{retrying > 0 ? `Detector loading or unreachable, retrying (${retrying}/${MAX_FAILURES})…` : frame ? `${frame.detections.length} candidate(s) · ${frame.latency_ms} ms model time · ${fps} frames/s · ${frame.model_version ?? "no model"}` : "Waiting for the first result…"}</p>}
+    {source && <p role="status" aria-live="polite">{retrying > 0 ? `Detector loading or unreachable, retrying (${retrying}/${MAX_FAILURES})…` : frame ? `${inView} candidate(s) in view · ${distinct} distinct track(s) this session · ${frame.latency_ms} ms model time · ${fps} frames/s · ${frame.model_version ?? "no model"}` : "Waiting for the first result…"}</p>}
     {status && status !== "DETECTED" && status !== "NO_DETECTIONS" && <p role="alert" className="error">Detector unavailable ({status}): {frame?.note}</p>}
     {status === "NO_DETECTIONS" && <p className="muted">No candidates in this frame. That does not show the area is clear.</p>}
     {source && <div className="form-row">
