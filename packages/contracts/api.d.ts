@@ -76,6 +76,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/drones/live-detect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Live Detect */
+        post: operations["live_detect_api_v1_drones_live_detect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -800,6 +817,11 @@ export interface components {
             /** Series */
             series: components["schemas"]["SurveillancePoint"][];
         };
+        /** Body_live_detect_api_v1_drones_live_detect_post */
+        Body_live_detect_api_v1_drones_live_detect_post: {
+            /** File */
+            file: string;
+        };
         /** Body_upload_api_v1_media_post */
         Body_upload_api_v1_media_post: {
             /** File */
@@ -1078,6 +1100,44 @@ export interface components {
              * @default SIMULATED EXPERIMENT
              */
             source_mode: string;
+        };
+        /** LiveDetection */
+        LiveDetection: {
+            /** Object Class */
+            object_class: string;
+            /** Bbox */
+            bbox: number[];
+            /** Confidence */
+            confidence: number;
+            /**
+             * State
+             * @default UNCERTAIN
+             * @constant
+             */
+            state: "UNCERTAIN";
+        };
+        /** LiveFrameResult */
+        LiveFrameResult: {
+            /** Status */
+            status: string;
+            /** Model Version */
+            model_version: string | null;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Frame Width */
+            frame_width: number;
+            /** Frame Height */
+            frame_height: number;
+            /** Detections */
+            detections: components["schemas"]["LiveDetection"][];
+            /**
+             * Persisted
+             * @default false
+             * @constant
+             */
+            persisted: false;
+            /** Note */
+            note: string;
         };
         /** Login */
         Login: {
@@ -1449,6 +1509,16 @@ export interface components {
         /** One[HistoryRecord] */
         One_HistoryRecord_: {
             data: components["schemas"]["HistoryRecord"];
+            /**
+             * Source Mode
+             * @default SIMULATED
+             * @enum {string}
+             */
+            source_mode: "SIMULATED" | "BENCH_TEST" | "OBSERVED" | "IMPORTED";
+        };
+        /** One[LiveFrameResult] */
+        One_LiveFrameResult_: {
+            data: components["schemas"]["LiveFrameResult"];
             /**
              * Source Mode
              * @default SIMULATED
@@ -2153,6 +2223,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["One_TrapPassResult_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    live_detect_api_v1_drones_live_detect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_live_detect_api_v1_drones_live_detect_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["One_LiveFrameResult_"];
                 };
             };
             /** @description Validation Error */

@@ -40,6 +40,16 @@ def _cached_model(path: str) -> Any:
     return _load_model(path)
 
 
+@lru_cache(maxsize=4)
+def _checkpoint_digest(path: str) -> str:
+    """Hash the weights once per process; live video calls inference many times a second."""
+    digest_builder = hashlib.sha256()
+    with Path(path).open("rb") as weights:
+        for chunk in iter(lambda: weights.read(1024 * 1024), b""):
+            digest_builder.update(chunk)
+    return digest_builder.hexdigest()[:12]
+
+
 def _as_float(value: Any) -> float:
     return float(value.item() if hasattr(value, "item") else value)
 
@@ -97,11 +107,7 @@ def infer_candidates(
                         confidence=max(0.0, min(1.0, _as_float(confidence))),
                     )
                 )
-        digest_builder = hashlib.sha256()
-        with checkpoint.open("rb") as weights:
-            for chunk in iter(lambda: weights.read(1024 * 1024), b""):
-                digest_builder.update(chunk)
-        digest = digest_builder.hexdigest()[:12]
+        digest = _checkpoint_digest(str(checkpoint.resolve()))
         version = f"{checkpoint.stem}@{digest}"
         return InferenceResult("DETECTED" if detections else "NO_DETECTIONS", version, detections)
     except ImportError:

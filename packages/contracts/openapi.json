@@ -232,6 +232,44 @@
         }
       }
     },
+    "/api/v1/drones/live-detect": {
+      "post": {
+        "summary": "Live Detect",
+        "operationId": "live_detect_api_v1_drones_live_detect_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_live_detect_api_v1_drones_live_detect_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_LiveFrameResult_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "summary": "Health",
@@ -2003,6 +2041,20 @@
         ],
         "title": "BlockSurveillanceAnalytics"
       },
+      "Body_live_detect_api_v1_drones_live_detect_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_live_detect_api_v1_drones_live_detect_post"
+      },
       "Body_upload_api_v1_media_post": {
         "properties": {
           "file": {
@@ -2785,6 +2837,97 @@
           "data"
         ],
         "title": "LatestBenchmark"
+      },
+      "LiveDetection": {
+        "properties": {
+          "object_class": {
+            "type": "string",
+            "title": "Object Class"
+          },
+          "bbox": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Bbox"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "state": {
+            "type": "string",
+            "const": "UNCERTAIN",
+            "title": "State",
+            "default": "UNCERTAIN"
+          }
+        },
+        "type": "object",
+        "required": [
+          "object_class",
+          "bbox",
+          "confidence"
+        ],
+        "title": "LiveDetection"
+      },
+      "LiveFrameResult": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "title": "Latency Ms"
+          },
+          "frame_width": {
+            "type": "integer",
+            "title": "Frame Width"
+          },
+          "frame_height": {
+            "type": "integer",
+            "title": "Frame Height"
+          },
+          "detections": {
+            "items": {
+              "$ref": "#/components/schemas/LiveDetection"
+            },
+            "type": "array",
+            "title": "Detections"
+          },
+          "persisted": {
+            "type": "boolean",
+            "const": false,
+            "title": "Persisted",
+            "default": false
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "model_version",
+          "latency_ms",
+          "frame_width",
+          "frame_height",
+          "detections",
+          "note"
+        ],
+        "title": "LiveFrameResult"
       },
       "Login": {
         "properties": {
@@ -3716,6 +3859,29 @@
           "data"
         ],
         "title": "One[HistoryRecord]"
+      },
+      "One_LiveFrameResult_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LiveFrameResult"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[LiveFrameResult]"
       },
       "One_MediaRecord_": {
         "properties": {
