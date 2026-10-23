@@ -88,9 +88,11 @@ from .schemas import (
 from .security import check_password, create_session, current_user, require
 from .surveillance import effective_status, engineering_referral, ingest, summaries
 from .egg_routes import router as egg_router
+from .live_routes import router as live_router
 
 app = FastAPI(title="AedesLoop 360", version="0.1.0")
 app.include_router(egg_router)
+app.include_router(live_router)
 DB = Annotated[Session, Depends(session)]
 Actor = Annotated[User, Depends(current_user)]
 Key = Annotated[str, Header(alias="Idempotency-Key", min_length=1, max_length=128)]
