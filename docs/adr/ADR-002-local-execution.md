@@ -1,0 +1,5 @@
+# ADR-002 — Local execution fallback
+
+Keep FastAPI/SQLAlchemy, Next.js and generated OpenAPI contracts. Docker engine access is denied here. Supply PostgreSQL Compose and execute SQLite with foreign keys enabled locally; this does not verify PostgreSQL/PostGIS. Map coordinates are fictional schematic coordinates; PostGIS geometry/GIST remain outstanding. Private bounded demo media is stored in database bytes rather than object storage. The API requires tenant authentication for media, but does not yet implement assignment-scoped media access.
+
+No learned CV or hardware control. Planner weights and recurrence window are software demo assumptions, not scientific coefficients. Uploads are stored but do not trigger detection. The initial migration constructs tables from live ORM metadata, so it is not a frozen historical schema; migration 002 handles the currently verified operator-column upgrade on SQLite. PostgreSQL migration behavior remains unverified. Source limitations follow the supplied PRD.

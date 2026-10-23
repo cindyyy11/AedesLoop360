@@ -134,7 +134,7 @@ Use REST JSON with `/api/v1`; generated TS clients from exported OpenAPI. TanSta
 
 `local`: Compose DB + storage + seeded fixtures + fake drone and camera, no keys beyond local dev; `demo`: deterministic hosted instance with `SIMULATED` display; `pilot`: must not be enabled without safety/privacy and partner reviews. Do not create production drone/pesticide routes in demo.
 
-**Operational CLI ideal:** `make dev`, `make seed`, `make test`, `make demo-reset`, `make openapi`. If a repo prefers pnpm/taskfile, use equivalent documented commands; never claim they exist until implemented.
+**Operational CLI ideal:** `make dev`, `make seed`, `make test`, `make demo-reset`, `make openapi`. This repository uses npm for the web app; document only commands that exist and have been verified.
 
 ## 9. Architecture decision record
 

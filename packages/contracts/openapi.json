@@ -1,0 +1,5444 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AedesLoop 360",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/ovitraps/{trap_id}/egg-analyses": {
+      "post": {
+        "summary": "Upload Egg Analysis",
+        "operationId": "upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post",
+        "parameters": [
+          {
+            "name": "trap_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trap Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_EggAnalysisRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Egg Analyses",
+        "operationId": "list_egg_analyses_api_v1_ovitraps__trap_id__egg_analyses_get",
+        "parameters": [
+          {
+            "name": "trap_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trap Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_EggAnalysisRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/egg-analyses/{analysis_id}/confirm": {
+      "post": {
+        "summary": "Confirm Egg Analysis",
+        "operationId": "confirm_egg_analysis_api_v1_egg_analyses__analysis_id__confirm_post",
+        "parameters": [
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Analysis Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EggConfirmationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_SampleRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/egg-analyses/inbox": {
+      "get": {
+        "summary": "Egg Analysis Inbox",
+        "description": "Proposals still waiting for a human decision, across all traps.",
+        "operationId": "egg_analysis_inbox_api_v1_egg_analyses_inbox_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_EggAnalysisRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/trap-passes": {
+      "post": {
+        "summary": "Simulate Trap Pass",
+        "operationId": "simulate_trap_pass_api_v1_drones_trap_passes_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrapPassInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_TrapPassResult_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/live-detect": {
+      "post": {
+        "summary": "Live Detect",
+        "operationId": "live_detect_api_v1_drones_live_detect_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_live_detect_api_v1_drones_live_detect_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_LiveFrameResult_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ovitraps/{trap_id}/egg-live-preview": {
+      "post": {
+        "summary": "Egg Live Preview",
+        "description": "Preview a count while aiming a camera at a paddle. Nothing is stored or confirmed.",
+        "operationId": "egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post",
+        "parameters": [
+          {
+            "name": "trap_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trap Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_EggPreview_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Login",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Me",
+        "operationId": "me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Logout",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blocks": {
+      "get": {
+        "summary": "Blocks",
+        "operationId": "blocks_api_v1_blocks_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": "2026-10-16T00:00:00Z",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": "2026-10-23T00:00:00Z",
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_Summary_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/evaluations": {
+      "get": {
+        "summary": "Analytics Evaluations",
+        "operationId": "analytics_evaluations_api_v1_analytics_evaluations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelEvaluations"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/surveillance": {
+      "get": {
+        "summary": "Analytics Surveillance",
+        "operationId": "analytics_surveillance_api_v1_analytics_surveillance_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": "2026-10-16T00:00:00Z",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "default": "2026-10-23T00:00:00Z",
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsMany_BlockSurveillanceAnalytics_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/allocation-benchmark": {
+      "get": {
+        "summary": "Analytics Allocation Benchmark",
+        "operationId": "analytics_allocation_benchmark_api_v1_analytics_allocation_benchmark_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LatestBenchmark"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Run Allocation Benchmark",
+        "operationId": "run_allocation_benchmark_api_v1_analytics_allocation_benchmark_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_AnalyticsRunRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assets": {
+      "get": {
+        "summary": "Assets",
+        "operationId": "assets_api_v1_assets_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_AssetRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assets/{entity_id}/history": {
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_v1_assets__entity_id__history_get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_HistoryRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/findings": {
+      "get": {
+        "summary": "Findings",
+        "operationId": "findings_api_v1_findings_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_FindingRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/findings/{entity_id}/review": {
+      "post": {
+        "summary": "Review Finding",
+        "operationId": "review_finding_api_v1_findings__entity_id__review_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FindingReviewInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_FindingRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media": {
+      "post": {
+        "summary": "Upload",
+        "operationId": "upload_api_v1_media_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_api_v1_media_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MediaRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/{entity_id}": {
+      "get": {
+        "summary": "Media",
+        "operationId": "media_api_v1_media__entity_id__get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ovitraps": {
+      "get": {
+        "summary": "Traps",
+        "operationId": "traps_api_v1_ovitraps_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_TrapRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ovitraps/{entity_id}/samples": {
+      "get": {
+        "summary": "Samples",
+        "operationId": "samples_api_v1_ovitraps__entity_id__samples_get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_SampleRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Import Sample",
+        "operationId": "import_sample_api_v1_ovitraps__entity_id__samples_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_SampleRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/samples/{entity_id}/revisions": {
+      "get": {
+        "summary": "Sample Revisions",
+        "operationId": "sample_revisions_api_v1_samples__entity_id__revisions_get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_SampleRevisionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Revise Sample",
+        "operationId": "revise_sample_api_v1_samples__entity_id__revisions_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleRevisionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_SampleRevisionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions": {
+      "get": {
+        "summary": "Missions",
+        "operationId": "missions_api_v1_drones_missions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_MissionRecord_"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Mission",
+        "operationId": "create_mission_api_v1_drones_missions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MissionInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MissionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions/{entity_id}/review": {
+      "post": {
+        "summary": "Review Mission",
+        "operationId": "review_mission_api_v1_drones_missions__entity_id__review_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MissionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions/{entity_id}/decision": {
+      "post": {
+        "summary": "Decide Mission",
+        "operationId": "decide_mission_api_v1_drones_missions__entity_id__decision_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Decision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MissionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions/{entity_id}/simulate": {
+      "post": {
+        "summary": "Simulate Mission",
+        "operationId": "simulate_mission_api_v1_drones_missions__entity_id__simulate_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MissionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions/{entity_id}/abort": {
+      "post": {
+        "summary": "Abort Mission",
+        "operationId": "abort_mission_api_v1_drones_missions__entity_id__abort_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_MissionRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drones/missions/{entity_id}/events": {
+      "get": {
+        "summary": "Mission Events",
+        "operationId": "mission_events_api_v1_drones_missions__entity_id__events_get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_MissionEventRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs": {
+      "get": {
+        "summary": "Jobs",
+        "operationId": "jobs_api_v1_jobs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_JobRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/planning/runs": {
+      "get": {
+        "summary": "Plans",
+        "operationId": "plans_api_v1_planning_runs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_AllocationRecord_"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Plan",
+        "operationId": "create_plan_api_v1_planning_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_AllocationRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/planning/runs/{entity_id}/approve": {
+      "post": {
+        "summary": "Approve Plan",
+        "operationId": "approve_plan_api_v1_planning_runs__entity_id__approve_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_AllocationRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inspections": {
+      "post": {
+        "summary": "Observation",
+        "operationId": "observation_api_v1_inspections_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObservationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_ObservationRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Observations",
+        "operationId": "observations_api_v1_inspections_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_ObservationRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inspections/{entity_id}/review": {
+      "post": {
+        "summary": "Review Observation",
+        "operationId": "review_observation_api_v1_inspections__entity_id__review_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_ObservationRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assets/{entity_id}/recurrence": {
+      "post": {
+        "summary": "Recurrence",
+        "operationId": "recurrence_api_v1_assets__entity_id__recurrence_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-orders": {
+      "get": {
+        "summary": "Work Orders",
+        "operationId": "work_orders_api_v1_work_orders_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_WorkOrderRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-orders/{entity_id}": {
+      "patch": {
+        "summary": "Update Work",
+        "operationId": "update_work_api_v1_work_orders__entity_id__patch",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_WorkOrderRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-orders/{entity_id}/verify": {
+      "post": {
+        "summary": "Verify Work",
+        "operationId": "verify_work_api_v1_work_orders__entity_id__verify_post",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/One_WorkOrderRecord_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/audit": {
+      "get": {
+        "summary": "Audits",
+        "operationId": "audits_api_v1_audit_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Many_AuditRecord_"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AllocationRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "evidence_snapshot_hash": {
+            "type": "string",
+            "title": "Evidence Snapshot Hash"
+          },
+          "snapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Snapshot"
+          },
+          "result": {
+            "$ref": "#/components/schemas/PlanResult"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at",
+          "evidence_snapshot_hash",
+          "snapshot",
+          "result",
+          "policy_version",
+          "status"
+        ],
+        "title": "AllocationRecord"
+      },
+      "AnalyticsMany_BlockSurveillanceAnalytics_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/BlockSurveillanceAnalytics"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "title": "Source Mode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "source_mode"
+        ],
+        "title": "AnalyticsMany[BlockSurveillanceAnalytics]"
+      },
+      "AnalyticsRunRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "run_type": {
+            "type": "string",
+            "title": "Run Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "source_mode": {
+            "type": "string",
+            "title": "Source Mode"
+          },
+          "run_metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Run Metadata"
+          },
+          "metrics": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metrics"
+          },
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationArtifact"
+            },
+            "type": "array",
+            "title": "Artifacts"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "initiated_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initiated By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at",
+          "run_id",
+          "run_type",
+          "status",
+          "source_mode",
+          "run_metadata",
+          "metrics",
+          "artifacts",
+          "limitations",
+          "initiated_by"
+        ],
+        "title": "AnalyticsRunRecord"
+      },
+      "AssetRecord": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "accessible": {
+            "type": "boolean",
+            "title": "Accessible"
+          },
+          "permission": {
+            "type": "boolean",
+            "title": "Permission"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_id",
+          "name",
+          "accessible",
+          "permission",
+          "x",
+          "y",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "AssetRecord"
+      },
+      "AuditRecord": {
+        "properties": {
+          "actor_id": {
+            "type": "string",
+            "title": "Actor Id"
+          },
+          "entity_id": {
+            "type": "string",
+            "title": "Entity Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "actor_id",
+          "entity_id",
+          "action",
+          "details",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "AuditRecord"
+      },
+      "BlockSurveillanceAnalytics": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "block_name": {
+            "type": "string",
+            "title": "Block Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "valid_trap_intervals": {
+            "type": "integer",
+            "title": "Valid Trap Intervals"
+          },
+          "expected_trap_intervals": {
+            "type": "integer",
+            "title": "Expected Trap Intervals"
+          },
+          "invalid_intervals": {
+            "type": "integer",
+            "title": "Invalid Intervals"
+          },
+          "completeness": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completeness"
+          },
+          "egg_sum": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Egg Sum"
+          },
+          "eggs_per_valid_trap_interval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eggs Per Valid Trap Interval"
+          },
+          "positivity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positivity"
+          },
+          "unavailable_traps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unavailable Traps"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "source_modes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Modes"
+          },
+          "interval_days_included": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Interval Days Included"
+          },
+          "comparability_warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparability Warning"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/SurveillancePoint"
+            },
+            "type": "array",
+            "title": "Series"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_id",
+          "block_name",
+          "status",
+          "valid_trap_intervals",
+          "expected_trap_intervals",
+          "invalid_intervals",
+          "completeness",
+          "egg_sum",
+          "eggs_per_valid_trap_interval",
+          "positivity",
+          "unavailable_traps",
+          "sources",
+          "source_modes",
+          "interval_days_included",
+          "comparability_warning",
+          "series"
+        ],
+        "title": "BlockSurveillanceAnalytics"
+      },
+      "Body_egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "roi": {
+            "type": "string",
+            "title": "Roi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "roi"
+        ],
+        "title": "Body_egg_live_preview_api_v1_ovitraps__trap_id__egg_live_preview_post"
+      },
+      "Body_live_detect_api_v1_drones_live_detect_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_live_detect_api_v1_drones_live_detect_post"
+      },
+      "Body_upload_api_v1_media_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "rights": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Rights"
+          },
+          "captured_at": {
+            "type": "string",
+            "title": "Captured At"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "rights",
+          "captured_at",
+          "asset_id"
+        ],
+        "title": "Body_upload_api_v1_media_post"
+      },
+      "Body_upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "rights": {
+            "type": "string",
+            "title": "Rights"
+          },
+          "captured_at": {
+            "type": "string",
+            "title": "Captured At"
+          },
+          "roi": {
+            "type": "string",
+            "title": "Roi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "rights",
+          "captured_at",
+          "roi"
+        ],
+        "title": "Body_upload_egg_analysis_api_v1_ovitraps__trap_id__egg_analyses_post"
+      },
+      "Budget": {
+        "properties": {
+          "staff_hours": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 4.0,
+            "title": "Staff Hours"
+          },
+          "drone_survey_hours": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Drone Survey Hours"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "staff_hours",
+          "drone_survey_hours"
+        ],
+        "title": "Budget"
+      },
+      "BudgetUsed": {
+        "properties": {
+          "staff_hours": {
+            "type": "number",
+            "title": "Staff Hours"
+          },
+          "drone_survey_hours": {
+            "type": "number",
+            "title": "Drone Survey Hours"
+          }
+        },
+        "type": "object",
+        "required": [
+          "staff_hours",
+          "drone_survey_hours"
+        ],
+        "title": "BudgetUsed"
+      },
+      "Decision": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "APPROVE",
+              "REJECT"
+            ],
+            "title": "Decision"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          },
+          "checked_items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Checked Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision",
+          "reason",
+          "checked_items"
+        ],
+        "title": "Decision"
+      },
+      "EggAnalysisRecord": {
+        "properties": {
+          "trap_id": {
+            "type": "string",
+            "title": "Trap Id"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "roi": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Roi"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "proposed_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed Count"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "confirmed_sample_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed Sample Id"
+          },
+          "reviewer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewer Id"
+          },
+          "accepted_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted Count"
+          },
+          "confirmation_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Reason"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "capture_pass_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capture Pass Id"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trap_id",
+          "media_id",
+          "roi",
+          "status",
+          "proposed_count",
+          "model_version",
+          "reason",
+          "details",
+          "confirmed_sample_id",
+          "reviewer_id",
+          "accepted_count",
+          "confirmation_reason",
+          "source",
+          "capture_pass_id",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "EggAnalysisRecord"
+      },
+      "EggConfirmationInput": {
+        "properties": {
+          "source_sample_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source Sample Id"
+          },
+          "substrate_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Substrate Id"
+          },
+          "interval_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval Start"
+          },
+          "interval_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval End"
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Collected At"
+          },
+          "sampling_effort_days": {
+            "type": "number",
+            "maximum": 31.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Sampling Effort Days"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "GOOD",
+              "BLURRED",
+              "OCCLUDED"
+            ],
+            "title": "Quality",
+            "default": "GOOD"
+          },
+          "accepted_egg_count": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Accepted Egg Count"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_sample_id",
+          "substrate_id",
+          "interval_start",
+          "interval_end",
+          "collected_at",
+          "sampling_effort_days",
+          "accepted_egg_count",
+          "reason"
+        ],
+        "title": "EggConfirmationInput"
+      },
+      "EggPreview": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "estimate": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimate"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "title": "Latency Ms"
+          },
+          "roi": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Roi"
+          },
+          "persisted": {
+            "type": "boolean",
+            "const": false,
+            "title": "Persisted",
+            "default": false
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "estimate",
+          "model_version",
+          "latency_ms",
+          "roi",
+          "note"
+        ],
+        "title": "EggPreview"
+      },
+      "EvaluationArtifact": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "name",
+          "sha256"
+        ],
+        "title": "EvaluationArtifact"
+      },
+      "FindingRecord": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "water_state": {
+            "type": "string",
+            "title": "Water State"
+          },
+          "object_class": {
+            "type": "string",
+            "title": "Object Class"
+          },
+          "bbox": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Bbox"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "reviewed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed By"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          },
+          "review_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Note"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "eligibility": {
+            "type": "string",
+            "title": "Eligibility"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id",
+          "media_id",
+          "water_state",
+          "object_class",
+          "bbox",
+          "confidence",
+          "model_version",
+          "reason",
+          "review_status",
+          "reviewed_by",
+          "reviewed_at",
+          "review_note",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at",
+          "eligibility"
+        ],
+        "title": "FindingRecord"
+      },
+      "FindingReviewInput": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "CONFIRM",
+              "REJECT",
+              "RELABEL"
+            ],
+            "title": "Decision"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          },
+          "water_state": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "DRY",
+                  "VISIBLE_WATER",
+                  "OCCLUDED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Water State"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision",
+          "reason"
+        ],
+        "title": "FindingReviewInput"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "database": {
+            "type": "string",
+            "title": "Database"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ready",
+          "database"
+        ],
+        "title": "HealthResponse"
+      },
+      "HistoryRecord": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "accessible": {
+            "type": "boolean",
+            "title": "Accessible"
+          },
+          "permission": {
+            "type": "boolean",
+            "title": "Permission"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/ObservationRecord"
+            },
+            "type": "array",
+            "title": "Observations"
+          },
+          "work_orders": {
+            "items": {
+              "$ref": "#/components/schemas/WorkOrderRecord"
+            },
+            "type": "array",
+            "title": "Work Orders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_id",
+          "name",
+          "accessible",
+          "permission",
+          "x",
+          "y",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at",
+          "observations",
+          "work_orders"
+        ],
+        "title": "HistoryRecord"
+      },
+      "ItemResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Record"
+          },
+          "source_mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ItemResponse"
+      },
+      "JobRecord": {
+        "properties": {
+          "mission_id": {
+            "type": "string",
+            "title": "Mission Id"
+          },
+          "operator_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operator Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "cursor": {
+            "type": "integer",
+            "title": "Cursor"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "next_attempt_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Next Attempt At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mission_id",
+          "operator_id",
+          "status",
+          "cursor",
+          "attempts",
+          "next_attempt_at",
+          "error",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "JobRecord"
+      },
+      "LatestBenchmark": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalyticsRunRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_mode": {
+            "type": "string",
+            "title": "Source Mode",
+            "default": "SIMULATED EXPERIMENT"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "LatestBenchmark"
+      },
+      "LiveDetection": {
+        "properties": {
+          "object_class": {
+            "type": "string",
+            "title": "Object Class"
+          },
+          "bbox": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Bbox"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "state": {
+            "type": "string",
+            "const": "UNCERTAIN",
+            "title": "State",
+            "default": "UNCERTAIN"
+          }
+        },
+        "type": "object",
+        "required": [
+          "object_class",
+          "bbox",
+          "confidence"
+        ],
+        "title": "LiveDetection"
+      },
+      "LiveFrameResult": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "title": "Latency Ms"
+          },
+          "frame_width": {
+            "type": "integer",
+            "title": "Frame Width"
+          },
+          "frame_height": {
+            "type": "integer",
+            "title": "Frame Height"
+          },
+          "detections": {
+            "items": {
+              "$ref": "#/components/schemas/LiveDetection"
+            },
+            "type": "array",
+            "title": "Detections"
+          },
+          "persisted": {
+            "type": "boolean",
+            "const": false,
+            "title": "Persisted",
+            "default": false
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "model_version",
+          "latency_ms",
+          "frame_width",
+          "frame_height",
+          "detections",
+          "note"
+        ],
+        "title": "LiveFrameResult"
+      },
+      "Login": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Login"
+      },
+      "LoginResponse": {
+        "properties": {
+          "user": {
+            "type": "string",
+            "title": "User"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user",
+          "role",
+          "tenant_id"
+        ],
+        "title": "LoginResponse"
+      },
+      "Many_AllocationRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AllocationRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[AllocationRecord]"
+      },
+      "Many_AssetRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AssetRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[AssetRecord]"
+      },
+      "Many_AuditRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AuditRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[AuditRecord]"
+      },
+      "Many_EggAnalysisRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EggAnalysisRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[EggAnalysisRecord]"
+      },
+      "Many_FindingRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/FindingRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[FindingRecord]"
+      },
+      "Many_JobRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/JobRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[JobRecord]"
+      },
+      "Many_MissionEventRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MissionEventRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[MissionEventRecord]"
+      },
+      "Many_MissionRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MissionRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[MissionRecord]"
+      },
+      "Many_ObservationRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ObservationRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[ObservationRecord]"
+      },
+      "Many_SampleRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SampleRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[SampleRecord]"
+      },
+      "Many_SampleRevisionRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SampleRevisionRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[SampleRevisionRecord]"
+      },
+      "Many_Summary_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Summary"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[Summary]"
+      },
+      "Many_TrapRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TrapRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[TrapRecord]"
+      },
+      "Many_WorkOrderRecord_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/WorkOrderRecord"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Many[WorkOrderRecord]"
+      },
+      "MediaRecord": {
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "rights": {
+            "type": "string",
+            "title": "Rights"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          },
+          "uploader_id": {
+            "type": "string",
+            "title": "Uploader Id"
+          },
+          "adapter": {
+            "type": "string",
+            "title": "Adapter"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sha256",
+          "content_type",
+          "rights",
+          "captured_at",
+          "uploader_id",
+          "adapter",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "MediaRecord"
+      },
+      "MissionEventRecord": {
+        "properties": {
+          "mission_id": {
+            "type": "string",
+            "title": "Mission Id"
+          },
+          "event_key": {
+            "type": "string",
+            "title": "Event Key"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mission_id",
+          "event_key",
+          "kind",
+          "payload",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "MissionEventRecord"
+      },
+      "MissionInput": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "target_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Target Ids"
+          },
+          "mode": {
+            "type": "string",
+            "const": "SIMULATED",
+            "title": "Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "block_id",
+          "target_ids"
+        ],
+        "title": "MissionInput"
+      },
+      "MissionRecord": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "target_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Target Ids"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "approval_expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Expires At"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_id",
+          "status",
+          "target_ids",
+          "policy_version",
+          "approved_by",
+          "approved_at",
+          "approval_expires_at",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "MissionRecord"
+      },
+      "ModelEvaluationCard": {
+        "properties": {
+          "run_type": {
+            "type": "string",
+            "title": "Run Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "latest_completed_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalyticsRunRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_type",
+          "status"
+        ],
+        "title": "ModelEvaluationCard"
+      },
+      "ModelEvaluations": {
+        "properties": {
+          "drone_detection": {
+            "$ref": "#/components/schemas/ModelEvaluationCard"
+          },
+          "ovitrap_count": {
+            "$ref": "#/components/schemas/ModelEvaluationCard"
+          }
+        },
+        "type": "object",
+        "required": [
+          "drone_detection",
+          "ovitrap_count"
+        ],
+        "title": "ModelEvaluations"
+      },
+      "ObservationInput": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Observed At"
+          },
+          "water_state": {
+            "type": "string",
+            "enum": [
+              "DRY",
+              "VISIBLE_WATER",
+              "OCCLUDED"
+            ],
+            "title": "Water State"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "asset_id",
+          "observed_at",
+          "water_state",
+          "media_id"
+        ],
+        "title": "ObservationInput"
+      },
+      "ObservationRecord": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Observed At"
+          },
+          "water_state": {
+            "type": "string",
+            "title": "Water State"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "reviewer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewer Id"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "resolved": {
+            "type": "boolean",
+            "title": "Resolved"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id",
+          "observed_at",
+          "water_state",
+          "review_status",
+          "reviewer_id",
+          "media_id",
+          "resolved",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "ObservationRecord"
+      },
+      "One_AllocationRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AllocationRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[AllocationRecord]"
+      },
+      "One_AnalyticsRunRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AnalyticsRunRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[AnalyticsRunRecord]"
+      },
+      "One_EggAnalysisRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EggAnalysisRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[EggAnalysisRecord]"
+      },
+      "One_EggPreview_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EggPreview"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[EggPreview]"
+      },
+      "One_FindingRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/FindingRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[FindingRecord]"
+      },
+      "One_HistoryRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/HistoryRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[HistoryRecord]"
+      },
+      "One_LiveFrameResult_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LiveFrameResult"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[LiveFrameResult]"
+      },
+      "One_MediaRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MediaRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[MediaRecord]"
+      },
+      "One_MissionRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MissionRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[MissionRecord]"
+      },
+      "One_ObservationRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ObservationRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[ObservationRecord]"
+      },
+      "One_SampleRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SampleRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[SampleRecord]"
+      },
+      "One_SampleRevisionRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SampleRevisionRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[SampleRevisionRecord]"
+      },
+      "One_TrapPassResult_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TrapPassResult"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[TrapPassResult]"
+      },
+      "One_WorkOrderRecord_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/WorkOrderRecord"
+          },
+          "source_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "BENCH_TEST",
+              "OBSERVED",
+              "IMPORTED"
+            ],
+            "title": "Source Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "One[WorkOrderRecord]"
+      },
+      "PlanInput": {
+        "properties": {
+          "budget": {
+            "$ref": "#/components/schemas/Budget",
+            "default": {
+              "staff_hours": 12.0,
+              "drone_survey_hours": 2.0
+            }
+          },
+          "window_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Window Start",
+            "default": "2026-10-16T00:00:00Z"
+          },
+          "window_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Window End",
+            "default": "2026-10-23T00:00:00Z"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PlanInput"
+      },
+      "PlanResult": {
+        "properties": {
+          "block_priorities": {
+            "items": {
+              "$ref": "#/components/schemas/Priority"
+            },
+            "type": "array",
+            "title": "Block Priorities"
+          },
+          "recommended_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            },
+            "type": "array",
+            "title": "Recommended Tasks"
+          },
+          "excluded_tasks": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Excluded Tasks"
+          },
+          "budget_used": {
+            "$ref": "#/components/schemas/BudgetUsed"
+          },
+          "coverage_guardrail": {
+            "type": "boolean",
+            "title": "Coverage Guardrail"
+          },
+          "assumptions": {
+            "type": "string",
+            "title": "Assumptions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_priorities",
+          "recommended_tasks",
+          "excluded_tasks",
+          "budget_used",
+          "coverage_guardrail",
+          "assumptions"
+        ],
+        "title": "PlanResult"
+      },
+      "Priority": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "valid_intervals": {
+            "type": "integer",
+            "title": "Valid Intervals"
+          },
+          "expected_intervals": {
+            "type": "integer",
+            "title": "Expected Intervals"
+          },
+          "eggs_per_interval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eggs Per Interval"
+          },
+          "positivity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positivity"
+          },
+          "sample_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sample Ids"
+          },
+          "observation_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Observation Ids"
+          },
+          "unresolved_sources": {
+            "type": "integer",
+            "title": "Unresolved Sources"
+          },
+          "unavailable_traps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unavailable Traps"
+          },
+          "excluded_samples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Excluded Samples"
+          },
+          "interval_days": {
+            "type": "number",
+            "title": "Interval Days"
+          },
+          "uncertainty": {
+            "type": "string",
+            "title": "Uncertainty"
+          },
+          "comparability_warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparability Warning"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "factors": {
+            "items": {
+              "$ref": "#/components/schemas/ScoreFactor"
+            },
+            "type": "array",
+            "title": "Factors",
+            "default": []
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "x",
+          "y",
+          "mode",
+          "status",
+          "valid_intervals",
+          "expected_intervals",
+          "eggs_per_interval",
+          "positivity",
+          "sample_ids",
+          "observation_ids",
+          "unresolved_sources",
+          "unavailable_traps",
+          "excluded_samples",
+          "interval_days",
+          "uncertainty",
+          "score",
+          "reasons",
+          "evidence_ids"
+        ],
+        "title": "Priority"
+      },
+      "Record": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "Record"
+      },
+      "ReviewInput": {
+        "properties": {
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confirmed",
+          "reason"
+        ],
+        "title": "ReviewInput"
+      },
+      "SampleInput": {
+        "properties": {
+          "source_sample_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source Sample Id"
+          },
+          "substrate_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Substrate Id"
+          },
+          "interval_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval Start"
+          },
+          "interval_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval End"
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Collected At"
+          },
+          "sampling_effort_days": {
+            "type": "number",
+            "maximum": 31.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Sampling Effort Days"
+          },
+          "egg_count": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Egg Count"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "GOOD",
+              "BLURRED",
+              "OCCLUDED"
+            ],
+            "title": "Quality",
+            "default": "GOOD"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "HUMAN_LABELLED_FIXTURE",
+              "MODEL_ASSISTED_REVIEWED",
+              "DRONE_SIM_REVIEWED"
+            ],
+            "title": "Source",
+            "default": "HUMAN_LABELLED_FIXTURE"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATED",
+              "IMPORTED"
+            ],
+            "title": "Mode",
+            "default": "SIMULATED"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_sample_id",
+          "substrate_id",
+          "interval_start",
+          "interval_end",
+          "collected_at",
+          "sampling_effort_days",
+          "egg_count",
+          "media_id"
+        ],
+        "title": "SampleInput"
+      },
+      "SampleRecord": {
+        "properties": {
+          "trap_id": {
+            "type": "string",
+            "title": "Trap Id"
+          },
+          "source_sample_id": {
+            "type": "string",
+            "title": "Source Sample Id"
+          },
+          "substrate_id": {
+            "type": "string",
+            "title": "Substrate Id"
+          },
+          "interval_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval Start"
+          },
+          "interval_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval End"
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Collected At"
+          },
+          "sampling_effort_days": {
+            "type": "number",
+            "title": "Sampling Effort Days"
+          },
+          "egg_count": {
+            "type": "integer",
+            "title": "Egg Count"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "quality": {
+            "type": "string",
+            "title": "Quality"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "validity": {
+            "type": "string",
+            "title": "Validity"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trap_id",
+          "source_sample_id",
+          "substrate_id",
+          "interval_start",
+          "interval_end",
+          "collected_at",
+          "sampling_effort_days",
+          "egg_count",
+          "media_id",
+          "source",
+          "quality",
+          "review_status",
+          "validity",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "SampleRecord"
+      },
+      "SampleRevisionInput": {
+        "properties": {
+          "corrected_egg_count": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Corrected Egg Count"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "GOOD",
+              "BLURRED",
+              "OCCLUDED"
+            ],
+            "title": "Quality",
+            "default": "GOOD"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "corrected_egg_count",
+          "media_id",
+          "reason"
+        ],
+        "title": "SampleRevisionInput"
+      },
+      "SampleRevisionRecord": {
+        "properties": {
+          "sample_id": {
+            "type": "string",
+            "title": "Sample Id"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "title": "Reviewer Id"
+          },
+          "previous_egg_count": {
+            "type": "integer",
+            "title": "Previous Egg Count"
+          },
+          "corrected_egg_count": {
+            "type": "integer",
+            "title": "Corrected Egg Count"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "Media Id"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_id",
+          "reviewer_id",
+          "previous_egg_count",
+          "corrected_egg_count",
+          "media_id",
+          "reason",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "SampleRevisionRecord"
+      },
+      "ScoreFactor": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "points": {
+            "type": "number",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "points"
+        ],
+        "title": "ScoreFactor"
+      },
+      "Summary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "valid_intervals": {
+            "type": "integer",
+            "title": "Valid Intervals"
+          },
+          "expected_intervals": {
+            "type": "integer",
+            "title": "Expected Intervals"
+          },
+          "eggs_per_interval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eggs Per Interval"
+          },
+          "positivity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positivity"
+          },
+          "sample_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sample Ids"
+          },
+          "observation_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Observation Ids"
+          },
+          "unresolved_sources": {
+            "type": "integer",
+            "title": "Unresolved Sources"
+          },
+          "unavailable_traps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unavailable Traps"
+          },
+          "excluded_samples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Excluded Samples"
+          },
+          "interval_days": {
+            "type": "number",
+            "title": "Interval Days"
+          },
+          "uncertainty": {
+            "type": "string",
+            "title": "Uncertainty"
+          },
+          "comparability_warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparability Warning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "x",
+          "y",
+          "mode",
+          "status",
+          "valid_intervals",
+          "expected_intervals",
+          "eggs_per_interval",
+          "positivity",
+          "sample_ids",
+          "observation_ids",
+          "unresolved_sources",
+          "unavailable_traps",
+          "excluded_samples",
+          "interval_days",
+          "uncertainty"
+        ],
+        "title": "Summary"
+      },
+      "SurveillancePoint": {
+        "properties": {
+          "interval_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval Start"
+          },
+          "interval_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Interval End"
+          },
+          "interval_days": {
+            "type": "number",
+            "title": "Interval Days"
+          },
+          "egg_sum": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Egg Sum"
+          },
+          "eggs_per_valid_trap_interval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eggs Per Valid Trap Interval"
+          },
+          "positive_intervals": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positive Intervals"
+          },
+          "valid_trap_intervals": {
+            "type": "integer",
+            "title": "Valid Trap Intervals"
+          },
+          "expected_trap_intervals": {
+            "type": "integer",
+            "title": "Expected Trap Intervals"
+          },
+          "invalid_intervals": {
+            "type": "integer",
+            "title": "Invalid Intervals"
+          },
+          "completeness": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completeness"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "sample_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sample Ids"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "source_modes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Modes"
+          },
+          "quality_states": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Quality States"
+          },
+          "latest_collected_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Collected At"
+          },
+          "latest_uploaded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Uploaded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "interval_start",
+          "interval_end",
+          "interval_days",
+          "egg_sum",
+          "eggs_per_valid_trap_interval",
+          "positive_intervals",
+          "valid_trap_intervals",
+          "expected_trap_intervals",
+          "invalid_intervals",
+          "completeness",
+          "status",
+          "sample_ids",
+          "sources",
+          "source_modes",
+          "quality_states",
+          "latest_collected_at",
+          "latest_uploaded_at"
+        ],
+        "title": "SurveillancePoint"
+      },
+      "Task": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "hours": {
+            "type": "number",
+            "title": "Hours"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "block_id",
+          "kind",
+          "hours",
+          "reason"
+        ],
+        "title": "Task"
+      },
+      "TrapPassInput": {
+        "properties": {
+          "trap_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Trap Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "trap_ids"
+        ],
+        "title": "TrapPassInput"
+      },
+      "TrapPassResult": {
+        "properties": {
+          "pass_id": {
+            "type": "string",
+            "title": "Pass Id"
+          },
+          "analyses": {
+            "items": {
+              "$ref": "#/components/schemas/EggAnalysisRecord"
+            },
+            "type": "array",
+            "title": "Analyses"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/TrapPassSkip"
+            },
+            "type": "array",
+            "title": "Skipped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pass_id",
+          "analyses",
+          "skipped"
+        ],
+        "title": "TrapPassResult"
+      },
+      "TrapPassSkip": {
+        "properties": {
+          "trap_id": {
+            "type": "string",
+            "title": "Trap Id"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trap_id",
+          "reason"
+        ],
+        "title": "TrapPassSkip"
+      },
+      "TrapRecord": {
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "safe_design_verified": {
+            "type": "boolean",
+            "title": "Safe Design Verified"
+          },
+          "sampling_cadence_days": {
+            "type": "integer",
+            "title": "Sampling Cadence Days"
+          },
+          "serviced_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Serviced At"
+          },
+          "heartbeat_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Heartbeat At"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "effective_status": {
+            "type": "string",
+            "title": "Effective Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block_id",
+          "name",
+          "status",
+          "safe_design_verified",
+          "sampling_cadence_days",
+          "serviced_at",
+          "heartbeat_at",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at",
+          "effective_status"
+        ],
+        "title": "TrapRecord"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VerifyInput": {
+        "properties": {
+          "result": {
+            "type": "string",
+            "enum": [
+              "VERIFIED_RESOLVED",
+              "REOPENED"
+            ],
+            "title": "Result"
+          },
+          "evidence_id": {
+            "type": "string",
+            "title": "Evidence Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 8,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "result",
+          "evidence_id",
+          "reason"
+        ],
+        "title": "VerifyInput"
+      },
+      "WorkOrderRecord": {
+        "properties": {
+          "dedupe_key": {
+            "type": "string",
+            "title": "Dedupe Key"
+          },
+          "block_id": {
+            "type": "string",
+            "title": "Block Id"
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "assigned_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To"
+          },
+          "completed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed By"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dedupe_key",
+          "block_id",
+          "asset_id",
+          "kind",
+          "status",
+          "reason",
+          "assigned_to",
+          "completed_by",
+          "evidence_id",
+          "id",
+          "tenant_id",
+          "mode",
+          "created_at"
+        ],
+        "title": "WorkOrderRecord"
+      },
+      "WorkUpdate": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "ASSIGN",
+              "START",
+              "COMPLETE"
+            ],
+            "title": "Action"
+          },
+          "assignee_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Id"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "WorkUpdate"
+      }
+    }
+  }
+}

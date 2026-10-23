@@ -11,6 +11,10 @@
 
 The application must never claim that a container detection proves Aedes larvae, an egg-count trend proves dengue incidence, or that simulated treatment proves biological effectiveness. No pesticide dispensing and no unattended real drone operations in this MVP.
 
+**Current repository status:** this is a local simulated demonstration. A configured local YOLOv8n checkpoint can detect candidate containers in uploaded images and persist `IMPORTED`/`UNCERTAIN` findings for human review. Without that checkpoint, the synthetic fixture and ground-review fallback remain available. The four-block ovitrap and mission loop uses simulated records; no real intervention is automated. See [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) for verified scenarios and remaining limits.
+
+**Data evaluation status:** `docs/DATA_ANALYTICS_AND_EVALUATION.md`, `docs/DATA_IMPLEMENTATION_STATUS.md` and `docs/DATA_RESULTS_REPORT.md` document the analytics and model evidence. The local workspace contains user-supplied datasets and ignored checkpoints; these are not redistributed in Git. The drone evaluation card shows a persisted grouped held-out test run (mAP@0.5 68.30%, recall 62.54%). The ovitrap reviewer-assist card now shows a registered 57-image grouped held-out run (image MAE 9.56); zero-count specificity remains unmeasured. Dashboard surveillance reads persisted sample intervals; the strategy comparison is a labelled deterministic simulation.
+
 ## Reading order for your coding agent
 
 1. `AGENTS.md` — non-negotiable engineering rules and repository navigation.
@@ -34,9 +38,78 @@ The application must never claim that a container detection proves Aedes larvae,
 - Local Docker Compose for database/object storage; mock/simulated drone, ovitrap and actuator adapters work without paid external credentials.
 - If an existing repository exists, **inspect and adapt it; do not overwrite or force this directory layout**. Preserve working features and migration history. Record deviations as ADRs.
 
-## MVP acceptance promise
+## Intended end-to-end workflow
 
-Given a seeded four-block demo: upload/mock aerial image -> show candidate object -> record eligibility -> request operator approval -> simulate a harmless test-water spray / skip target -> ingest *new per-sampling-interval* ovitrap data -> recompute task priorities -> create next mission/inspection tasks -> verify and escalate recurring water-accumulation asset. Changes must persist in DB and survive reloads.
+The target workflow is: use a seeded four-block demo, review candidate objects, approve and simulate an eligible harmless test-water action, ingest a new ovitrap interval, recompute priorities, create inspection work, then independently verify and escalate recurring accumulation. The local fixture workflow covers these persisted stages. The local upload-to-review path now persists an asset-linked fixture annotation for the exact synthetic image and an uncertain review item for unsupported images. It does not perform CV inference or infer real-world asset matching. See the implementation status for exact acceptance coverage.
+
+## Run the local demo (Windows PowerShell)
+
+The default demonstration uses SQLite, synthetic fixture evidence, a persisted mission worker and the local Next.js UI. No Docker service, external account or real actuator is required. Start each service in its own PowerShell window from the repository root.
+
+**Terminal 1 — migrate, seed and start the API:**
+
+```powershell
+$repo = (Resolve-Path .).Path.Replace('\', '/')
+New-Item -ItemType Directory -Force data | Out-Null
+$env:AEDES_DATABASE_URL = "sqlite:///$repo/data/aedes-demo.sqlite"
+python -m alembic -c services/api/alembic.ini upgrade head
+Push-Location services/api
+python -m app.seed
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+**Terminal 2 — start the durable simulation worker:**
+
+```powershell
+$repo = (Resolve-Path .).Path.Replace('\', '/')
+$env:AEDES_DATABASE_URL = "sqlite:///$repo/data/aedes-demo.sqlite"
+Set-Location services/api
+python -m app.worker
+```
+
+**Terminal 3 — install and start the web UI:**
+
+```powershell
+Set-Location apps/web
+npm ci
+npm run dev
+```
+
+The added `apps/web/package-lock.json` pins the npm dependency tree. Use `npm ci` for clean installs; use `npm install` when intentionally changing dependencies, then review the package and lockfile changes together.
+
+Open `http://127.0.0.1:3000/dashboard` and click **Enter demo**. This opens the coordinator view without a role or password picker. Use **Switch to operator** in the top bar when you want to demonstrate simulated mission execution; switch back to coordinator for approvals. The API continues to enforce each role's permissions. Inspector, reviewer and admin accounts remain seeded for the deeper acceptance scenarios, but are not part of the normal prototype entry flow.
+
+To reset the demo, stop the API and worker with Ctrl+C and use a new SQLite filename, for example `aedes-demo-reset-1.sqlite`, in the same `AEDES_DATABASE_URL` setting in the API and worker terminals. Run the migration and seed commands again. The previous database and audit history remain intact. Seeding an existing database is idempotent and preserves its records.
+
+Run the automated checks from the repository root and `apps/web`:
+
+```powershell
+python -m pytest -q
+ruff check services/api
+Set-Location apps/web
+npm run lint
+npm run typecheck
+npm run build
+npm run test
+```
+
+Run the reproducible data inventory from the repository root:
+
+```powershell
+python scripts/data_evaluation.py validate-dataset --dataset local-app-fixture-images-v1 --out data/evaluations
+python scripts/data_evaluation.py validate-dataset --dataset drone-aedes-habitat-candidate-v1 --out data/evaluations
+python scripts/data_evaluation.py eval-drone --out data/evaluations
+python scripts/data_evaluation.py eval-eggs --out data/evaluations
+python scripts/benchmark_allocation.py --out data/evaluations/allocation-benchmark.json
+```
+
+The evaluation commands report `NOT_EVALUATED` until an independent labelled test set, predictions, and checkpoint are supplied. With those prerequisites, pass `--labels`, `--predictions`, `--checkpoint`, `--dataset-id` and `--split test` to the appropriate evaluator; then register its generated summary for the local demo tenant with `python scripts/register_evaluation.py --summary <path-to-summary.json> --tenant tenant-demo`. Registration checks the held-out split, sample count and dataset/checkpoint hashes before writing a tenant-scoped run record. A local registration still relies on the evaluator/operator to provide honest labels and predictions. On the dashboard, coordinators can run and persist the four-block simulated allocation comparison. The run compares uniform, stale static, and adaptive plans under shared scenario truth and budget; it is not field evidence.
+
+The Playwright scenario expects the API, worker and web UI to be running. Install its browser once with `npx playwright install chromium`, or set `AEDES_BROWSER_EXECUTABLE` to an installed Chromium-compatible browser. For a side-by-side run when ports 3000/8000 are occupied, set `AEDES_API_ORIGIN` for Next.js, set `AEDES_WEB_ORIGIN` in both the API and Playwright process, and use a separate `AEDES_NEXT_DIST_DIR` for the second Next.js development server.
+
+## Interactive 3D demonstration
+
+Open **Township** for the new 3D walkthrough: select registered assets, inspect trap availability, replay saved mission events and explain the latest saved allocation. It uses existing backend records and preserves the 2D map. Geometry and drone travel are explicitly illustrative; replay cannot execute a mission. See [the 3D demo and validation guide](docs/3D_TOWNSHIP.md).
 
 ## Explicit exclusions
 

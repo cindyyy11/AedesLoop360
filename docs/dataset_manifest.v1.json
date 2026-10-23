@@ -1,0 +1,79 @@
+{
+  "manifest_version": 1,
+  "manifest_name": "AedesLoop 360 dataset inventory",
+  "updated_at": "2026-10-23",
+  "datasets": [
+    {
+      "id": "drone-aedes-habitat-candidate-v1",
+      "name": "Drone Imagery Dataset of Aedes Mosquito Breeding Habitats",
+      "source_url": "https://data.mendeley.com/datasets/vr3kkt9mvn/1",
+      "doi": "10.17632/vr3kkt9mvn.1",
+      "licence": "Mendeley Data record: CC BY 4.0; embedded Roboflow export YAML: Private (conflicting metadata)",
+      "licence_status": "SOURCE_RECORD_CC_BY_4_0_EXPORT_METADATA_CONFLICT",
+      "metadata_status": "LOCALLY_DOWNLOADED_AND_LABELS_VERIFIED",
+      "declared_metadata": {
+        "image_count": 2821,
+        "image_dimensions": "512x512",
+        "classes": ["coconut_shell", "drum", "other_open_container", "tyre", "water_tank"],
+        "published_split": {"train": 0.7, "validation": 0.15, "test": 0.15}
+      },
+      "classes": ["coconut_shell", "drum", "other_open_container", "tyre", "water_tank"],
+      "configured_root": "../data/external/drone-aedes-yolov8-v1",
+      "split_image_dirs": {
+        "train": "train/images",
+        "validation": "valid/images",
+        "test": "test/images"
+      },
+      "split_label_dirs": {
+        "train": "train/labels",
+        "validation": "valid/labels",
+        "test": "test/labels"
+      },
+      "group_id_regex": "(?P<group>.+?)(?:_tile_.*|$)",
+      "warnings": [
+        "Source Mendeley record declares CC BY 4.0; the export metadata says Private. Do not redistribute until this discrepancy is clarified.",
+        "Candidate-container labels do not confirm standing water, larvae, Aedes species, treatment eligibility, or dengue risk.",
+        "Tiles from the same source aerial image cross the publisher's split; use the deterministic source-group split for model training and held-out evaluation."
+      ]
+    },
+    {
+      "id": "ovitrap-technician-count-candidate-v1",
+      "name": "Sample dataset: ovitrap sticks pictures and observed egg count",
+      "source_url": "https://zenodo.org/records/6962536",
+      "doi": "10.5281/zenodo.6962536",
+      "licence": "Not independently verified in this repository",
+      "licence_status": "UNVERIFIED",
+      "metadata_status": "CANDIDATE_DECLARATION_NOT_DOWNLOADED",
+      "declared_metadata": {
+        "image_count": 300,
+        "described_label_coverage": "egg-positive stick photographs with technician counts"
+      },
+      "classes": [],
+      "configured_root": null,
+      "images_subdir": "images",
+      "labels_subdir": null,
+      "warnings": [
+        "No dataset files are configured or asserted as obtained.",
+        "The described all-positive sample cannot establish negative-sample specificity.",
+        "Image-level technician counts do not provide individual egg boxes for object-detection AP."
+      ]
+    },
+    {
+      "id": "local-app-fixture-images-v1",
+      "name": "AedesLoop local application fixture images",
+      "source_url": null,
+      "doi": null,
+      "licence": "Project fixture; no external dataset licence applies",
+      "licence_status": "PROJECT_FIXTURE",
+      "metadata_status": "LOCAL_FIXTURE_UNLABELLED",
+      "classes": ["water_tank", "drum", "tyre", "coconut_shell", "other_open_container"],
+      "configured_root": "../fixtures",
+      "images_subdir": "images",
+      "labels_subdir": null,
+      "warnings": [
+        "These application fixture images are not an independent labelled evaluation set.",
+        "Their presence must not be reported as model performance or scientific evidence."
+      ]
+    }
+  ]
+}
