@@ -43,14 +43,14 @@ export default function TownshipMap({ data, dronePoint, route, visited, routeOnl
   useEffect(() => {
     const container = host.current;
     if (!container) return;
-    const instance = L.map(container, { zoomControl: false, attributionControl: true, zoomSnap: 0.25 });
+    const instance = L.map(container, { zoomControl: false, attributionControl: true, zoomSnap: 0.25, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false });
     const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap contributors" }).addTo(instance);
     tiles.on("tileerror", () => setTilesFailed(true));
     tiles.on("tileload", () => setTilesFailed(false));
     overlay.current = L.layerGroup().addTo(instance);
     map.current = instance;
     instance.fitBounds(extent(dataRef.current));
-    return () => { instance.remove(); map.current = null; overlay.current = null; drone.current = null; };
+    return () => { instance.stop(); instance.remove(); map.current = null; overlay.current = null; drone.current = null; };
   }, []);
 
   // Static layers: blocks, assets, traps, route.

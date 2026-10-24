@@ -31,6 +31,7 @@ async function mockApi(page: Page, role = "operator") {
 }
 
 test("3D flight rehearsal replays stored outcomes without writing anything", async ({ page }, testInfo) => {
+  test.slow(); // headless software WebGL renders the larger viewport slowly while the whole flight plays
   const errors: string[] = [];
   page.on("pageerror", e => errors.push(e.message));
   const writes = await mockApi(page);

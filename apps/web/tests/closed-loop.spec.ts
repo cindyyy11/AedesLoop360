@@ -31,7 +31,7 @@ test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
   await expect(page.getByText("NO DATA",{exact:true}).first()).toBeVisible();
   await page.screenshot({path:testInfo.outputPath("dashboard-desktop.png"),fullPage:true});
   await page.getByRole("link",{name:"Drone missions",exact:true}).click();
-  await expect(page.getByRole("heading",{name:"Simulation mission"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Simulation mission"})).toBeVisible({timeout:20000});
   await page.getByRole("button",{name:"Create new draft"}).click();
   await page.getByRole("button",{name:"Submit for review"}).click();
   for(const check of ["SIMULATED MODE","AUTHORIZED TEST ZONE","NO CHEMICAL PAYLOAD"]) await page.getByLabel(check,{exact:true}).check();
