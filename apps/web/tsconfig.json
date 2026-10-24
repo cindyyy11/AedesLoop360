@@ -34,11 +34,7 @@
     ".next-ui/types/**/*.ts",
     ".next-ui/dev/types/**/*.ts",
     ".next-egg-completion/types/**/*.ts",
-    ".next-egg-completion/dev/types/**/*.ts",
-    ".next-ux/types/**/*.ts",
-    ".next-ux/dev/types/**/*.ts",
-    ".next-pw/types/**/*.ts",
-    ".next-pw/dev/types/**/*.ts"
+    ".next-egg-completion/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

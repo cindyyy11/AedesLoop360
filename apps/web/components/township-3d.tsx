@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneCorner } from "./scene-controls";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -123,9 +124,14 @@ export default function Township3D({ version }: { version: number }) {
       <div className="township-viewport" data-view={view}>
         {view === "map" ? <TownshipMap data={data} route={chapter === 0 ? (showPlanned ? planned : route) : []} visited={visited} routeOnly={showPlanned} eventAsset={chapter === 0 ? eventAsset : undefined} eventKind={chapter === 0 ? event?.kind : undefined} selected={selected} onSelect={setSelected} mapCommand={mapCommand} /> : <Scene data={data} chapter={chapter} selected={selected} onSelect={setSelected} onReady={setSceneReady} eventAsset={chapter === 0 ? eventAsset : undefined} eventKind={chapter === 0 ? event?.kind : undefined} route={chapter === 0 ? (showPlanned ? planned : route) : []} routeOnly={showPlanned} playing={playing && chapter === 0 && !!event} cameraAction={camera} night={night} heat={heat} loopStage={chapter === 3 ? loopStage : -1} loop={loop} />}
         <div className="township-scene-caption"><strong>AE / 360</strong><span>{view === "map" ? "Fictional township placed on a real basemap for presentation · not a survey or GPS" : "Illustrative buildings & trap placement"}<br/>Drone path is a visual replay, not telemetry</span></div>
-        <div className="township-nav" role="toolbar" aria-label="Scene navigator">
-          <div role="group" aria-label="Scene view">{([["3d", "3D view"], ["map", "Map view"]] as const).map(([v, label]) => <button key={v} aria-pressed={view === v} onClick={() => { setView(v); setSceneReady(false); }}>{label}</button>)}</div>
-          <div role="group" aria-label="Camera">{[["left", "Rotate left", false], ["right", "Rotate right", false], ["in", "Zoom in", true], ["out", "Zoom out", true], ["reset", "Reset view", true]].map(([command, label, onMap]) => <button key={String(command)} disabled={view === "3d" ? !sceneReady : !onMap} onClick={() => view === "3d" ? setCamera(v => ({ command: String(command), sequence: v.sequence + 1 })) : setMapCommand(v => ({ command: String(command), sequence: v.sequence + 1 }))}>{String(label)}</button>)}</div>
+        <SceneCorner
+          mode={view}
+          onMode={m => { setView(m); setSceneReady(false); }}
+          commands={["left", "right", "in", "out", "reset"]}
+          enabled={c => view === "3d" ? sceneReady : c !== "left" && c !== "right"}
+          onCommand={c => view === "3d" ? setCamera(v => ({ command: c, sequence: v.sequence + 1 })) : setMapCommand(v => ({ command: c, sequence: v.sequence + 1 }))}
+        />
+        <div className="township-nav" role="toolbar" aria-label="Display">
           <div role="group" aria-label="Display"><button disabled={view !== "3d" || !sceneReady} aria-pressed={!night} onClick={() => setNight(v => !v)}>{night ? "Switch to day" : "Switch to night"}</button><button disabled={view !== "3d" || !sceneReady} aria-pressed={heat} onClick={() => setHeat(v => !v)}>Egg-count overlay</button></div>
         </div>
       </div>

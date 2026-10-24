@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneCorner } from "./scene-controls";
 import dynamic from "next/dynamic";
 import { useMemo, useRef, useState } from "react";
 import type { Schema } from "../lib/api";
@@ -90,6 +91,14 @@ export function DroneSim({ mission, findings, assets, events }: {
           <div><small>Battery · simulated</small><b>{Math.round(tick?.battery ?? 100)}%</b></div>
         </div>}
         {ready && !playing && t === 0 && <button className="dronesim-play-big" onClick={() => setPlaying(true)}>▶ Play flight replay</button>}
+        <SceneCorner
+          mode={mode}
+          onMode={setMode}
+          modeDisabled={!ready}
+          commands={mode === "map" ? ["in", "out", "reset"] : ["reset"]}
+          enabled={c => ready && (c !== "reset" || mode === "map" || view === "orbit")}
+          onCommand={c => mode === "map" ? setMapCommand(v => ({ command: c, sequence: v.sequence + 1 })) : setRecenter(v => v + 1)}
+        />
         <div className="dronesim-badges">{mode === "map" && <span>FICTIONAL TOWNSHIP ON REAL BASEMAP · NOT A SURVEY</span>}<span>SIMULATED</span><span>ACTUATOR DISARMED</span></div>
       </div>
       <div className="dronesim-controls">
@@ -103,13 +112,8 @@ export function DroneSim({ mission, findings, assets, events }: {
           <input type="range" min={0} max={duration} step={0.1} value={t} disabled={!ready} aria-label="Flight timeline position" aria-valuetext={`${clock(t)} of ${clock(duration)}`} onChange={e => { setPlaying(false); jump(Number(e.target.value)); }} />
           <time>{clock(duration)}</time>
         </div>
-        <div className="dronesim-views" role="toolbar" aria-label="Scene navigator">
-          <div role="group" aria-label="Scene view">{([["3d", "3D view"], ["map", "Map view"]] as const).map(([m, label]) => <button key={m} className="secondary" aria-pressed={mode === m} disabled={!ready} onClick={() => setMode(m)}>{label}</button>)}</div>
-          <div role="group" aria-label="Camera view">
-            {VIEWS.map(([v, label]) => <button key={v} className="secondary" aria-pressed={view === v} disabled={!ready || mode !== "3d"} onClick={() => setView(v)}>{label}</button>)}
-            {mode === "map" && ["in", "out"].map(c => <button key={c} className="secondary" onClick={() => setMapCommand(v => ({ command: c, sequence: v.sequence + 1 }))}>{c === "in" ? "Zoom in" : "Zoom out"}</button>)}
-            <button className="secondary" disabled={!ready || (mode === "3d" && view !== "orbit")} onClick={() => mode === "map" ? setMapCommand(v => ({ command: "reset", sequence: v.sequence + 1 })) : setRecenter(v => v + 1)}>Reset view</button>
-          </div>
+        <div className="dronesim-views" role="group" aria-label="Camera view">
+          {VIEWS.map(([v, label]) => <button key={v} className="secondary" aria-pressed={view === v} disabled={!ready || mode !== "3d"} onClick={() => setView(v)}>{label}</button>)}
         </div>
       </div>
       <p className="sr-only" role="status" aria-live="polite">{announced ? `Inspecting target ${tick!.arrivedIndex + 1}, ${announced.name}.` : ""}</p>

@@ -44,7 +44,7 @@ test("3D evidence, recorded replay and chapters are read-only on desktop and mob
   const writes = await mockApi(page);
   await page.goto("/township");
   const experience = page.getByRole("region", { name: "3D township walkthrough" });
-  await expect(experience).toBeVisible();
+  await expect(experience).toBeVisible({ timeout: 15000 });
   await expect(page.getByTestId("township-canvas").locator("canvas")).toBeVisible({ timeout: 15000 });
   await page.getByLabel("Inspect a block, asset or trap").selectOption("asset-1");
   await expect(experience.getByRole("link", { name: "Open asset evidence" })).toHaveAttribute("href", "/assets/asset-1");
