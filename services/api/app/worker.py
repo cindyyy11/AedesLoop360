@@ -5,6 +5,7 @@ from datetime import timedelta
 from sqlalchemy import select
 
 from .db import SessionLocal, now
+from . import model_warmup
 from .drone import step
 from .models import Job
 
@@ -42,6 +43,8 @@ if __name__ == "__main__":
     if args.once:
         tick()
     else:
+        # Mission completion runs the detector; load it now so the first mission is not held up by the load.
+        print("Model warm-up:", model_warmup.warm_models(), flush=True)
         while True:
             tick()
             time.sleep(1)

@@ -4,6 +4,8 @@ import { test, expect } from "@playwright/test";
 // Run against a freshly seeded isolated database; never the shared demo.
 test("real paddle model: review, interval persistence, retry and chart", async ({ page }, info) => {
   test.setTimeout(120000);
+  // The first count waits on the model load; wait for the API to report it ready instead of racing the dev proxy.
+  await expect.poll(async () => (await (await page.request.get("/api/v1/health")).json()).models?.egg, { timeout: 120000 }).toBe("READY");
   await page.goto("/ovitraps");
   await page.getByRole("button", { name: "Enter demo", exact: true }).click();
   await expect(page.locator(".topbar .badge")).toHaveText("coordinator", { timeout: 30000 });
