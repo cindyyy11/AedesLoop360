@@ -22,6 +22,8 @@ async function login(page: Page, role: string) {
 }
 
 test("five-scene persisted loop and mobile layout", async ({page}, testInfo)=>{
+  // Five scenes across six pages and two roles; on a cold dev server each route compiles on first visit.
+  test.setTimeout(240000);
   await page.goto("/dashboard");
   await login(page,"coordinator");
   await expect(page.getByRole("heading",{name:"Needs your attention",exact:true})).toBeVisible();
