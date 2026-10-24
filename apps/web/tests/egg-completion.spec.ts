@@ -31,6 +31,8 @@ test("real paddle model: review, interval persistence, retry and chart", async (
   expect(analysis.proposed_count).toBe(8);
   expect((await (await page.request.get(samplesUrl)).json()).data).toHaveLength(before.length);
   const card = counter.locator(".result-card");
+  // An older unconfirmed analysis can be shown until the list refetches; typing into its form would be discarded.
+  await expect(card.locator(".result-number b")).toHaveText(String(analysis.proposed_count));
   await expect(card.getByText("NOT SURVEILLANCE YET")).toBeVisible();
   const form = card.locator("form.confirm-form");
   await form.getByLabel(/Eggs you accept/).fill("7");
